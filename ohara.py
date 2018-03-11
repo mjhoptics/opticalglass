@@ -5,10 +5,13 @@ Created on Wed Aug  2 10:11:18 2017
 
 @author: Mike
 """
-
+import logging
 
 from math import sqrt
 import xlrd
+import numpy as np
+
+from . import glasserror as ge
 
 
 class OharaCatalog:
@@ -43,7 +46,8 @@ class OharaCatalog:
         if gname in gnames:
             gindex = gnames.index(gname)
         else:
-            gindex = None
+            logging.info('Ohara glass %s not found', gname)
+            raise ge.GlassNotFoundError("Ohara", gname)
 
         return gindex
 
@@ -51,7 +55,8 @@ class OharaCatalog:
         if dname in self.xl_data.row_values(self.data_header, 0):
             dindex = self.xl_data.row_values(self.data_header, 0).index(dname)
         else:
-            dindex = None
+            logging.info('Ohara glass data type %s not found', dname)
+            raise ge.GlassDataNotFoundError("Ohara", dname)
 
         return dindex
 
@@ -69,15 +74,23 @@ class OharaCatalog:
 
     def glass_map_data(self, wvl='d'):
         if wvl == 'd':
-            nd = self.catalog_data(self.data_index('nd'))
-            vd = self.catalog_data(self.data_index('νd'))
+            nd = np.array(self.catalog_data(self.data_index('nd')))
+            nF = np.array(self.catalog_data(self.data_index('nF')))
+            nC = np.array(self.catalog_data(self.data_index('nC')))
+            dFC = nF-nC
+            vd = (nd - 1.0)/dFC
+            PCd = (nd-nC)/dFC
             names = self.catalog_data(self.name_col_offset)
-            return vd, nd, names
+            return nd, vd, PCd, names
         elif wvl == 'e':
-            ne = self.catalog_data(self.data_index('ne'))
-            ve = self.catalog_data(self.data_index('νe'))
+            ne = np.array(self.catalog_data(self.data_index('ne')))
+            nF = np.array(self.catalog_data(self.data_index('nF')))
+            nC = np.array(self.catalog_data(self.data_index('nC')))
+            dFC = nF-nC
+            ve = (ne - 1.0)/dFC
+            PCe = (ne-nC)/dFC
             names = self.catalog_data(self.name_col_offset)
-            return ve, ne, names
+            return ne, ve, PCe, names
         else:
             return None
 
