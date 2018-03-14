@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
+# Copyright © 2017 Michael J. Hayford
+""" Support for the Schott Glass catalog
+
 Created on Wed Aug  2 10:11:18 2017
 
-@author: Mike
+@author: Michael J. Hayford
 """
 import logging
 

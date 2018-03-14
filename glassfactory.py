@@ -1,20 +1,35 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
+# Copyright © 2018 Michael J. Hayford
+""" Interfaces for commercial glass catalogs
+
 Created on Sun Jan 21 15:00:22 2018
 
-@author: Mike
+@author: Michael J. Hayford
 """
+import logging
 
 from . import hoya as h
 from . import ohara as o
 from . import schott as s
+
+from . import glasserror as ge
 
 Hoya, Ohara, Schott = range(3)
 _cat_names = ["Hoya", "Ohara", "Schott"]
 
 
 def create_glass(catalog, name):
+    """ Factory function returning a catalog glass instance.
+
+    Arguments:
+        catalog: name of supported catalog (Hoya, Ohara, Schott)
+        name: glass name
+
+    Exceptions:
+        If catalog isn't found, a GlassCatalogNotFoundError is raised
+        If name isn't in the specified catalog, a GlassNotFoundError is raised
+    """
     cat_name = catalog.capitalize()
     glass_name = name.upper()
     if cat_name == _cat_names[Hoya]:
@@ -24,11 +39,13 @@ def create_glass(catalog, name):
     elif cat_name == _cat_names[Schott]:
         return s.SchottGlass(glass_name)
     else:
+        logging.info('Glass catalog %s not found', catalog)
+        raise ge.GlassCatalogNotFoundError(catalog)
         return None
 
 
 class GlassMapModel():
-
+    """ Simple model to support Model/View architecture for Glass map views """
     def __init__(self):
         self.dataSetList = []
         self.dataSetList.append((h.HoyaCatalog(), _cat_names[Hoya]))

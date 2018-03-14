@@ -1,14 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
+# Copyright © 2018 Michael J. Hayford
+""" Support for Glass catalog exception handling
+
 Created on Wed Mar  7 13:09:15 2018
 
-@author: Mike
+@author: Michael J. Hayford
 """
 
 
 class GlassError(Exception):
     """ Exception raised when interrogating glass database """
+
+
+class GlassCatalogNotFoundError(GlassError):
+    """ Exception raised when glass catalog name not found """
+    def __init__(self, catalog):
+        self.catalog = catalog
 
 
 class GlassNotFoundError(GlassError):
