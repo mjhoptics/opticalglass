@@ -19,12 +19,12 @@ Hoya, Ohara, Schott = range(3)
 _cat_names = ["Hoya", "Ohara", "Schott"]
 
 
-def create_glass(catalog, name):
+def create_glass(name, catalog):
     """ Factory function returning a catalog glass instance.
 
     Arguments:
-        catalog: name of supported catalog (Hoya, Ohara, Schott)
         name: glass name
+        catalog: name of supported catalog (Hoya, Ohara, Schott)
 
     Exceptions:
         If catalog isn't found, a GlassCatalogNotFoundError is raised
