@@ -8,6 +8,7 @@ Created on Wed Aug  2 10:11:18 2017
 @author: Michael J. Hayford
 """
 import logging
+from pathlib import Path
 
 from math import sqrt
 import xlrd
@@ -27,9 +28,9 @@ class HoyaCatalog:
 
     def __init__(self):
         # Open the workbook
-        dname = '/Users/Mike/Developer/PyProjects/ray-optics/glass/'
+        path = Path(__file__).resolve().parent
         fname = 'HOYA20171226.xlsx'
-        xl_workbook = xlrd.open_workbook(dname+fname)
+        xl_workbook = xlrd.open_workbook(path/fname)
         self.xl_data = xl_workbook.sheet_by_index(0)
         self.name_col_offset = self.xl_data.row_values(0, 0).index('Glass\u3000Type')
         gnames = self.xl_data.col_values(self.name_col_offset, self.data_start)

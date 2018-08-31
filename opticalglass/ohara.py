@@ -8,6 +8,7 @@ Created on Wed Aug  2 10:11:18 2017
 @author: Michael J. Hayford
 """
 import logging
+from pathlib import Path
 
 from math import sqrt
 import xlrd
@@ -27,9 +28,9 @@ class OharaCatalog:
 
     def __init__(self):
         # Open the workbook
-        dname = '/Users/Mike/Developer/PyProjects/ray-optics/glass/'
+        path = Path(__file__).resolve().parent
         fname = 'ohara-excel-glass-data-12-02-2016.xlsx'
-        xl_workbook = xlrd.open_workbook(dname+fname)
+        xl_workbook = xlrd.open_workbook(path/fname)
         self.xl_data = xl_workbook.sheet_by_index(0)
         self.name_col_offset = self.xl_data.row_values(1, 0).index('Glass ')
         self.data_header = (self.xl_data.col_values(self.name_col_offset, 0)
