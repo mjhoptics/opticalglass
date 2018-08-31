@@ -7,11 +7,11 @@ Created on Tue Sep 19 09:59:50 2017
 """
 
 import unittest
-import glass.ohara as o
+import opticalglass as og
 
 
 class OharaTestCase(unittest.TestCase):
-    catalog = o.OharaCatalog()
+    catalog = og.ohara.OharaCatalog()
 
     def compare_indices(self, glass, tol=5e-6):
         nC = glass.rindex(656.27)
@@ -57,19 +57,19 @@ class OharaTestCase(unittest.TestCase):
         self.assertEqual(date, 154)
 
     def test_ohara_glass_stim2(self):
-        stim2 = o.OharaGlass('S-TIM 2')
+        stim2 = og.OharaGlass('S-TIM 2')
         self.assertIsNotNone(stim2.gindex)
         self.assertEqual(stim2.name(), 'S-TIM 2')
         self.compare_indices(stim2, tol=6e-6)
 
     def test_ohara_glass_sbsl7(self):
-        sbsl7 = o.OharaGlass('S-BSL 7')
+        sbsl7 = og.OharaGlass('S-BSL 7')
         self.assertIsNotNone(sbsl7.gindex)
         self.assertEqual(sbsl7.name(), 'S-BSL 7')
         self.compare_indices(sbsl7)
 
     def test_ohara_glass_snph1(self):
-        snph1 = o.OharaGlass('S-NPH 1')
+        snph1 = og.OharaGlass('S-NPH 1')
         self.assertIsNotNone(snph1.gindex)
         self.assertEqual(snph1.name(), 'S-NPH 1')
         self.compare_indices(snph1)

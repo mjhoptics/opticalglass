@@ -7,11 +7,11 @@ Created on Tue Sep 19 09:59:50 2017
 """
 
 import unittest
-import glass.hoya as h
+import opticalglass as og
 
 
 class HoyaTestCase(unittest.TestCase):
-    catalog = h.HoyaCatalog()
+    catalog = og.hoya.HoyaCatalog()
 
     def compare_indices(self, glass, tol=5e-6):
         nC = glass.rindex(656.27)
@@ -55,19 +55,19 @@ class HoyaTestCase(unittest.TestCase):
         self.assertEqual(n1529, 10)
 
     def test_hoya_glass_fcd1(self):
-        fcd1 = h.HoyaGlass('FCD1')
+        fcd1 = og.HoyaGlass('FCD1')
         self.assertIsNotNone(fcd1.gindex)
         self.assertEqual(fcd1.name(), 'FCD1')
         self.compare_indices(fcd1)
 
     def test_hoya_glass_ef2(self):
-        ef2 = h.HoyaGlass('E-F2')
+        ef2 = og.HoyaGlass('E-F2')
         self.assertIsNotNone(ef2.gindex)
         self.assertEqual(ef2.name(), 'E-F2')
         self.compare_indices(ef2)
 
     def test_hoya_glass_bsc7(self):
-        bsc7 = h.HoyaGlass('BSC7')
+        bsc7 = og.HoyaGlass('BSC7')
         self.assertIsNotNone(bsc7.gindex)
         self.assertEqual(bsc7.name(), 'BSC7')
         self.compare_indices(bsc7)

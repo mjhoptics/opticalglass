@@ -7,11 +7,11 @@ Created on Tue Sep 19 09:59:50 2017
 """
 
 import unittest
-import glass.schott as s
+import opticalglass as og
 
 
 class SchottTestCase(unittest.TestCase):
-    catalog = s.SchottCatalog()
+    catalog = og.schott.SchottCatalog()
 
     def compare_indices(self, glass, tol=5e-6):
         nC = glass.rindex(656.27)
@@ -57,19 +57,19 @@ class SchottTestCase(unittest.TestCase):
         self.assertEqual(date, 160)
 
     def test_schott_glass_f2(self):
-        f2 = s.SchottGlass('F2')
+        f2 = og.SchottGlass('F2')
         self.assertIsNotNone(f2.gindex)
         self.assertEqual(f2.name(), 'F2')
         self.compare_indices(f2)
 
     def test_schott_glass_nbk7(self):
-        nbk7 = s.SchottGlass('N-BK7')
+        nbk7 = og.SchottGlass('N-BK7')
         self.assertIsNotNone(nbk7.gindex)
         self.assertEqual(nbk7.name(), 'N-BK7')
         self.compare_indices(nbk7)
 
     def test_schott_glass_sf6ht(self):
-        sf6ht = s.SchottGlass('SF6HT')
+        sf6ht = og.SchottGlass('SF6HT')
         self.assertIsNotNone(sf6ht.gindex)
         self.assertEqual(sf6ht.name(), 'SF6HT')
         self.compare_indices(sf6ht)
