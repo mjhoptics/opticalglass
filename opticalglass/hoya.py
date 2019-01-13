@@ -18,6 +18,7 @@ from . import glasserror as ge
 
 
 class HoyaCatalog:
+    fname = 'HOYA.xlsx'
     xl_data = None
     data_header = 1
     data_start = 4
@@ -26,11 +27,13 @@ class HoyaCatalog:
     coef_col_offset = 28
     index_col_offset = 10
 
+    def get_filepath():
+        path = Path(__file__).resolve().parent
+        return path/HoyaCatalog.fname
+
     def __init__(self):
         # Open the workbook
-        path = Path(__file__).resolve().parent
-        fname = 'HOYA20171226.xlsx'
-        xl_workbook = xlrd.open_workbook(path/fname)
+        xl_workbook = xlrd.open_workbook(HoyaCatalog.get_filepath())
         self.xl_data = xl_workbook.sheet_by_index(0)
         self.name_col_offset = self.xl_data.row_values(0, 0).index('Glass\u3000Type')
         gnames = self.xl_data.col_values(self.name_col_offset, self.data_start)

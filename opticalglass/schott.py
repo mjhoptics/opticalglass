@@ -18,7 +18,7 @@ from . import glasserror as ge
 
 
 class SchottCatalog:
-    xl_data = None
+    fname = 'schott-optical-glass-overview-excel-table-english.xls'
     data_header = 3
     data_start = 4
     num_glasses = 123
@@ -26,12 +26,13 @@ class SchottCatalog:
     coef_col_offset = 6
     index_col_offset = 117
 
+    def get_filepath():
+        path = Path(__file__).resolve().parent
+        return path/SchottCatalog.fname
+
     def __init__(self):
         # Open the workbook
-        path = Path(__file__).resolve().parent
-        fname = 'schott-optical-glass-overview-excel-table-english-06032017'\
-                '.xls'
-        xl_workbook = xlrd.open_workbook(path/fname)
+        xl_workbook = xlrd.open_workbook(SchottCatalog.get_filepath())
         self.xl_data = xl_workbook.sheet_by_index(0)
         # self.name_col_offset = self.xl_data.row_values(1, 0).index('Glass')
         self.data_header = (self.xl_data.col_values(self.name_col_offset, 0)

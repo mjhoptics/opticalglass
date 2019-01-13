@@ -18,6 +18,7 @@ from . import glasserror as ge
 
 
 class OharaCatalog:
+    fname = 'ohara-excel-glass-data.xlsx'
     xl_data = None
     data_header = 1
     data_start = 2
@@ -26,11 +27,13 @@ class OharaCatalog:
     coef_col_offset = 60
     index_col_offset = 4
 
+    def get_filepath():
+        path = Path(__file__).resolve().parent
+        return path/OharaCatalog.fname
+
     def __init__(self):
         # Open the workbook
-        path = Path(__file__).resolve().parent
-        fname = 'ohara-excel-glass-data-12-02-2016.xlsx'
-        xl_workbook = xlrd.open_workbook(path/fname)
+        xl_workbook = xlrd.open_workbook(OharaCatalog.get_filepath())
         self.xl_data = xl_workbook.sheet_by_index(0)
         self.name_col_offset = self.xl_data.row_values(1, 0).index('Glass ')
         self.data_header = (self.xl_data.col_values(self.name_col_offset, 0)
