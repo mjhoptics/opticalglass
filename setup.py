@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="opticalglass",
-    version="0.1.5",
+    version="0.2.0",
     author="Michael J Hayford",
     author_email="mjhoptics@gmail.com",
     description="Tools for reading commercial optical glass catalogs",
@@ -18,13 +18,15 @@ setuptools.setup(
         "Programming Language :: Python :: 3.6",
         "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
+        "Topic :: Scientific/Engineering :: Physics",
     ],
+    keywords='glass refractive_index optics',
     install_requires=[
         "xlrd>=1.1.0",
         "numpy>=1.15.0",
         ],
     data_files=[
-        ('', ['*.xlsx', '*.xls']),
+        ('data', ['*.xlsx', '*.xls']),
         ],
     extras_require={
         'QtGUI':  ["pyqt5"],
