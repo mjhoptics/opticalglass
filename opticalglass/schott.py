@@ -3,9 +3,7 @@
 # Copyright © 2017 Michael J. Hayford
 """ Support for the Schott Glass catalog
 
-Created on Wed Aug  2 10:11:18 2017
-
-@author: Michael J. Hayford
+.. codeauthor: Michael J. Hayford
 """
 import logging
 from pathlib import Path
@@ -17,34 +15,60 @@ import numpy as np
 from . import glasserror as ge
 
 
+def get_filepath(fname):
+    pth = Path(__file__).resolve()
+    try:
+        root_pos = pth.parts.index('opticalglass')
+    except ValueError:
+        logging.debug("Can't find opticalglass: path is %s", pth)
+    else:
+        path = Path(*pth.parts[:root_pos+1])
+        return path/'data'/fname
+
+
 class SchottCatalog:
-    fname = 'schott-optical-glass-overview-excel-table-english.xls'
-    data_header = 3
-    data_start = 4
-    num_glasses = 123
-    name_col_offset = 0
-    coef_col_offset = 6
-    index_col_offset = 117
+    #    data_header = 3
+    #    data_start = 4
+    #    num_glasses = 123
+    #    name_col_offset = 0
+    #    coef_col_offset = 6
+    #    index_col_offset = 117
 
-    def get_filepath():
-        path = Path(__file__).resolve().parent
-        return path/SchottCatalog.fname
-
-    def __init__(self):
+    def __init__(self, fname='SCHOTT.xls'):
         # Open the workbook
-        xl_workbook = xlrd.open_workbook(SchottCatalog.get_filepath())
+        xl_workbook = xlrd.open_workbook(get_filepath(fname))
         self.xl_data = xl_workbook.sheet_by_index(0)
-        # self.name_col_offset = self.xl_data.row_values(1, 0).index('Glass')
-        self.data_header = (self.xl_data.col_values(self.name_col_offset, 0)
-                            .index('Glass'))
-        self.data_start = self.data_header+1
-        gnames = self.xl_data.col_values(self.name_col_offset, self.data_start)
-        while gnames and len(gnames[-1]) is 0:
-            gnames.pop()
+
+        for i in range(0, self.xl_data.nrows):
+            try:
+                self.name_col_offset = (self.xl_data.row_values(i, 0)
+                                        .index('Glass'))
+                glass_header = i
+                self.data_header = i
+                break
+            except ValueError:
+                pass
+
+        for j in range(glass_header+1, self.xl_data.nrows):
+            gname = self.xl_data.cell_value(j, self.name_col_offset)
+            if len(gname) > 0:
+                self.data_start = j
+                break
+
+        gnames = self.get_glass_names()
         self.num_glasses = len(gnames)
+
         colnames = self.xl_data.row_values(self.data_header, 0)
         self.coef_col_offset = colnames.index('B1')
         self.index_col_offset = colnames.index('  n2325.4')
+
+    def get_glass_names(self):
+        """ returns a list of glass names """
+        gnames = self.xl_data.col_values(self.name_col_offset, self.data_start)
+        # filter out any empty cells at the end
+        while gnames and len(gnames[-1]) is 0:
+            gnames.pop()
+        return gnames
 
     def glass_index(self, gname):
         gnames = self.xl_data.col_values(self.name_col_offset, self.data_start)
@@ -105,9 +129,13 @@ class SchottGlass:
 
     def __init__(self, gname):
         self.gindex = self.catalog.glass_index(gname)
+        self.gname = gname
 
     def __repr__(self):
         return 'Schott ' + self.name() + ': ' + self.glass_code()
+
+    def sync_to_restore(self):
+        self.gindex = self.catalog.glass_index(self.gname)
 
     def glass_code(self):
         nd = self.glass_item('nd')
@@ -118,8 +146,7 @@ class SchottGlass:
         return self.catalog.glass_data(self.gindex)
 
     def name(self):
-        return self.catalog.xl_data.cell_value(
-                self.catalog.data_start+self.gindex, 0)
+        return self.gname
 
     def glass_item(self, dname):
         dindex = self.catalog.data_index(dname)
