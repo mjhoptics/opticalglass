@@ -3,9 +3,7 @@
 # Copyright © 2017 Michael J. Hayford
 """ Support for the Hoya Glass catalog
 
-Created on Wed Aug  2 10:11:18 2017
-
-@author: Michael J. Hayford
+.. codeauthor: Michael J. Hayford
 """
 import logging
 from pathlib import Path
@@ -17,32 +15,61 @@ import numpy as np
 from . import glasserror as ge
 
 
+def get_filepath(fname):
+    pth = Path(__file__).resolve()
+    try:
+        root_pos = pth.parts.index('opticalglass')
+    except ValueError:
+        logging.debug("Can't find opticalglass: path is %s", pth)
+    else:
+        path = Path(*pth.parts[:root_pos+1])
+        return path/'data'/fname
+
+
 class HoyaCatalog:
-    fname = 'HOYA.xlsx'
-    xl_data = None
-    data_header = 1
-    data_start = 4
-    num_glasses = 191
-    name_col_offset = 2
-    coef_col_offset = 28
-    index_col_offset = 10
+    #    data_header = 1
+    #    data_start = 4
+    #    num_glasses = 194
+    #    name_col_offset = 2
+    #    coef_col_offset = 28
+    #    index_col_offset = 10
 
-    def get_filepath():
-        path = Path(__file__).resolve().parent
-        return path/HoyaCatalog.fname
-
-    def __init__(self):
+    def __init__(self, fname='HOYA.xlsx'):
         # Open the workbook
-        xl_workbook = xlrd.open_workbook(HoyaCatalog.get_filepath())
+        xl_workbook = xlrd.open_workbook(get_filepath(fname))
         self.xl_data = xl_workbook.sheet_by_index(0)
-        self.name_col_offset = self.xl_data.row_values(0, 0).index('Glass\u3000Type')
-        gnames = self.xl_data.col_values(self.name_col_offset, self.data_start)
-        while gnames and len(gnames[-1]) is 0:
-            gnames.pop()
+
+        for i in range(0, self.xl_data.nrows):
+            try:
+                self.name_col_offset = (self.xl_data.row_values(i, 0)
+                                        .index('Glass\u3000Type'))
+                # the data headers are offset +1 from the Glass header row
+                glass_header = i
+                self.data_header = i+1
+                break
+            except ValueError:
+                pass
+
+        for j in range(glass_header+1, self.xl_data.nrows):
+            gname = self.xl_data.cell_value(j, self.name_col_offset)
+            if len(gname) > 0:
+                self.data_start = j
+                break
+
+        gnames = self.get_glass_names()
         self.num_glasses = len(gnames)
+
         colnames = self.xl_data.row_values(self.data_header, 0)
         self.coef_col_offset = colnames.index('A0')
         self.index_col_offset = colnames.index('n1529.6')
+
+    def get_glass_names(self):
+        """ returns a list of glass names """
+        gnames = self.xl_data.col_values(self.name_col_offset, self.data_start)
+        # filter out any empty cells at the end
+        while gnames and len(gnames[-1]) is 0:
+            gnames.pop()
+        return gnames
 
     def glass_index(self, gname):
         gnames = self.xl_data.col_values(self.name_col_offset, self.data_start)
@@ -104,9 +131,13 @@ class HoyaGlass:
 
     def __init__(self, gname):
         self.gindex = self.catalog.glass_index(gname)
+        self.gname = gname
 
     def __repr__(self):
         return 'Hoya ' + self.name() + ': ' + self.glass_code()
+
+    def sync_to_restore(self):
+        self.gindex = self.catalog.glass_index(self.gname)
 
     def glass_code(self):
         nd = self.glass_item('nd')
@@ -117,8 +148,7 @@ class HoyaGlass:
         return self.catalog.glass_data(self.gindex)
 
     def name(self):
-        return self.catalog.xl_data.cell_value(self.catalog.data_start+self.gindex,
-                                               self.catalog.name_col_offset)
+        return self.gname
 
     def glass_item(self, dname):
         dindex = self.catalog.data_index(dname)
