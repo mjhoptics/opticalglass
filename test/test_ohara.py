@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Tue Sep 19 09:59:50 2017
+""" unit test for Ohara optical glass catalog
 
-@author: Mike
+.. codeauthor: Michael J. Hayford
 """
 
 import unittest
-import opticalglass as og
+import opticalglass.ohara as o
 
 
 class OharaTestCase(unittest.TestCase):
-    catalog = og.ohara.OharaCatalog()
+    catalog = o.OharaCatalog()
 
     def compare_indices(self, glass, tol=5e-6):
         nC = glass.rindex(656.27)
@@ -37,12 +36,16 @@ class OharaTestCase(unittest.TestCase):
         # self.assertAlmostEqual(nI, indxI, delta=tol)
 
     def test_ohara_catalog_glass_index(self):
+        sfpl51 = self.catalog.glass_index('S-FPL51')  # first in list
+        self.assertEqual(sfpl51, 0)
         stim2 = self.catalog.glass_index('S-TIM 2')
-        self.assertEqual(stim2, 48)
+        self.assertEqual(stim2, 41)
         sbsl7 = self.catalog.glass_index('S-BSL 7')
         self.assertEqual(sbsl7, 6)
         snph1 = self.catalog.glass_index('S-NPH 1')
-        self.assertEqual(snph1, 132)
+        self.assertEqual(snph1, 126)
+        snph53 = self.catalog.glass_index('S-NPH53')  # last in list
+        self.assertEqual(snph53, 133)
 
     def test_ohara_catalog_data_index(self):
         nd = self.catalog.data_index('nd')
@@ -57,19 +60,19 @@ class OharaTestCase(unittest.TestCase):
         self.assertEqual(date, 154)
 
     def test_ohara_glass_stim2(self):
-        stim2 = og.OharaGlass('S-TIM 2')
+        stim2 = o.OharaGlass('S-TIM 2')
         self.assertIsNotNone(stim2.gindex)
         self.assertEqual(stim2.name(), 'S-TIM 2')
         self.compare_indices(stim2, tol=6e-6)
 
     def test_ohara_glass_sbsl7(self):
-        sbsl7 = og.OharaGlass('S-BSL 7')
+        sbsl7 = o.OharaGlass('S-BSL 7')
         self.assertIsNotNone(sbsl7.gindex)
         self.assertEqual(sbsl7.name(), 'S-BSL 7')
         self.compare_indices(sbsl7)
 
     def test_ohara_glass_snph1(self):
-        snph1 = og.OharaGlass('S-NPH 1')
+        snph1 = o.OharaGlass('S-NPH 1')
         self.assertIsNotNone(snph1.gindex)
         self.assertEqual(snph1.name(), 'S-NPH 1')
         self.compare_indices(snph1)
