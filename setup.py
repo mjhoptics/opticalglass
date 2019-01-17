@@ -20,7 +20,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
         "Topic :: Scientific/Engineering :: Physics",
     ],
-    keywords='glass refractive_index optics',
+    keywords=['glass', 'refractive index', 'optics', 'glass catalog'],
     install_requires=[
         "xlrd>=1.1.0",
         "numpy>=1.15.0",
