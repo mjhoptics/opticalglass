@@ -1,10 +1,11 @@
 # opticalglass
 ## Tools for reading commercial optical glass catalogs
 
-This package is a set of python scripts for reading the excel spreadsheets published by the major commercial optical glass manufacturers.
+This package is a set of python scripts for reading the excel spreadsheets published by optical glass manufacturers.
 
-The package currently supports
+The package currently supports the following manufacturers:
 
+* CDGM
 * Hoya
 * Ohara
 * Schott
