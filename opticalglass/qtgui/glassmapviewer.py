@@ -34,7 +34,7 @@ class GlassMapViewer(QMainWindow):
         self.width = 1100
         self.height = 650
         self.dataSets = gf.GlassMapModel()
-        self.displayDataSets = [True, True, True]
+        self.displayDataSets = [True, True, True, True]
         self.display_ref_index = True
         self.initUI()
 
@@ -98,6 +98,9 @@ class GlassMapViewer(QMainWindow):
     def createCatalogGroupBox(self):
         groupBox = QGroupBox("Glass Catalogs", self)
 
+        cdgm_checkBox = QCheckBox("&CDGM")
+        cdgm_checkBox.setChecked(True)
+        cdgm_checkBox.stateChanged.connect(self.cdgm_check)
         hoya_checkBox = QCheckBox("&Hoya")
         hoya_checkBox.setChecked(True)
         hoya_checkBox.stateChanged.connect(self.hoya_check)
@@ -109,6 +112,7 @@ class GlassMapViewer(QMainWindow):
         schott_checkBox.stateChanged.connect(self.schott_check)
 
         vbox = QVBoxLayout()
+        vbox.addWidget(cdgm_checkBox)
         vbox.addWidget(hoya_checkBox)
         vbox.addWidget(ohara_checkBox)
         vbox.addWidget(schott_checkBox)
@@ -120,6 +124,11 @@ class GlassMapViewer(QMainWindow):
     def createTable(self):
         table = PickTable()
         return table
+
+    def cdgm_check(self, state):
+        checked = state == qt.Checked
+        self.gm.displayDataSets[gf.CDGM] = checked
+        self.gm.updateVisibility(gf.CDGM, checked)
 
     def hoya_check(self, state):
         checked = state == qt.Checked
@@ -162,7 +171,8 @@ class PickTable(QTableWidget):
 
 
 class PlotCanvas(FigureCanvas):
-    dsc = [(113/255, 113/255, 198/255),  # sgi slateblue
+    dsc = [(56/255, 142/255, 142/255),  # sgi teal
+           (113/255, 113/255, 198/255),  # sgi slateblue
            (102/255, 205/255, 0),  # chartreuse 3
            (255/255, 114/255, 86/255)]  # coral 1
 

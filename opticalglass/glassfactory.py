@@ -9,14 +9,15 @@ Created on Sun Jan 21 15:00:22 2018
 """
 import logging
 
+from . import cdgm as c
 from . import hoya as h
 from . import ohara as o
 from . import schott as s
 
 from . import glasserror as ge
 
-Hoya, Ohara, Schott = range(3)
-_cat_names = ["Hoya", "Ohara", "Schott"]
+CDGM, Hoya, Ohara, Schott = range(4)
+_cat_names = ["CDGM", "Hoya", "Ohara", "Schott"]
 
 
 def create_glass(name, catalog):
@@ -24,7 +25,7 @@ def create_glass(name, catalog):
 
     Arguments:
         name: glass name
-        catalog: name of supported catalog (Hoya, Ohara, Schott)
+        catalog: name of supported catalog (CDGM, Hoya, Ohara, Schott)
 
     Exceptions:
         If catalog isn't found, a GlassCatalogNotFoundError is raised
@@ -32,7 +33,9 @@ def create_glass(name, catalog):
     """
     cat_name = catalog.capitalize()
     glass_name = name.upper()
-    if cat_name == _cat_names[Hoya]:
+    if catalog.upper() == _cat_names[CDGM]:
+        return c.CDGMGlass(glass_name)
+    elif cat_name == _cat_names[Hoya]:
         return h.HoyaGlass(glass_name)
     elif cat_name == _cat_names[Ohara]:
         return o.OharaGlass(glass_name)
@@ -48,6 +51,7 @@ class GlassMapModel():
     """ Simple model to support Model/View architecture for Glass map views """
     def __init__(self):
         self.dataSetList = []
+        self.dataSetList.append((c.CDGMCatalog(), _cat_names[CDGM]))
         self.dataSetList.append((h.HoyaCatalog(), _cat_names[Hoya]))
         self.dataSetList.append((o.OharaCatalog(), _cat_names[Ohara]))
         self.dataSetList.append((s.SchottCatalog(), _cat_names[Schott]))
