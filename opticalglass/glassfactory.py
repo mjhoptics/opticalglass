@@ -3,9 +3,7 @@
 # Copyright © 2018 Michael J. Hayford
 """ Interfaces for commercial glass catalogs
 
-Created on Sun Jan 21 15:00:22 2018
-
-@author: Michael J. Hayford
+.. codeauthor: Michael J. Hayford
 """
 import logging
 
@@ -27,9 +25,10 @@ def create_glass(name, catalog):
         name: glass name
         catalog: name of supported catalog (CDGM, Hoya, Ohara, Schott)
 
-    Exceptions:
-        If catalog isn't found, a GlassCatalogNotFoundError is raised
-        If name isn't in the specified catalog, a GlassNotFoundError is raised
+    Raises:
+        GlassCatalogNotFoundError: if catalog isn't found
+        GlassNotFoundError: if name isn't in the specified catalog
+
     """
     cat_name = catalog.capitalize()
     glass_name = name.upper()
@@ -41,6 +40,30 @@ def create_glass(name, catalog):
         return o.OharaGlass(glass_name)
     elif cat_name == _cat_names[Schott]:
         return s.SchottGlass(glass_name)
+    else:
+        logging.info('Glass catalog %s not found', catalog)
+        raise ge.GlassCatalogNotFoundError(catalog)
+        return None
+
+
+def get_glass_catalog(catalog):
+    """ Function returning a glass catalog instance.
+
+    Arguments:
+        catalog: name of supported catalog (CDGM, Hoya, Ohara, Schott)
+
+    Raises:
+        GlassCatalogNotFoundError: if catalog isn't found
+    """
+    cat_name = catalog.capitalize()
+    if catalog.upper() == _cat_names[CDGM]:
+        return c.CDGMGlass
+    elif cat_name == _cat_names[Hoya]:
+        return h.HoyaGlass
+    elif cat_name == _cat_names[Ohara]:
+        return o.OharaGlass
+    elif cat_name == _cat_names[Schott]:
+        return s.SchottGlass
     else:
         logging.info('Glass catalog %s not found', catalog)
         raise ge.GlassCatalogNotFoundError(catalog)

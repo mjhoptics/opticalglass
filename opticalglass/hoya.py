@@ -17,6 +17,13 @@ class HoyaCatalog(glass.GlassCatalog):
     #    name_col_offset = 2
     #    coef_col_offset = 28
     #    index_col_offset = 10
+    nline_str = {'nC': 'nC',
+                 'nd': 'nd',
+                 'ne': 'ne',
+                 'nF': 'nF',
+                 'ng': 'ng',
+                 'nh': 'nh',
+                 'ni': 'ni'}
 
     def __init__(self, fname='HOYA.xlsx'):
         super().__init__('Hoya', fname, 'Glass\u3000Type', 'A0', 'n1529.6',
@@ -27,14 +34,6 @@ class HoyaCatalog(glass.GlassCatalog):
                                      self.coef_col_offset,
                                      self.coef_col_offset+12))
         return [x*10**y for x, y in zip(c[::2], c[1::2])]
-
-    def glass_map_data(self, wvl='d'):
-        if wvl == 'd':
-            return super().glass_map_data('nd', 'nF', 'nC')
-        elif wvl == 'e':
-            return super().glass_map_data('ne', 'nF', 'nC')
-        else:
-            return None
 
 
 class HoyaGlass(glass.Glass):
@@ -48,7 +47,7 @@ class HoyaGlass(glass.Glass):
     def glass_code(self):
         return super().glass_code('nd', 'νd')
 
-    def rindex(self, wv_nm):
+    def calc_rindex(self, wv_nm):
         wv = 0.001*wv_nm
         wv2 = wv*wv
         coefs = self.catalog.glass_coefs(self.gindex)

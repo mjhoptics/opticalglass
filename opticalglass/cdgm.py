@@ -19,17 +19,16 @@ class CDGMCatalog(glass.GlassCatalog):
     #    name_col_offset = 0
     #    coef_col_offset = 21
     #    index_col_offset = 2
+    nline_str = {'nC': 'nc',
+                 'nd': 'nd',
+                 'ne': 'ne',
+                 'nF': 'nF',
+                 'ng': 'ng',
+                 'nh': 'nh',
+                 'ni': 'ni'}
 
     def __init__(self, fname='CDGM.xls'):
         super().__init__('CDGM', fname, 'Glass', 'A0', 'nt')
-
-    def glass_map_data(self, wvl='d'):
-        if wvl == 'd':
-            return super().glass_map_data('nd', 'nF', 'nc')
-        elif wvl == 'e':
-            return super().glass_map_data('ne', 'nF', 'nc')
-        else:
-            return None
 
     def get_glass_names(self):
         """ returns a list of glass names """
@@ -51,7 +50,7 @@ class CDGMGlass(glass.Glass):
     def glass_code(self):
         return super().glass_code('nd', 'υd')
 
-    def rindex(self, wv_nm):
+    def calc_rindex(self, wv_nm):
         wv = 0.001*wv_nm
         wv2 = wv*wv
         coefs = self.catalog.glass_coefs(self.gindex)

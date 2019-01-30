@@ -3,9 +3,7 @@
 # Copyright © 2018 Michael J. Hayford
 """ Support for Glass catalog exception handling
 
-Created on Wed Mar  7 13:09:15 2018
-
-@author: Michael J. Hayford
+.. codeauthor: Michael J. Hayford
 """
 
 

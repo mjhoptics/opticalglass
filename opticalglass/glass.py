@@ -3,6 +3,20 @@
 # Copyright © 2019 Michael J. Hayford
 """ Support for Glass catalogs and instances
 
+The ``glass`` module contains the two base classes fundamental to the
+:mod:`opticalglass` module. The :class:`~opticalglass.glass.GlassCatalog` class
+implements as much of the common functionality needed for access to the
+catalog data as possible.
+
+The :class:`~opticalglass.glass.Glass` is an interface to the data for a particular
+glass in a cataog. The primary function of interest for optical calculations
+is :func:`~opticalglass.glass.Glass.rindex` which returns the refractive index at the
+input wavelength (nm).
+
+A factory interface to ``Glass`` creation is the function
+:func:`~opticalglass.glassfactory.create_glass` that returns a ``Glass``
+instance of the appropriate catalog type, given the glass and catalog names.
+
 .. codeauthor: Michael J. Hayford
 """
 import logging
@@ -14,7 +28,29 @@ import numpy as np
 from . import glasserror as ge
 
 
+spectra = {'Nd': 1060.0,
+           't': 1013.98,
+           's': 852.11,
+           'r': 706.5188,
+           'C': 656.2725,
+           "C'": 643.8469,
+           'HeNe': 632.8,
+           'D': 589.2938,
+           'd': 587.5618,
+           'e': 546.074,
+           'F': 486.1327,
+           "F'": 479.9914,
+           'g': 435.8343,
+           'h': 404.6561,
+           'i': 365.014}
+""" dict:
+       - keys: spectral line labels
+       - values: wavelengths in nm
+"""
+
+
 def get_filepath(fname):
+    """ given a (spreadsheet) file name, return a complete Path to the file """
     pth = Path(__file__).resolve()
     try:
         root_pos = pth.parts.index('opticalglass')
@@ -41,15 +77,18 @@ class GlassCatalog:
         num_glasses: number of glasses in the catalog
         data_header: the row containing the data header labels
         data_start: first row in the spreadsheet contain glass data
-        name_col_offset = the column offset for glass_str
+        name_col_offset: the column offset for glass_str
         coef_col_offset: the column offset for coef_str
         index_col_offset: the column offset for rindex_str
         data_header_offset: the row offset of the data headers from the
                             glass_str row
+        nline_str: a dict of strings mapping header strings used for index for
+                   spectral lines. **Must be provided by the derived class**
     """
 
     def __init__(self, name, fname, glass_str, coef_str, rindex_str,
                  data_header_offset=0):
+        self.name = name
         # Open the workbook
         xl_workbook = xlrd.open_workbook(get_filepath(fname))
         self.xl_data = xl_workbook.sheet_by_index(0)
@@ -88,6 +127,17 @@ class GlassCatalog:
         return gnames
 
     def glass_index(self, gname):
+        """ returns the glass index (row) for glass name `gname`
+
+        Args:
+            gname (str): glass name
+
+        Returns:
+            int: the index (row) of the requested glass
+
+        Raises:
+            GlassNotFoundError: if **gname** doesn't match any header string
+        """
         gnames = self.xl_data.col_values(self.name_col_offset, self.data_start)
         if gname in gnames:
             gindex = gnames.index(gname)
@@ -98,6 +148,17 @@ class GlassCatalog:
         return gindex
 
     def data_index(self, dname):
+        """ returns the data index (column) for data `dname`
+
+        Args:
+            dname (str): header string for data
+
+        Returns:
+            int: the index (column) of the requested data
+
+        Raises:
+            GlassDataNotFoundError: if **dname** doesn't match any header string
+        """
         if dname in self.xl_data.row_values(self.data_header, 0):
             dindex = self.xl_data.row_values(self.data_header, 0).index(dname)
         else:
@@ -106,22 +167,54 @@ class GlassCatalog:
 
         return dindex
 
-    def glass_data(self, row):
-        return self.xl_data.row_values(self.data_start+row, 0)
+    def glass_data(self, gindex):
+        """ returns an array of data for the glass at gindex """
+        return self.xl_data.row_values(self.data_start+gindex, 0)
 
-    def catalog_data(self, col):
-        return self.xl_data.col_values(col, self.data_start,
+    def catalog_data(self, dindex):
+        """ returns an array of data at column dindex for all glasses """
+        return self.xl_data.col_values(dindex, self.data_start,
                                        self.data_start+self.num_glasses)
 
     def glass_coefs(self, gindex):
+        """ returns an array of glass coefficients for the glass at gindex """
         return (self.xl_data.row_values(self.data_start+gindex,
                                         self.coef_col_offset,
                                         self.coef_col_offset+6))
 
-    def glass_map_data(self, nd_str, nf_str, nc_str):
-        nd = np.array(self.catalog_data(self.data_index(nd_str)))
-        nF = np.array(self.catalog_data(self.data_index(nf_str)))
-        nC = np.array(self.catalog_data(self.data_index(nc_str)))
+    def glass_map_data(self, wvl='d'):
+        """ return index and dispersion data for all glasses in the catalog
+
+        Args:
+            wvl (str): the central wavelength for the data, either 'd' or 'e'
+
+        Returns:
+            index, V-number, partial dispersion, and glass names
+        """
+        if wvl == 'd':
+            return self.get_glass_map_arrays('nd', 'nF', 'nC')
+        elif wvl == 'e':
+            return self.get_glass_map_arrays('ne', 'nF', 'nC')
+        else:
+            return None
+
+    def get_glass_map_arrays(self, nd_str, nf_str, nc_str):
+        """ return index and dispersion data arrays for input spectral range
+
+        Args:
+            nd_str (str): central wavelength string
+            nf_str (str): blue end wavelength string
+            nc_str (str): red end wavelength string
+
+        Returns:
+            index, V-number, partial dispersion, and glass names
+        """
+        nd = np.array(
+                self.catalog_data(self.data_index(self.nline_str[nd_str])))
+        nF = np.array(
+                self.catalog_data(self.data_index(self.nline_str[nf_str])))
+        nC = np.array(
+                self.catalog_data(self.data_index(self.nline_str[nc_str])))
         dFC = nF-nC
         vd = (nd - 1.0)/dFC
         PCd = (nd-nC)/dFC
@@ -142,8 +235,11 @@ class Glass:
         self.gindex = self.catalog.glass_index(gname)
         self.gname = gname
 
-    def __repr__(self):
+    def __str__(self):
         return self.catalog.name + ' ' + self.name() + ': ' + self.glass_code()
+
+    def __repr__(self):
+        return "{!s}('{}')".format(type(self).__name__, self.gname)
 
     def sync_to_restore(self):
         self.gindex = self.catalog.glass_index(self.gname)
@@ -166,8 +262,30 @@ class Glass:
         else:
             return self.glass_data()[dindex]
 
-    def rindex(self, wv_nm):
+    def rindex(self, wvl):
+        """ returns the interpolated refractive index at wvl
+
+        Args:
+            wvl: either the wavelength in nm or a string with a spectral line
+                 identifier. for the refractive index query
+
+        Returns:
+            float: the refractive index at wv_nm
+
+        Raises:
+            KeyError: if ``wvl`` is not in the spectra dictionary
+        """
+        if isinstance(wvl, float):
+            return self.calc_rindex(wvl)
+        elif isinstance(wvl, int):
+            return self.calc_rindex(wvl)
+        else:
+            return self.calc_rindex(spectra[wvl])
+
+    def calc_rindex(self, wv_nm):
         """ returns the interpolated refractive index at wv_nm
+
+        **Must be provided by the derived class**
 
         Args:
             wv_nm (float): wavelength in nm for the refractive index query

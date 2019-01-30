@@ -19,17 +19,16 @@ class OharaCatalog(glass.GlassCatalog):
     #    name_col_offset = 1
     #    coef_col_offset = 60
     #    index_col_offset = 4
+    nline_str = {'nC': 'nC',
+                 'nd': 'nd',
+                 'ne': 'ne',
+                 'nF': 'nF',
+                 'ng': 'ng',
+                 'nh': 'nh',
+                 'ni': 'ni'}
 
     def __init__(self, fname='OHARA.xlsx'):
         super().__init__('Ohara', fname, 'Glass ', 'A1', 'n2325')
-
-    def glass_map_data(self, wvl='d'):
-        if wvl == 'd':
-            return super().glass_map_data('nd', 'nF', 'nC')
-        elif wvl == 'e':
-            return super().glass_map_data('ne', 'nF', 'nC')
-        else:
-            return None
 
 
 class OharaGlass(glass.Glass):
@@ -43,7 +42,7 @@ class OharaGlass(glass.Glass):
     def glass_code(self):
         return super().glass_code('nd', 'νd')
 
-    def rindex(self, wv_nm):
+    def calc_rindex(self, wv_nm):
         wv = 0.001*wv_nm
         wv2 = wv*wv
         coefs = self.catalog.glass_coefs(self.gindex)

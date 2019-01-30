@@ -19,21 +19,21 @@ class OharaTestCase(unittest.TestCase):
         nF = glass.rindex(486.13)
         ng = glass.rindex(435.84)
         nh = glass.rindex(404.66)
-        # nI = glass.rindex(365.01)
+        nI = glass.rindex(365.01)
         indxC = glass.glass_data()[self.catalog.data_index('nC')]
         indxd = glass.glass_data()[self.catalog.data_index('nd')]
         indxe = glass.glass_data()[self.catalog.data_index('ne')]
         indxF = glass.glass_data()[self.catalog.data_index('nF')]
         indxg = glass.glass_data()[self.catalog.data_index('ng')]
         indxh = glass.glass_data()[self.catalog.data_index('nh')]
-        # indxI = glass.glass_data()[self.catalog.data_index('ni')]
+        indxI = glass.glass_data()[self.catalog.data_index('ni')]
         self.assertAlmostEqual(nC, indxC, delta=tol)
         self.assertAlmostEqual(nd, indxd, delta=tol)
         self.assertAlmostEqual(ne, indxe, delta=tol)
         self.assertAlmostEqual(nF, indxF, delta=tol)
         self.assertAlmostEqual(ng, indxg, delta=tol)
         self.assertAlmostEqual(nh, indxh, delta=tol)
-        # self.assertAlmostEqual(nI, indxI, delta=tol)
+        self.assertAlmostEqual(nI, indxI, delta=tol)
 
     def test_ohara_catalog_glass_index(self):
         sfpl51 = self.catalog.glass_index('S-FPL51')  # first in list
@@ -60,22 +60,22 @@ class OharaTestCase(unittest.TestCase):
         self.assertEqual(date, 154)
 
     def test_ohara_glass_stim2(self):
-        stim2 = o.OharaGlass('S-TIM 2')
-        self.assertIsNotNone(stim2.gindex)
-        self.assertEqual(stim2.name(), 'S-TIM 2')
-        self.compare_indices(stim2, tol=6e-6)
+        glass = o.OharaGlass('S-TIM 2')
+        self.assertIsNotNone(glass.gindex)
+        self.assertEqual(glass.name(), 'S-TIM 2')
+        self.compare_indices(glass, tol=6e-6)
 
     def test_ohara_glass_sbsl7(self):
-        sbsl7 = o.OharaGlass('S-BSL 7')
-        self.assertIsNotNone(sbsl7.gindex)
-        self.assertEqual(sbsl7.name(), 'S-BSL 7')
-        self.compare_indices(sbsl7)
+        glass = o.OharaGlass('S-BSL 7')
+        self.assertIsNotNone(glass.gindex)
+        self.assertEqual(glass.name(), 'S-BSL 7')
+        self.compare_indices(glass, tol=6e-6)
 
-    def test_ohara_glass_snph1(self):
-        snph1 = o.OharaGlass('S-NPH 1')
-        self.assertIsNotNone(snph1.gindex)
-        self.assertEqual(snph1.name(), 'S-NPH 1')
-        self.compare_indices(snph1)
+    def test_ohara_glass_snbh53v(self):
+        glass = o.OharaGlass('S-NBH53V')
+        self.assertIsNotNone(glass.gindex)
+        self.assertEqual(glass.name(), 'S-NBH53V')
+        self.compare_indices(glass)
 
 
 if __name__ == '__main__':
