@@ -9,7 +9,7 @@ implements as much of the common functionality needed for access to the
 catalog data as possible.
 
 The :class:`~opticalglass.glass.Glass` is an interface to the data for a particular
-glass in a cataog. The primary function of interest for optical calculations
+glass in a catalog. The primary function of interest for optical calculations
 is :func:`~opticalglass.glass.Glass.rindex` which returns the refractive index at the
 input wavelength (nm).
 
@@ -50,15 +50,25 @@ spectra = {'Nd': 1060.0,
 
 
 def get_filepath(fname):
-    """ given a (spreadsheet) file name, return a complete Path to the file """
-    pth = Path(__file__).resolve()
-    try:
-        root_pos = pth.parts.index('opticalglass')
-    except ValueError:
-        logging.debug("Can't find opticalglass: path is %s", pth)
-    else:
-        path = Path(*pth.parts[:root_pos+1])
-        return path/'data'/fname
+    """ given a (spreadsheet) file name, return a complete Path to the file
+
+    The data files included with the ``opticalglass`` package are located in
+    a data directory in the package hierarchy.
+    ::
+
+        opticalglass/
+            opticalglass/
+                data/
+                    fname
+
+    Args:
+        fname (str): the spreadsheet filename, including extender
+
+    Returns:
+        str: full path including filename for requested spreadsheet
+    """
+    pth = Path(__file__).resolve().parent
+    return pth/'data'/fname
 
 
 class GlassCatalog:
@@ -168,16 +178,16 @@ class GlassCatalog:
         return dindex
 
     def glass_data(self, gindex):
-        """ returns an array of data for the glass at gindex """
+        """ returns an array of data for the glass at **gindex** """
         return self.xl_data.row_values(self.data_start+gindex, 0)
 
     def catalog_data(self, dindex):
-        """ returns an array of data at column dindex for all glasses """
+        """ returns an array of data at column **dindex** for all glasses """
         return self.xl_data.col_values(dindex, self.data_start,
                                        self.data_start+self.num_glasses)
 
     def glass_coefs(self, gindex):
-        """ returns an array of glass coefficients for the glass at gindex """
+        """ returns an array of glass coefficients for the glass at **gindex** """
         return (self.xl_data.row_values(self.data_start+gindex,
                                         self.coef_col_offset,
                                         self.coef_col_offset+6))
@@ -228,8 +238,8 @@ class Glass:
     Attributes:
         gname: the glass name
         gindex: the index into the glass list
-        catalog: the GlassCatalog this glass is associated with. Must be
-                 provided by the derived class
+        catalog: the GlassCatalog this glass is associated with.
+                 **Must be provided by the derived class**
     """
     def __init__(self, gname):
         self.gindex = self.catalog.glass_index(gname)
@@ -242,20 +252,35 @@ class Glass:
         return "{!s}('{}')".format(type(self).__name__, self.gname)
 
     def sync_to_restore(self):
+        """ hook routine to restore the gindex given gname """
         self.gindex = self.catalog.glass_index(self.gname)
 
     def glass_code(self, nd_str, vd_str):
+        """ returns the 6 digit glass code, combining index and V-number """
         nd = self.glass_item(nd_str)
         vd = self.glass_item(vd_str)
         return str(1000*round((nd - 1), 3) + round(vd/100, 3))
 
     def glass_data(self):
+        """ returns the raw spreadsheet data for the glass """
         return self.catalog.glass_data(self.gindex)
 
     def name(self):
+        """ returns the glass name, :attr:`gname` """
         return self.gname
 
     def glass_item(self, dname):
+        """ return the value of the **dname** item
+
+        Args:
+            dname (str): header string for data
+
+        Returns:
+            the **dname** data
+
+        Raises:
+            GlassDataNotFoundError: if **dname** doesn't match any header string
+        """
         dindex = self.catalog.data_index(dname)
         if dindex is None:
             return None

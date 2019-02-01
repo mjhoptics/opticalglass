@@ -26,9 +26,9 @@ setuptools.setup(
         "xlrd>=1.1.0",
         "numpy>=1.15.0",
         ],
-    data_files=[
-        ('data', ['*.xlsx', '*.xls']),
-        ],
+    package_data={
+        '': ['data/*.xlsx', 'data/*.xls']
+        },
     extras_require={
         'QtGUI':  ["pyqt5"],
     },
