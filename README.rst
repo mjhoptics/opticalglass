@@ -15,4 +15,4 @@ The package currently supports the following manufacturers:
 
 .. note::
 
-All rights and ownership of the data is retained by the original owners, i.e the respective manufacturers.
+   All rights and ownership of the data is retained by the original owners, i.e the respective manufacturers.
