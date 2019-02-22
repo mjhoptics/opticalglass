@@ -25,16 +25,15 @@ setuptools.setup(
     install_requires=[
         "xlrd>=1.1.0",
         "numpy>=1.15.0",
+        "pyqt5"
         ],
     package_data={
         '': ['data/*.xlsx', 'data/*.xls']
         },
-    extras_require={
-        'QtGUI':  ["pyqt5"],
     },
     entry_points={
         'gui_scripts': [
-            'glassmap = opticalglass.qtgui.glassmapviewer:main [QtGUI]',
+            'glassmap = opticalglass.qtgui.glassmapviewer:main',
         ],
     },
 )
