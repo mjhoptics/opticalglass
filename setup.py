@@ -30,7 +30,6 @@ setuptools.setup(
     package_data={
         '': ['data/*.xlsx', 'data/*.xls']
         },
-    },
     entry_points={
         'gui_scripts': [
             'glassmap = opticalglass.qtgui.glassmapviewer:main',
