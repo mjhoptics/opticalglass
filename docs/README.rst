@@ -23,7 +23,13 @@ A desktop application is installed as part of ``opticalglass``. It is invoked by
 
 .. code::
 
-   MacBook-Pro:docs Mike$ glassmap
+   > glassmap
+
+On a Windows machine, the ``glassmap`` command will be located in a Scripts directory underneath the install directory. For example, if using a virtual environment named ``optgla``, the command would be
+
+.. code::
+
+   > \optgla\Scripts\glassmap
 
 Clicking on a glass or glasses in the map will list the glasses and their catalog plus index, V-number and partial dispersion in the table at the right.
 
