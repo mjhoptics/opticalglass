@@ -14,7 +14,7 @@ To install ``opticalglass`` using pip, use
 
 .. code::
 
-   pip install opticalglass
+   > pip install opticalglass
 
 Glass Map Application
 ---------------------
@@ -96,4 +96,4 @@ The following is an example of using ``opticalglass`` interactively.
 	   ...: plt.plot(wl,rn)
    Out[12]: [<matplotlib.lines.Line2D at 0x120f95860>]
 
-.. image:: _images/index_vs_wvl.png
+.. image:: _images/Index_vs_wvl.png
