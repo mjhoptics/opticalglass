@@ -29,7 +29,7 @@ On a Windows machine, the ``glassmap`` command will be located in a Scripts dire
 
 .. code::
 
-   > \optgla\Scripts\glassmap
+   > optgla\Scripts\glassmap
 
 Clicking on a glass or glasses in the map will list the glasses and their catalog plus index, V-number and partial dispersion in the table at the right.
 
