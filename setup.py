@@ -5,7 +5,7 @@ with open("README.rst", "r") as fh:
 
 setuptools.setup(
     name="opticalglass",
-    version="0.3.3",
+    version="0.3.4",
     author="Michael J Hayford",
     author_email="mjhoptics@gmail.com",
     description="Tools for reading commercial optical glass catalogs",
