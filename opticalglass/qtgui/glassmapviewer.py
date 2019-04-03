@@ -20,11 +20,20 @@ from matplotlib.backends.backend_qt5agg \
              NavigationToolbar2QT as NavigationToolbar)
 
 from matplotlib.figure import Figure
+from matplotlib.patches import Polygon
 
 import opticalglass.glassfactory as gf
+import opticalglass.glasspolygons as gp
 
 pickTableHeader = ["Catalog", "Glass", "Nd", "Vd", "P C,d"]
 pickTableFormat = ["s", "s", "7.5f", "5.2f", "6.4f"]
+
+
+def rgb2mpl(rgb):
+    if len(rgb) == 3:
+        return [rgb[0]/255., rgb[1]/255., rgb[2]/255., 1.0]
+    elif len(rgb) == 4:
+        return [rgb[0]/255., rgb[1]/255., rgb[2]/255., rgb[3]/255.]
 
 
 class GlassMapViewer(QMainWindow):
@@ -220,13 +229,14 @@ class PlotCanvas(FigureCanvas):
         xi = 1
         if self.display_ref_index is True:
             yi = 0
+            self.draw_glass_polygons()
         else:
             yi = 2
         self.axes.set_title(self.get_display_label())
         for i, display in enumerate(self.displayDataSets):
             self.axes.plot(self.rawData[i][1][xi], self.rawData[i][1][yi],
                            linestyle='None', marker='o', markersize=5,
-                           color=self.dsc[i], alpha=0.5, gid=i, picker=5,
+                           color=self.dsc[i], alpha=0.75, gid=i, picker=5,
                            label=self.rawData[i][0], visible=display)
 
         self.figure.canvas.mpl_connect('pick_event', self.on_pick)
@@ -235,6 +245,13 @@ class PlotCanvas(FigureCanvas):
         self.axes.grid()
         self.axes.legend()
         self.draw()
+
+    def draw_glass_polygons(self):
+        for glass, poly in gp.polygons.items():
+            rgb = gp.rgb[glass]
+            p = Polygon(poly, closed=True, fc=rgb2mpl(rgb), ec='black',
+                        linewidth=1.0)
+            self.axes.add_artist(p)
 
     def clearPickTable(self):
         self.pickTable.clearContents()
