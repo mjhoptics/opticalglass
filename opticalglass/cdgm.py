@@ -34,7 +34,7 @@ class CDGMCatalog(glass.GlassCatalog):
         """ returns a list of glass names """
         gnames = self.xl_data.col_values(self.name_col_offset, self.data_start)
         # filter out any empty cells at the end
-        while gnames and (len(gnames[-1]) is 0 or gnames[-1] == 'Over!'):
+        while gnames and (len(gnames[-1]) == 0 or gnames[-1] == 'Over!'):
             gnames.pop()
         return gnames
 

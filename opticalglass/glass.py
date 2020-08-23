@@ -152,7 +152,7 @@ class GlassCatalog:
         if gname in gnames:
             gindex = gnames.index(gname)
         else:
-            logging.info('%s glass %s not found', self.name, gname)
+            logging.info('glass %s not found in catalog %s', gname, self.name)
             raise ge.GlassNotFoundError(self.name, gname)
 
         return gindex
@@ -172,7 +172,7 @@ class GlassCatalog:
         if dname in self.xl_data.row_values(self.data_header, 0):
             dindex = self.xl_data.row_values(self.data_header, 0).index(dname)
         else:
-            logging.info('%s glass data type %s not found', self.name, dname)
+            logging.info('data type %s not found in catalog %s', dname, self.name)
             raise ge.GlassDataNotFoundError(self.name, dname)
 
         return dindex

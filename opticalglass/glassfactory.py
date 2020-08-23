@@ -16,6 +16,7 @@ from . import glasserror as ge
 
 CDGM, Hoya, Ohara, Schott = range(4)
 _cat_names = ["CDGM", "Hoya", "Ohara", "Schott"]
+_cat_names_uc = [cat.upper() for cat in _cat_names]
 
 
 def create_glass(name, catalog):
@@ -30,20 +31,34 @@ def create_glass(name, catalog):
         GlassNotFoundError: if name isn't in the specified catalog
 
     """
-    cat_name = catalog.capitalize()
-    glass_name = name.upper()
-    if catalog.upper() == _cat_names[CDGM]:
-        return c.CDGMGlass(glass_name)
-    elif cat_name == _cat_names[Hoya]:
-        return h.HoyaGlass(glass_name)
-    elif cat_name == _cat_names[Ohara]:
-        return o.OharaGlass(glass_name)
-    elif cat_name == _cat_names[Schott]:
-        return s.SchottGlass(glass_name)
-    else:
-        logging.info('Glass catalog %s not found', catalog)
-        raise ge.GlassCatalogNotFoundError(catalog)
-        return None
+    def _create_glass(name, catalog):
+        cat_name = catalog.upper()
+        glass_name = name.upper()
+        if cat_name == _cat_names_uc[CDGM]:
+            return c.CDGMGlass(glass_name)
+        elif cat_name == _cat_names_uc[Hoya]:
+            return h.HoyaGlass(glass_name)
+        elif cat_name == _cat_names_uc[Ohara]:
+            return o.OharaGlass(glass_name)
+        elif cat_name == _cat_names_uc[Schott]:
+            return s.SchottGlass(glass_name)
+        else:
+            logging.info('glass catalog %s not found', catalog)
+            raise ge.GlassCatalogNotFoundError(catalog)
+
+    if isinstance(catalog, str):
+        return _create_glass(name, catalog)
+
+    else:  # treat calalog as a list
+        for cat in catalog:
+            try:
+                glass = _create_glass(name, cat)
+            except ge.GlassError:
+                continue
+            else:
+                return glass
+        logging.info('glass %s not found in %s', name, catalog)
+        raise ge.GlassNotFoundError(catalog, name)
 
 
 def get_glass_catalog(catalog):
@@ -55,23 +70,24 @@ def get_glass_catalog(catalog):
     Raises:
         GlassCatalogNotFoundError: if catalog isn't found
     """
-    cat_name = catalog.capitalize()
-    if catalog.upper() == _cat_names[CDGM]:
+    cat_name = catalog.upper()
+    if cat_name == _cat_names_uc[CDGM]:
         return c.CDGMGlass
-    elif cat_name == _cat_names[Hoya]:
+    elif cat_name == _cat_names_uc[Hoya]:
         return h.HoyaGlass
-    elif cat_name == _cat_names[Ohara]:
+    elif cat_name == _cat_names_uc[Ohara]:
         return o.OharaGlass
-    elif cat_name == _cat_names[Schott]:
+    elif cat_name == _cat_names_uc[Schott]:
         return s.SchottGlass
     else:
-        logging.info('Glass catalog %s not found', catalog)
+        logging.info('glass catalog %s not found', catalog)
         raise ge.GlassCatalogNotFoundError(catalog)
         return None
 
 
 class GlassMapModel():
     """ Simple model to support Model/View architecture for Glass map views """
+
     def __init__(self):
         self.dataSetList = []
         self.dataSetList.append((c.CDGMCatalog(), _cat_names[CDGM]))
