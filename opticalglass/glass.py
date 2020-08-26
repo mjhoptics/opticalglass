@@ -24,6 +24,7 @@ from pathlib import Path
 
 import xlrd
 import numpy as np
+from scipy.optimize import least_squares
 
 from . import glasserror as ge
 import opticalglass.buchdahl as buchdahl
@@ -73,6 +74,27 @@ def calc_buchdahl_coords(nd, nF, nC, wlns=('d', 'F', 'C')):
     b = np.array([nF-nd, nC-nd])
     coefs = np.linalg.solve(a, b)
     return nd, coefs
+
+
+def fit_buchdahl_coords(indices, wlns=['d', 'h', 'g', 'F', 'e', 'C', 'r']):
+    """Given central, blue and red refractive indices, calculate the Buchdahl
+    chromatic coefficients.
+    """
+    rind0 = indices[0]
+    wv0 = buchdahl.get_wv(wlns[0])
+    om = [buchdahl.omega(buchdahl.get_wv(w) - wv0) for w in wlns]
+
+    def rindex(coefs):
+        b = [(rind0 + coefs[0]*o + coefs[1]*o**2 - indices[i])
+             for i, o in enumerate(om)]
+        return np.array(b)
+
+    def jac(coefs):
+        a = [[o, o**2] for i, o in enumerate(om)]
+        return np.array(a)
+
+    result = least_squares(rindex, np.array([0., 0.]), jac)
+    return rind0, result
 
 
 class GlassCatalog:

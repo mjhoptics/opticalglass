@@ -8,10 +8,9 @@
 .. codeauthor: Michael J. Hayford
 """
 
-import math
 import numpy as np
 
-from rayoptics.util.spectral_lines import get_wavelength
+from opticalglass.spectral_lines import get_wavelength
 
 
 def get_wv(wavelength):
@@ -28,16 +27,60 @@ def omega2wvl(om):
     return om/(1 - 2.5*om)
 
 
+def model_from_glasses(gla1, gla2):
+    """Create a model from the slope between two glasses."""
+    bhdl_gla1 = Buchdahl1(gla1)
+    bhdl_gla2 = Buchdahl1(gla2)
+    # get the Buchdahl quadratic coefficients for the 2 input glasses
+    v1_gla1, v2_gla1 = bhdl_gla1.coefs[0], bhdl_gla1.coefs[1]
+    v1_gla2, v2_gla2 = bhdl_gla2.coefs[0], bhdl_gla2.coefs[1]
+    # calculate the slope and v1 intercept of the line between the 2 glasses
+    m = (v1_gla1 - v1_gla2)/(v2_gla1 - v2_gla2)
+    b = v1_gla1 - m*v2_gla1
+    return b, m
+
+
 class Buchdahl:
-    """Quadratic Buchdahl refractive index model. """
+    """Quadratic Buchdahl refractive index model.
 
-    def __init__(self, wv0, rind0, coefs):
-        self.coefs = coefs
+        n = n(0) + v1*om + v2*om**2
 
+        where:
+            om is the Buchdahl chromatic coordinate for the input wavelength
+            v1, v2 are the linear and quadratic coefficients of the model
+            n(0) is the refractive index at the central wavelength of the fit
+    """
+
+    def __init__(self, wv0, rind0, coefs, mat=''):
+        """
+        Parameters
+        ----------
+        wv0 : float
+            central wavelength in **micrometers**.
+        rind0 : float
+            refractive index at the central wavelength.
+        coefs : (float, float)
+            the linear and quadratic coefficients of the model.
+        mat : str
+            a string label returned from the name() fct.
+        """
         self.wv0 = wv0
         self.rind0 = rind0
+        self.coefs = coefs
+        self.label = mat
+
+    def name(self):
+        return self.label
+
+    def glass_code(self):
+        nd = self.rindex('d')
+        nF = self.rindex('F')
+        nC = self.rindex('C')
+        vd = (nd - 1)/(nF - nC)
+        return str(1000*round((nd - 1), 3) + round(vd/100, 3))
 
     def rindex(self, wvl):
+        """Returns the refractive index from the quadratic model at wvl."""
         om = omega(get_wv(wvl) - self.wv0)
         return self.rind0 + self.coefs[0]*om + self.coefs[1]*om**2
 
@@ -45,23 +88,23 @@ class Buchdahl:
 class Buchdahl1(Buchdahl):
     """Quadratic refractive index model for a real glass, *medium*. """
 
-    def __init__(self, medium, wlns=('F', 'd', 'C')):
+    def __init__(self, medium, wlns=('d', 'F', 'C'), **kwargs):
         rindx = [medium.rindex(wlns[0]),
                  medium.rindex(wlns[1]),
                  medium.rindex(wlns[2])]
 
-        wv0 = get_wv(wlns[1])
+        wv0 = get_wv(wlns[0])
+        omF = omega(get_wv(wlns[1]) - wv0)
         omC = omega(get_wv(wlns[2]) - wv0)
-        omF = omega(get_wv(wlns[0]) - wv0)
         self.om = omF, omC
 
         coefs = self.update(rindx)
-        super().__init__(wv0, rindx[1], coefs)
+        super().__init__(wv0, rindx[0], coefs, **kwargs)
 
     def update(self, rindx):
         omF, omC = self.om
         a = np.array([[omF, omF**2], [omC, omC**2]])
-        b = np.array([rindx[0]-rindx[1], rindx[2]-rindx[1]])
+        b = np.array([rindx[1]-rindx[0], rindx[2]-rindx[0]])
         coefs = np.linalg.solve(a, b)
         return coefs
 
@@ -72,17 +115,17 @@ class Buchdahl2(Buchdahl):
     b = -0.064667
     m = -1.604048
 
-    def __init__(self, nd, vd, wlns=('F', 'd', 'C'), model=None):
+    def __init__(self, nd, vd, model=None, wlns=('d', 'F', 'C'), **kwargs):
         if model is not None:
-            self.b, self.m = *model
-        wv0 = get_wv(wlns[1])
+            self.b, self.m = model
+        wv0 = get_wv(wlns[0])
+        omF = omega(get_wv(wlns[1]) - wv0)
         omC = omega(get_wv(wlns[2]) - wv0)
-        omF = omega(get_wv(wlns[0]) - wv0)
         delta_om = omF - omC
         delta_om2 = omF**2 - omC**2
         self.om = omF, omC, delta_om, delta_om2
         rind0, coefs = self.update(nd, vd)
-        super().__init__(wv0, rind0, coefs)
+        super().__init__(wv0, rind0, coefs, **kwargs)
 
     def update(self, nd, vd):
         omF, omC, delta_om, delta_om2 = self.om
