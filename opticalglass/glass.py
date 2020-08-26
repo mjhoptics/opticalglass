@@ -26,27 +26,8 @@ import xlrd
 import numpy as np
 
 from . import glasserror as ge
-
-
-spectra = {'Nd': 1060.0,
-           't': 1013.98,
-           's': 852.11,
-           'r': 706.5188,
-           'C': 656.2725,
-           "C'": 643.8469,
-           'HeNe': 632.8,
-           'D': 589.2938,
-           'd': 587.5618,
-           'e': 546.074,
-           'F': 486.1327,
-           "F'": 479.9914,
-           'g': 435.8343,
-           'h': 404.6561,
-           'i': 365.014}
-""" dict:
-       - keys: spectral line labels
-       - values: wavelengths in nm
-"""
+import opticalglass.buchdahl as buchdahl
+from opticalglass.spectral_lines import get_wavelength
 
 
 def get_filepath(fname):
@@ -71,6 +52,29 @@ def get_filepath(fname):
     return pth/'data'/fname
 
 
+def calc_glass_constants(nd, nF, nC):
+    """Given central, blue and red refractive indices, calculate Vd and PCd."""
+    dFC = nF-nC
+    vd = (nd - 1.0)/dFC
+    PCd = (nd-nC)/dFC
+    return vd, PCd
+
+
+def calc_buchdahl_coords(nd, nF, nC, wlns=('d', 'F', 'C')):
+    """Given central, blue and red refractive indices, calculate the Buchdahl
+    chromatic coefficients.
+    """
+    wv0 = buchdahl.get_wv(wlns[0])
+
+    omF = buchdahl.omega(buchdahl.get_wv(wlns[1]) - wv0)
+    omC = buchdahl.omega(buchdahl.get_wv(wlns[2]) - wv0)
+
+    a = np.array([[omF, omF**2], [omC, omC**2]])
+    b = np.array([nF-nd, nC-nd])
+    coefs = np.linalg.solve(a, b)
+    return nd, coefs
+
+
 class GlassCatalog:
     """ base glass catalog
 
@@ -89,6 +93,7 @@ class GlassCatalog:
         data_start: first row in the spreadsheet contain glass data
         name_col_offset: the column offset for glass_str
         coef_col_offset: the column offset for coef_str
+        num_coefs: the number of coefficients in the index equation
         index_col_offset: the column offset for rindex_str
         data_header_offset: the row offset of the data headers from the
                             glass_str row
@@ -97,7 +102,7 @@ class GlassCatalog:
     """
 
     def __init__(self, name, fname, glass_str, coef_str, rindex_str,
-                 data_header_offset=0):
+                 num_coefs=6, data_header_offset=0, glass_name_offset=1):
         self.name = name
         # Open the workbook
         xl_workbook = xlrd.open_workbook(get_filepath(fname))
@@ -115,7 +120,7 @@ class GlassCatalog:
             except ValueError:
                 pass
 
-        for j in range(glass_header+1, self.xl_data.nrows):
+        for j in range(glass_header+glass_name_offset, self.xl_data.nrows):
             gname = self.xl_data.cell_value(j, self.name_col_offset)
             if len(gname) > 0:
                 self.data_start = j
@@ -126,6 +131,7 @@ class GlassCatalog:
 
         colnames = self.xl_data.row_values(self.data_header, 0)
         self.coef_col_offset = colnames.index(coef_str)
+        self.num_coefs = num_coefs
         self.index_col_offset = colnames.index(rindex_str)
 
     def get_glass_names(self):
@@ -190,7 +196,7 @@ class GlassCatalog:
         """ returns an array of glass coefficients for the glass at **gindex** """
         return (self.xl_data.row_values(self.data_start+gindex,
                                         self.coef_col_offset,
-                                        self.coef_col_offset+6))
+                                        self.coef_col_offset+self.num_coefs))
 
     def glass_map_data(self, wvl='d'):
         """ return index and dispersion data for all glasses in the catalog
@@ -201,14 +207,9 @@ class GlassCatalog:
         Returns:
             index, V-number, partial dispersion, and glass names
         """
-        if wvl == 'd':
-            return self.get_glass_map_arrays('nd', 'nF', 'nC')
-        elif wvl == 'e':
-            return self.get_glass_map_arrays('ne', 'nF', 'nC')
-        else:
-            return None
+        return self.get_glass_map_arrays(wvl, 'F', 'C')
 
-    def get_glass_map_arrays(self, nd_str, nf_str, nc_str):
+    def get_glass_map_arrays(self, d_str, F_str, C_str):
         """ return index and dispersion data arrays for input spectral range
 
         Args:
@@ -220,16 +221,19 @@ class GlassCatalog:
             index, V-number, partial dispersion, and glass names
         """
         nd = np.array(
-                self.catalog_data(self.data_index(self.nline_str[nd_str])))
+                self.catalog_data(self.data_index(self.nline_str['n'+d_str])))
         nF = np.array(
-                self.catalog_data(self.data_index(self.nline_str[nf_str])))
+                self.catalog_data(self.data_index(self.nline_str['n'+F_str])))
         nC = np.array(
-                self.catalog_data(self.data_index(self.nline_str[nc_str])))
-        dFC = nF-nC
-        vd = (nd - 1.0)/dFC
-        PCd = (nd-nC)/dFC
+                self.catalog_data(self.data_index(self.nline_str['n'+C_str])))
+
+        vd, PCd = calc_glass_constants(nd, nF, nC)
+
+        nd, coefs = calc_buchdahl_coords(
+            nd, nF, nC, wlns=(d_str, F_str, C_str))
+
         names = self.catalog_data(self.name_col_offset)
-        return nd, vd, PCd, names
+        return nd, vd, PCd, coefs[0], coefs[1], names
 
 
 class Glass:
@@ -276,10 +280,10 @@ class Glass:
             dname (str): header string for data
 
         Returns:
-            the **dname** data
+            the *dname* data
 
         Raises:
-            GlassDataNotFoundError: if **dname** doesn't match any header string
+            GlassDataNotFoundError: if *dname* doesn't match any header string
         """
         dindex = self.catalog.data_index(dname)
         if dindex is None:
@@ -300,12 +304,7 @@ class Glass:
         Raises:
             KeyError: if ``wvl`` is not in the spectra dictionary
         """
-        if isinstance(wvl, float):
-            return self.calc_rindex(wvl)
-        elif isinstance(wvl, int):
-            return self.calc_rindex(wvl)
-        else:
-            return self.calc_rindex(spectra[wvl])
+        return self.calc_rindex(get_wavelength(wvl))
 
     def calc_rindex(self, wv_nm):
         """ returns the interpolated refractive index at wv_nm

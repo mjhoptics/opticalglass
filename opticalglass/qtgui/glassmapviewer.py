@@ -45,8 +45,8 @@ class GlassMapViewer(QMainWindow):
         self.width = 1100
         self.height = 650
         self.dataSets = gf.GlassMapModel()
-        self.displayDataSets = [True, True, True, True]
-        self.display_ref_index = True
+        self.displayDataSets = [True, True, True, True, True, True]
+        self.plot_display_type = "Refractive Index"
         self.initUI()
 
     def initUI(self):
@@ -84,10 +84,14 @@ class GlassMapViewer(QMainWindow):
         partial_btn = QRadioButton("Partial Dispersion")
         partial_btn.toggled.connect(lambda:
                                     self.on_plot_type_toggled(partial_btn))
+        buchdahl_btn = QRadioButton("Buchdahl Coordinates")
+        buchdahl_btn.toggled.connect(lambda:
+                                     self.on_plot_type_toggled(buchdahl_btn))
 
         vbox = QVBoxLayout()
         vbox.addWidget(index_btn)
         vbox.addWidget(partial_btn)
+        vbox.addWidget(buchdahl_btn)
 
         groupBox.setLayout(vbox)
 
@@ -96,13 +100,15 @@ class GlassMapViewer(QMainWindow):
     def on_plot_type_toggled(self, button):
         if button.text() == "Refractive Index":
             if button.isChecked() is True:
-                self.display_ref_index = True
-
-        if button.text() == "Partial Dispersion":
+                self.plot_display_type = "Refractive Index"
+        elif button.text() == "Partial Dispersion":
             if button.isChecked() is True:
-                self.display_ref_index = False
+                self.plot_display_type = "Partial Dispersion"
+        elif button.text() == "Buchdahl Coordinates":
+            if button.isChecked() is True:
+                self.plot_display_type = "Buchdahl Coordinates"
 
-        self.gm.display_ref_index = self.display_ref_index
+        self.gm.plot_display_type = self.plot_display_type
         self.gm.update_data()
         self.gm.plot()
 
@@ -112,6 +118,9 @@ class GlassMapViewer(QMainWindow):
         cdgm_checkBox = QCheckBox("&CDGM")
         cdgm_checkBox.setChecked(True)
         cdgm_checkBox.stateChanged.connect(self.cdgm_check)
+        hikari_checkBox = QCheckBox("&Hikari")
+        hikari_checkBox.setChecked(True)
+        hikari_checkBox.stateChanged.connect(self.hikari_check)
         hoya_checkBox = QCheckBox("&Hoya")
         hoya_checkBox.setChecked(True)
         hoya_checkBox.stateChanged.connect(self.hoya_check)
@@ -121,12 +130,17 @@ class GlassMapViewer(QMainWindow):
         schott_checkBox = QCheckBox("&Schott")
         schott_checkBox.setChecked(True)
         schott_checkBox.stateChanged.connect(self.schott_check)
+        sumita_checkBox = QCheckBox("&Sumita")
+        sumita_checkBox.setChecked(True)
+        sumita_checkBox.stateChanged.connect(self.sumita_check)
 
         vbox = QVBoxLayout()
         vbox.addWidget(cdgm_checkBox)
+        vbox.addWidget(hikari_checkBox)
         vbox.addWidget(hoya_checkBox)
         vbox.addWidget(ohara_checkBox)
         vbox.addWidget(schott_checkBox)
+        vbox.addWidget(sumita_checkBox)
 
         groupBox.setLayout(vbox)
 
@@ -140,6 +154,11 @@ class GlassMapViewer(QMainWindow):
         checked = state == qt.Checked
         self.gm.displayDataSets[gf.CDGM] = checked
         self.gm.updateVisibility(gf.CDGM, checked)
+
+    def hikari_check(self, state):
+        checked = state == qt.Checked
+        self.gm.displayDataSets[gf.Hikari] = checked
+        self.gm.updateVisibility(gf.Hikari, checked)
 
     def hoya_check(self, state):
         checked = state == qt.Checked
@@ -155,6 +174,11 @@ class GlassMapViewer(QMainWindow):
         checked = state == qt.Checked
         self.gm.displayDataSets[gf.Schott] = checked
         self.gm.updateVisibility(gf.Schott, checked)
+
+    def sumita_check(self, state):
+        checked = state == qt.Checked
+        self.gm.displayDataSets[gf.Sumita] = checked
+        self.gm.updateVisibility(gf.Sumita, checked)
 
 
 class PickTable(QTableWidget):
@@ -183,9 +207,11 @@ class PickTable(QTableWidget):
 
 class PlotCanvas(FigureCanvas):
     dsc = [(56/255, 142/255, 142/255),  # sgi teal
+           (133/255, 133/255, 133/255),  # grey 52
            (113/255, 113/255, 198/255),  # sgi slateblue
            (102/255, 205/255, 0),  # chartreuse 3
-           (255/255, 114/255, 86/255)]  # coral 1
+           (255/255, 114/255, 86/255),  # coral 1
+           (255/255, 165/255, 0/255)]  # orange 1
 
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         # fig = Figure(figsize=(width, height), dpi=dpi)
@@ -195,7 +221,7 @@ class PlotCanvas(FigureCanvas):
         self.data = parent.dataSets
         self.displayDataSets = parent.displayDataSets
         self.pickTable = parent.gmt
-        self.display_ref_index = parent.display_ref_index
+        self.plot_display_type = parent.plot_display_type
         self.needsClear = True
         self.pickRow = 0
 
@@ -212,26 +238,27 @@ class PlotCanvas(FigureCanvas):
         self.plot()
 
     def get_display_label(self):
-        if self.display_ref_index is True:
-            return 'Glass Map'
-        else:
-            return 'Partial Dispersion'
+        return self.plot_display_type
 
     def update_data(self):
         self.rawData = []
         for i, display in enumerate(self.displayDataSets):
-            n, v, p, lbl = self.data.get_data_at(i)
+            n, v, p, coefs0, coefs1, lbl = self.data.get_data_at(i)
             dsLabel = self.data.get_data_set_label_at(i)
-            self.rawData.append([dsLabel, (n, v, p, lbl)])
+            self.rawData.append([dsLabel, (n, v, p, coefs0, coefs1, lbl)])
 
     def plot(self):
         self.axes.cla()
-        xi = 1
-        if self.display_ref_index is True:
+        if self.plot_display_type == "Refractive Index":
+            xi = 1
             yi = 0
             self.draw_glass_polygons()
-        else:
+        elif self.plot_display_type == "Partial Dispersion":
+            xi = 1
             yi = 2
+        elif self.plot_display_type == "Buchdahl Coordinates":
+            xi = 4
+            yi = 3
         self.axes.set_title(self.get_display_label())
         for i, display in enumerate(self.displayDataSets):
             self.axes.plot(self.rawData[i][1][xi], self.rawData[i][1][yi],
@@ -241,7 +268,8 @@ class PlotCanvas(FigureCanvas):
 
         self.figure.canvas.mpl_connect('pick_event', self.on_pick)
         self.figure.canvas.mpl_connect('button_press_event', self.on_press)
-        self.axes.invert_xaxis()
+        if xi == 1:
+            self.axes.invert_xaxis()
         self.axes.grid()
         self.axes.legend()
         self.draw()
@@ -277,7 +305,7 @@ class PlotCanvas(FigureCanvas):
         if self.displayDataSets[id]:
             ind = event.ind
             dsLabel = self.rawData[id][0]
-            n, v, p, lbl = self.rawData[id][1]
+            n, v, p, coef0, coef1, lbl = self.rawData[id][1]
             self.pickTable.setRowCount(self.pickRow+len(ind))
             for k in ind:
                 glass = (dsLabel, lbl[k], n[k], v[k], p[k])
