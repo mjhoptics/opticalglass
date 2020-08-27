@@ -258,19 +258,36 @@ class PlotCanvas(FigureCanvas):
             dsLabel = self.data.get_data_set_label_at(i)
             self.rawData.append([dsLabel, (n, v, p, coefs0, coefs1, lbl)])
 
+    def draw_axes(self):
+        self.axes.grid(True)
+        if hasattr(self, 'header'):
+            self.axes.set_title(self.header, pad=10.0, fontsize=18)
+        if hasattr(self, 'x_label'):
+            self.axes.set_xlabel(self.x_label)
+        if hasattr(self, 'y_label'):
+            self.axes.set_ylabel(self.y_label)
+
     def plot(self):
         self.axes.cla()
         if self.plot_display_type == "Refractive Index":
+            self.x_label = r'$V_d$'
+            self.y_label = r'$n_d$'
             xi = 1
             yi = 0
             self.draw_glass_polygons()
         elif self.plot_display_type == "Partial Dispersion":
+            self.x_label = r'$V_d$'
+            self.y_label = r'$P_{C-d}$'
             xi = 1
             yi = 2
         elif self.plot_display_type == "Buchdahl Coefficients":
+            self.x_label = r'$\nu_2$'
+            self.y_label = r'$\nu_1$'
             xi = 4
             yi = 3
         elif self.plot_display_type == "Buchdahl Dispersion Coefficients":
+            self.x_label = r'$\eta_2$'
+            self.y_label = r'$\eta_1$'
             xi = 4
             yi = 3
         self.axes.set_title(self.get_display_label())
@@ -284,7 +301,7 @@ class PlotCanvas(FigureCanvas):
         self.figure.canvas.mpl_connect('button_press_event', self.on_press)
         if xi == 1:
             self.axes.invert_xaxis()
-        self.axes.grid()
+        self.draw_axes()
         self.axes.legend()
         self.draw()
 
