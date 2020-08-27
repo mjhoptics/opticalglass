@@ -270,24 +270,24 @@ class PlotCanvas(FigureCanvas):
     def plot(self):
         self.axes.cla()
         if self.plot_display_type == "Refractive Index":
-            self.x_label = r'$V_d$'
-            self.y_label = r'$n_d$'
+            self.x_label = r'$\mathrm{V_d}$'
+            self.y_label = r'$\mathrm{n_d}$'
             xi = 1
             yi = 0
             self.draw_glass_polygons()
         elif self.plot_display_type == "Partial Dispersion":
-            self.x_label = r'$V_d$'
-            self.y_label = r'$P_{C-d}$'
+            self.x_label = r'$\mathrm{V_d}$'
+            self.y_label = r'$\mathrm{P_{C-d}}$'
             xi = 1
             yi = 2
         elif self.plot_display_type == "Buchdahl Coefficients":
-            self.x_label = r'$\nu_2$'
-            self.y_label = r'$\nu_1$'
+            self.x_label = r'$\mathrm{\nu_2}$'
+            self.y_label = r'$\mathrm{\nu_1}$'
             xi = 4
             yi = 3
         elif self.plot_display_type == "Buchdahl Dispersion Coefficients":
-            self.x_label = r'$\eta_2$'
-            self.y_label = r'$\eta_1$'
+            self.x_label = r'$\mathrm{\eta_2}$'
+            self.y_label = r'$\mathrm{\eta_1}$'
             xi = 4
             yi = 3
         self.axes.set_title(self.get_display_label())
