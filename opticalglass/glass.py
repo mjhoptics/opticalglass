@@ -61,7 +61,7 @@ def calc_glass_constants(nd, nF, nC):
     return vd, PCd
 
 
-def calc_buchdahl_coords(nd, nF, nC, wlns=('d', 'F', 'C')):
+def calc_buchdahl_coords(nd, nF, nC, wlns=('d', 'F', 'C'), ctype=None):
     """Given central, blue and red refractive indices, calculate the Buchdahl
     chromatic coefficients.
     """
@@ -73,6 +73,8 @@ def calc_buchdahl_coords(nd, nF, nC, wlns=('d', 'F', 'C')):
     a = np.array([[omF, omF**2], [omC, omC**2]])
     b = np.array([nF-nd, nC-nd])
     coefs = np.linalg.solve(a, b)
+    if ctype == "disp_coefs":
+        coefs /= (nd - 1)
     return nd, coefs
 
 
@@ -220,7 +222,7 @@ class GlassCatalog:
                                         self.coef_col_offset,
                                         self.coef_col_offset+self.num_coefs))
 
-    def glass_map_data(self, wvl='d'):
+    def glass_map_data(self, wvl='d', **kwargs):
         """ return index and dispersion data for all glasses in the catalog
 
         Args:
@@ -229,9 +231,9 @@ class GlassCatalog:
         Returns:
             index, V-number, partial dispersion, and glass names
         """
-        return self.get_glass_map_arrays(wvl, 'F', 'C')
+        return self.get_glass_map_arrays(wvl, 'F', 'C', **kwargs)
 
-    def get_glass_map_arrays(self, d_str, F_str, C_str):
+    def get_glass_map_arrays(self, d_str, F_str, C_str, **kwargs):
         """ return index and dispersion data arrays for input spectral range
 
         Args:
@@ -252,7 +254,7 @@ class GlassCatalog:
         vd, PCd = calc_glass_constants(nd, nF, nC)
 
         nd, coefs = calc_buchdahl_coords(
-            nd, nF, nC, wlns=(d_str, F_str, C_str))
+            nd, nF, nC, wlns=(d_str, F_str, C_str), **kwargs)
 
         names = self.catalog_data(self.name_col_offset)
         return nd, vd, PCd, coefs[0], coefs[1], names

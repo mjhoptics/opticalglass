@@ -107,8 +107,8 @@ class GlassMapModel():
         self.dataSetList.append((s.SchottCatalog(), _cat_names[Schott]))
         self.dataSetList.append((su.SumitaCatalog(), _cat_names[Sumita]))
 
-    def get_data_at(self, i):
-        return self.dataSetList[i][0].glass_map_data()
+    def get_data_at(self, i, **kwargs):
+        return self.dataSetList[i][0].glass_map_data(**kwargs)
 
     def get_data_set_label_at(self, i):
         return self.dataSetList[i][1]

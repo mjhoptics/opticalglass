@@ -84,14 +84,18 @@ class GlassMapViewer(QMainWindow):
         partial_btn = QRadioButton("Partial Dispersion")
         partial_btn.toggled.connect(lambda:
                                     self.on_plot_type_toggled(partial_btn))
-        buchdahl_btn = QRadioButton("Buchdahl Coordinates")
+        buchdahl_btn = QRadioButton("Buchdahl Coefficients")
         buchdahl_btn.toggled.connect(lambda:
                                      self.on_plot_type_toggled(buchdahl_btn))
+        buchdahl_disp_btn = QRadioButton("Buchdahl Dispersion Coefficients")
+        buchdahl_disp_btn.toggled.connect(
+            lambda: self.on_plot_type_toggled(buchdahl_disp_btn))
 
         vbox = QVBoxLayout()
         vbox.addWidget(index_btn)
         vbox.addWidget(partial_btn)
         vbox.addWidget(buchdahl_btn)
+        vbox.addWidget(buchdahl_disp_btn)
 
         groupBox.setLayout(vbox)
 
@@ -104,9 +108,12 @@ class GlassMapViewer(QMainWindow):
         elif button.text() == "Partial Dispersion":
             if button.isChecked() is True:
                 self.plot_display_type = "Partial Dispersion"
-        elif button.text() == "Buchdahl Coordinates":
+        elif button.text() == "Buchdahl Coefficients":
             if button.isChecked() is True:
-                self.plot_display_type = "Buchdahl Coordinates"
+                self.plot_display_type = "Buchdahl Coefficients"
+        elif button.text() == "Buchdahl Dispersion Coefficients":
+            if button.isChecked() is True:
+                self.plot_display_type = "Buchdahl Dispersion Coefficients"
 
         self.gm.plot_display_type = self.plot_display_type
         self.gm.update_data()
@@ -242,8 +249,12 @@ class PlotCanvas(FigureCanvas):
 
     def update_data(self):
         self.rawData = []
+        ctyp = ("disp_coefs"
+                if self.plot_display_type == "Buchdahl Dispersion Coefficients"
+                else None)
         for i, display in enumerate(self.displayDataSets):
-            n, v, p, coefs0, coefs1, lbl = self.data.get_data_at(i)
+            gmap_data = self.data.get_data_at(i, ctype=ctyp)
+            n, v, p, coefs0, coefs1, lbl = gmap_data
             dsLabel = self.data.get_data_set_label_at(i)
             self.rawData.append([dsLabel, (n, v, p, coefs0, coefs1, lbl)])
 
@@ -256,7 +267,10 @@ class PlotCanvas(FigureCanvas):
         elif self.plot_display_type == "Partial Dispersion":
             xi = 1
             yi = 2
-        elif self.plot_display_type == "Buchdahl Coordinates":
+        elif self.plot_display_type == "Buchdahl Coefficients":
+            xi = 4
+            yi = 3
+        elif self.plot_display_type == "Buchdahl Dispersion Coefficients":
             xi = 4
             yi = 3
         self.axes.set_title(self.get_display_label())
