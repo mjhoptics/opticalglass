@@ -9,9 +9,11 @@ This package is a set of python scripts for reading the excel spreadsheets publi
 The package currently supports the following manufacturers:
 
     * CDGM
+    * Hikari
     * Hoya
     * Ohara
     * Schott
+    * Sumita
 
 .. note::
 
