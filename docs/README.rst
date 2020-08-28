@@ -1,7 +1,7 @@
 User's Guide
 ============
 
-Optical glass manufacturers provide detailed technical data for optical glasses via Excel spreadsheets. The ``opticalglass`` package provides uniform access to data from different vendors.
+Optical glass manufacturers provide detailed technical data for optical glasses via Excel spreadsheets. The :mod:`opticalglass` package provides uniform access to data from different vendors.
 
 .. note::
 
@@ -10,7 +10,7 @@ Optical glass manufacturers provide detailed technical data for optical glasses 
 Installation
 ------------
 
-To install ``opticalglass`` using pip, use
+To install :mod:`opticalglass` using pip, use
 
 .. code::
 
@@ -19,7 +19,7 @@ To install ``opticalglass`` using pip, use
 Glass Map Application
 ---------------------
 
-A desktop application is installed as part of ``opticalglass``. It is invoked by running ``glassmap`` at the command line.
+A desktop application is installed as part of :mod:`opticalglass`. It is invoked by running ``glassmap`` at the command line.
 
 .. code::
 
@@ -41,16 +41,20 @@ Partial dispersion data can be displayed by clicking on the plot type in the upp
 
 Display of different catalogs can be controlled by selecting or unselecting checkboxs in the Glass Catalogs panel on the right.
 
-.. image:: _images/CatalogSelection.png
+.. image:: _images/BuchdahlCoefficients.png
+
+The Buchdahl Dispersion Coefficient display can be used to find glass pairs that can be corrected at 3 wavelengths. Robb and Mercado showed that glasses lying along the same vector from the origin of the dispersion diagram would be color corrrected at 3 wavelegths.
+
+.. image:: _images/BuchdahlDispersion.png
 
 Command Line Quick Start
 ------------------------
 
 Two families of objects are provided to manage access to glass data. The :class:`~opticalglass.glass.GlassCatalog` base class manages the generic operations on the catalog. Subclasses of :class:`~opticalglass.glass.GlassCatalog` provide specific mapping information for the vendor spreadsheet format. The :class:`~opticalglass.glass.Glass` base class manages the generic operations on the individual glass instances, principally the index interpolation function :func:`~opticalglass.glass.Glass.calc_rindex`.
 
-A factory interface to ``Glass`` creation is the function :func:`~opticalglass.glassfactory.create_glass` that returns a ``Glass`` instance of the appropriate catalog type, given the glass and catalog names.
+A factory interface to :class:`~opticalglass.glass.Glass` creation is the function :func:`~opticalglass.glassfactory.create_glass` that returns a :class:`~opticalglass.glass.Glass` instance of the appropriate catalog type, given the glass and catalog names.
 
-The following is an example of using ``opticalglass`` interactively.
+The following is an example of using :mod:`opticalglass` interactively.
 
 .. code:: python
 

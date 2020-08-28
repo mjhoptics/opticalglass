@@ -36,10 +36,29 @@ buchdahl
     :undoc-members:
     :show-inheritance:
 
+spectral_lines
+++++++++++++++
+
+.. automodule:: opticalglass.spectral_lines
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 glasserror
 ++++++++++
 
 .. automodule:: opticalglass.glasserror
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+GUI Submodules
+--------------
+
+glassmapviewer
+++++++++++++++
+
+.. automodule:: opticalglass.qtgui.glassmapviewer
     :members:
     :undoc-members:
     :show-inheritance:

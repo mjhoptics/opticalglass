@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # Copyright © 2019 Michael J. Hayford
-""" Support for spectral line data
+"""Support for using wavelength values and spectral line designations interchangably.
 
 .. codeauthor: Michael J. Hayford
 """
@@ -48,6 +48,7 @@ spectra = {'Nd': 1060.0,
            'h': 404.6561,
            'i': 365.014}
 """ dict:
+
        - keys: spectral line labels
        - values: wavelengths in nm
 """
