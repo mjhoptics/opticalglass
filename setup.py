@@ -27,7 +27,7 @@ setuptools.setup(
         "numpy>=1.17.1",
         "scipy>=1.3.1",
         "matplotlib>=3.1.1",
-#        "pyqt5>=5.9.2"
+        "pyqt5>=5.9.2"
         ],
     package_data={
         '': ['data/*.xlsx', 'data/*.xls']

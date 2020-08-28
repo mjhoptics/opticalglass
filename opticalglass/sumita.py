@@ -29,7 +29,7 @@ class SumitaCatalog(glass.GlassCatalog):
                  'nh': 'nh',
                  'ni': 'ni'}
 
-    def __init__(self, fname='Sumita.xlsx'):
+    def __init__(self, fname='SUMITA.xlsx'):
         super().__init__('Sumita', fname, 'GNAME', 'A0', 'n1548')
 
 
