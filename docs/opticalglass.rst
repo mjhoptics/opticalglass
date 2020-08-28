@@ -52,6 +52,17 @@ glasserror
     :undoc-members:
     :show-inheritance:
 
+GUI Submodules
+--------------
+
+glassmapviewer
+++++++++++++++
+
+.. automodule:: opticalglass.qtgui.glassmapviewer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Catalog-specific Submodules
 ---------------------------
 
