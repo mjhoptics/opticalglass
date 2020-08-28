@@ -25,9 +25,9 @@ copyright = '2020, Michael J. Hayford'
 author = 'Michael J. Hayford'
 
 # The short X.Y version
-version = '0.4.1'
+version = '0.4.2'
 # The full version, including alpha/beta/rc tags
-release = '0.4.1'
+release = '0.4.2'
 
 
 # -- General configuration ---------------------------------------------------
@@ -197,6 +197,7 @@ epub_exclude_files = ['search.html']
 intersphinx_mapping = {
         'python': ('https://docs.python.org/3.7', None),
         'matplotlib': ('https://matplotlib.org', None),
-        'numpy': ('https://docs.scipy.org/doc/numpy/', None),
-        'pandas': ('http://pandas.pydata.org/pandas-docs/stable/', None),
+        'numpy': ('https://numpy.org/doc/stable', None),
+        'pandas': ('https://pandas.pydata.org/pandas-docs/stable', None),
+        'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
         }

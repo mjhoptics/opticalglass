@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-# Copyright © 2018 Michael J. Hayford
 # -*- coding: utf-8 -*-
+# Copyright © 2018 Michael J. Hayford
 """ desktop application for viewing glass catalog data
 
 .. Created on Wed Jan  3 12:50:03 2018
