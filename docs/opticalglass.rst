@@ -58,7 +58,7 @@ GUI Submodules
 glassmapviewer
 ++++++++++++++
 
-.. automodule:: opticalglass.qtgui.glassmapviewer
+.. automodule:: opticalglass.glassmapviewer
     :members:
     :undoc-members:
     :show-inheritance:

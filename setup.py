@@ -34,7 +34,7 @@ setuptools.setup(
         },
     entry_points={
         'gui_scripts': [
-            'glassmap = opticalglass.qtgui.glassmapviewer:main',
+            'glassmap = opticalglass.glassmapviewer:main',
         ],
     },
 )
