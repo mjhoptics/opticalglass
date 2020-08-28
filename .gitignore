@@ -28,3 +28,5 @@ _templates
 # Jupyter Notebook
 .ipynb_checkpoints
 glassmapviewer.ui
+spectral lines.xlsx
+spectral lines.csv

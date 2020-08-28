@@ -21,13 +21,13 @@ sys.path.insert(0, os.path.abspath('../'))
 # -- Project information -----------------------------------------------------
 
 project = 'opticalglass'
-copyright = '2019, Michael J. Hayford'
+copyright = '2020, Michael J. Hayford'
 author = 'Michael J. Hayford'
 
 # The short X.Y version
-version = '0.3.4'
+version = '0.4.0'
 # The full version, including alpha/beta/rc tags
-release = '0.3.4'
+release = '0.4.0'
 
 
 # -- General configuration ---------------------------------------------------
@@ -195,7 +195,7 @@ epub_exclude_files = ['search.html']
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-        'python': ('https://docs.python.org/3.6', None),
+        'python': ('https://docs.python.org/3.7', None),
         'matplotlib': ('https://matplotlib.org', None),
         'numpy': ('https://docs.scipy.org/doc/numpy/', None),
         'pandas': ('http://pandas.pydata.org/pandas-docs/stable/', None),
