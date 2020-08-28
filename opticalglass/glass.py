@@ -64,6 +64,14 @@ def calc_glass_constants(nd, nF, nC):
 def calc_buchdahl_coords(nd, nF, nC, wlns=('d', 'F', 'C'), ctype=None):
     """Given central, blue and red refractive indices, calculate the Buchdahl
     chromatic coefficients.
+
+    Arguments:
+        nd: central refractive index
+        nF: "blue" refractive index
+        nC: "red" refractive index
+        wlns: wavelengths for the 3 refractive indices
+        ctype: if "disp_coefs", return dispersion coefficients, otherwise the
+               quadratic coefficients
     """
     wv0 = buchdahl.get_wv(wlns[0])
 
@@ -229,7 +237,8 @@ class GlassCatalog:
             wvl (str): the central wavelength for the data, either 'd' or 'e'
 
         Returns:
-            index, V-number, partial dispersion, and glass names
+            index, V-number, partial dispersion, Buchdahl coefficients, and
+            glass names
         """
         return self.get_glass_map_arrays(wvl, 'F', 'C', **kwargs)
 
@@ -242,7 +251,8 @@ class GlassCatalog:
             nc_str (str): red end wavelength string
 
         Returns:
-            index, V-number, partial dispersion, and glass names
+            index, V-number, partial dispersion, Buchdahl coefficients, and
+            glass names
         """
         nd = np.array(
                 self.catalog_data(self.data_index(self.nline_str['n'+d_str])))

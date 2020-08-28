@@ -43,12 +43,20 @@ def model_from_glasses(gla1, gla2):
 class Buchdahl:
     """Quadratic Buchdahl refractive index model.
 
-        n = n(0) + v1*om + v2*om**2
+    .. math::
 
-        where:
-            om is the Buchdahl chromatic coordinate for the input wavelength
-            v1, v2 are the linear and quadratic coefficients of the model
-            n(0) is the refractive index at the central wavelength of the fit
+        N(\omega) = {N_0} + \\nu_1\omega + \\nu_2\omega^2
+
+    - :math:`\omega` is the Buchdahl chromatic coordinate for the input wavelength
+    - :math:`\\nu_1, \\nu_2` are the linear and quadratic coefficients of the model
+    - :math:`{N_0}` is the refractive index at the central wavelength of the fit
+
+    The Buchdahl chromatic coordinate :math:`\omega` is defined as:
+
+    .. math::
+
+        \omega(\lambda) = \\frac{\lambda - \lambda_0}{1 + 5/2(\lambda - \lambda_0)}
+
     """
 
     def __init__(self, wv0, rind0, coefs, mat=''):

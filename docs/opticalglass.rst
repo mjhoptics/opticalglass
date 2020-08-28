@@ -28,6 +28,14 @@ glassfactory
     :undoc-members:
     :show-inheritance:
 
+buchdahl
+++++++++
+
+.. automodule:: opticalglass.buchdahl
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 glasserror
 ++++++++++
 
@@ -43,6 +51,14 @@ cdgm
 ++++
 
 .. automodule:: opticalglass.cdgm
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+hikari
+++++++
+
+.. automodule:: opticalglass.hikari
     :members:
     :undoc-members:
     :show-inheritance:
@@ -67,6 +83,14 @@ schott
 ++++++
 
 .. automodule:: opticalglass.schott
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+sumita
+++++++
+
+.. automodule:: opticalglass.sumita
     :members:
     :undoc-members:
     :show-inheritance:
