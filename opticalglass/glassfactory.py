@@ -55,7 +55,7 @@ def create_glass(name, catalog):
     if isinstance(catalog, str):
         return _create_glass(name, catalog)
 
-    else:  # treat calalog as a list
+    else:  # treat catalog as a list
         for cat in catalog:
             try:
                 glass = _create_glass(name, cat)
@@ -78,17 +78,17 @@ def get_glass_catalog(catalog):
     """
     cat_name = catalog.upper()
     if cat_name == _cat_names_uc[CDGM]:
-        return c.CDGMGlass
+        return c.CDGMCatalog()
     elif cat_name == _cat_names_uc[Hikari]:
-        return hi.HikariGlass
+        return hi.HikariCatalog()
     elif cat_name == _cat_names_uc[Hoya]:
-        return h.HoyaGlass
+        return h.HoyaCatalog()
     elif cat_name == _cat_names_uc[Ohara]:
-        return o.OharaGlass
+        return o.OharaCatalog()
     elif cat_name == _cat_names_uc[Schott]:
-        return s.SchottGlass
+        return s.SchottCatalog()
     elif cat_name == _cat_names_uc[Sumita]:
-        return su.SumitaGlass
+        return su.SumitaCatalog()
     else:
         logging.info('glass catalog %s not found', catalog)
         raise ge.GlassCatalogNotFoundError(catalog)
