@@ -6,13 +6,14 @@
 .. codeauthor: Michael J. Hayford
 """
 import logging
+from opticalglass.util import Singleton
 
 from math import sqrt
 
 from . import glass
 
 
-class SchottCatalog(glass.GlassCatalog):
+class SchottCatalog(glass.GlassCatalog, metaclass=Singleton):
     #    data_header = 3
     #    data_start = 4
     #    num_glasses = 123

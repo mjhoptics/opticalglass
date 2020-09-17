@@ -6,13 +6,14 @@
 .. codeauthor: Michael J. Hayford
 """
 import logging
+from opticalglass.util import Singleton
 
 from math import sqrt
 
 from . import glass
 
 
-class CDGMCatalog(glass.GlassCatalog):
+class CDGMCatalog(glass.GlassCatalog, metaclass=Singleton):
     #    data_header = 0
     #    data_start = 2
     #    num_glasses = 240

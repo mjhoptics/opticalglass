@@ -6,13 +6,14 @@
 .. codeauthor: Michael J. Hayford
 """
 import logging
+from opticalglass.util import Singleton
 
 from math import sqrt
 
 from . import glass
 
 
-class OharaCatalog(glass.GlassCatalog):
+class OharaCatalog(glass.GlassCatalog, metaclass=Singleton):
     #    data_header = 1
     #    data_start = 2
     #    num_glasses = 134

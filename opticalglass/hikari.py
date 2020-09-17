@@ -9,13 +9,14 @@
 """
 
 import logging
+from opticalglass.util import Singleton
 
 from math import sqrt
 
 from . import glass
 
 
-class HikariCatalog(glass.GlassCatalog):
+class HikariCatalog(glass.GlassCatalog, metaclass=Singleton):
     #    data_header = 0
     #    data_start = 2
     #    num_glasses = 240

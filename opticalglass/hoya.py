@@ -6,11 +6,12 @@
 .. codeauthor: Michael J. Hayford
 """
 from math import sqrt
+from opticalglass.util import Singleton
 
 from . import glass
 
 
-class HoyaCatalog(glass.GlassCatalog):
+class HoyaCatalog(glass.GlassCatalog, metaclass=Singleton):
     #    data_header = 1
     #    data_start = 4
     #    num_glasses = 194
