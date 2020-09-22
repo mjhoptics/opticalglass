@@ -35,19 +35,18 @@ def create_glass(name, catalog):
     """
     def _create_glass(name, catalog):
         cat_name = catalog.upper()
-        glass_name = name.upper()
         if cat_name == _cat_names_uc[CDGM]:
-            return c.CDGMGlass(glass_name)
+            return c.CDGMGlass(name)
         elif cat_name == _cat_names_uc[Hikari]:
-            return hi.HikariGlass(glass_name)
+            return hi.HikariGlass(name)
         elif cat_name == _cat_names_uc[Hoya]:
-            return h.HoyaGlass(glass_name)
+            return h.HoyaGlass(name)
         elif cat_name == _cat_names_uc[Ohara]:
-            return o.OharaGlass(glass_name)
+            return o.OharaGlass(name)
         elif cat_name == _cat_names_uc[Schott]:
-            return s.SchottGlass(glass_name)
+            return s.SchottGlass(name)
         elif cat_name == _cat_names_uc[Sumita]:
-            return su.SumitaGlass(glass_name)
+            return su.SumitaGlass(name)
         else:
             logging.info('glass catalog %s not found', catalog)
             raise ge.GlassCatalogNotFoundError(catalog)

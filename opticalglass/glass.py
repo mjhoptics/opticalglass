@@ -24,9 +24,10 @@ from pathlib import Path
 
 import xlrd
 import numpy as np
-from scipy.optimize import least_squares
+from scipy import linalg
 
 from . import glasserror as ge
+from opticalglass.util import Singleton, Counter
 import opticalglass.buchdahl as buchdahl
 from opticalglass.spectral_lines import get_wavelength
 
@@ -86,25 +87,22 @@ def calc_buchdahl_coords(nd, nF, nC, wlns=('d', 'F', 'C'), ctype=None):
     return nd, coefs
 
 
-def fit_buchdahl_coords(indices, wlns=['d', 'h', 'g', 'F', 'e', 'C', 'r']):
-    """Given central, blue and red refractive indices, calculate the Buchdahl
-    chromatic coefficients.
+def fit_buchdahl_coords(indices, degree=2,
+                        wlns=['d', 'h', 'g', 'F', 'e', 'C', 'r']):
+    """Given central, 4 blue and 2 red refractive indices, do a least squares
+    fit for the Buchdahl chromatic coefficients.
     """
     rind0 = indices[0]
     wv0 = buchdahl.get_wv(wlns[0])
     om = [buchdahl.omega(buchdahl.get_wv(w) - wv0) for w in wlns]
 
-    def rindex(coefs):
-        b = [(rind0 + coefs[0]*o + coefs[1]*o**2 - indices[i])
-             for i, o in enumerate(om)]
-        return np.array(b)
+    a = np.array([[o**(i+1) for i in range(degree)] for o in om])
+    b = np.array(indices) - rind0
 
-    def jac(coefs):
-        a = [[o, o**2] for i, o in enumerate(om)]
-        return np.array(a)
+    results = linalg.lstsq(a, b)
+    coefs = results[0]
 
-    result = least_squares(rindex, np.array([0., 0.]), jac)
-    return rind0, result
+    return rind0, coefs
 
 
 class GlassCatalog:
@@ -165,6 +163,10 @@ class GlassCatalog:
         self.coef_col_offset = colnames.index(coef_str)
         self.num_coefs = num_coefs
         self.index_col_offset = colnames.index(rindex_str)
+
+        # build a list of decoded glass names
+        self.__class__.glass_list = [(decode_glass_name(gn), gn, name)
+                                     for gn in self.get_glass_names()]
 
     def get_glass_names(self):
         """ returns a list of glass names """
@@ -352,3 +354,106 @@ class Glass:
             float: the refractive index at wv_nm
         """
         pass
+
+
+def decode_glass_name(glass_name):
+    """Split glass_name into prefix, group, num, suffix.
+
+    Manufacturers glass names follow a common pattern. At the simplest, it is
+    a short character string, typically used to identify a particular glass
+    composition, with a numeric qualifier. The composition group and product
+    serial number are combined to form the basic product id, the group_num:
+
+        F2
+        SF56
+
+    Manufacturers will often use a single character prefix to indicate
+    different categories of glasses, e.g. moldable or "New":
+
+        N-BK7
+        P-LASF50
+
+    Similarly, a suffix with one or more characters is often used to
+    differentiate between different variations of the same base material.
+
+        N-SF57
+        N-SF57HT
+        N-SF57HTultra
+
+    This function takes an input glass name and returns a tuple of strings. A
+    valid glass_name should always have a non-null group_num; prefixes and
+    suffixes are optional and used differently by different manufacturers.
+
+        group_num, prefix, suffix
+
+    Args:
+        glass_name (str): a glass manufacturer's glass name
+
+    Returns: group_num, prefix, suffix
+
+    """
+    gn = glass_name.split('-')
+    suffix = ''
+    if len(gn) == 1:
+        prefix = ''
+        gn2 = gn[0]
+    elif len(gn) == 3:
+        prefix = gn[0]
+        suffix = gn[2]
+        gn2 = gn[1]
+    elif len(gn) == 2:
+        if len(gn[0]) < 3:
+            prefix = gn[0]
+            gn2 = gn[1]
+        else:
+            prefix = ''
+            gn2 = gn[0]
+            suffix = gn[1]
+
+    for i, char in enumerate(gn2):
+        if char.isdigit():
+            start = i
+            while i < len(gn2) and gn2[i].isdigit():
+                i += 1
+            group = gn2[:start].rstrip()
+            num = gn2[start:i]
+            group_num = group, num
+            break
+    suffix = gn2[i:] if suffix == '' else suffix
+    return group_num, prefix, suffix
+
+
+def glass_catalog_stats(glass_list, do_print=False):
+    """Decode all of the glass names in glass_cat_name.
+
+    Print out the original glass names and the decoded version side by side.
+
+    Args:
+        glass_list: ((group, num), prefix, suffix), glass_name, glass_cat_name
+        do_print (bool): if True, print the glass name and the decoded version
+
+    Returns:
+        groups (dict): all catalog groups
+        group_num (dict): all glasses with multiple variants
+        prefixes (dict): all the non-null prefixes used
+        suffixes (dict): all the non-null suffixes used
+    """
+    groups = Counter()
+    group_nums = Counter()
+    prefixes = Counter()
+    suffixes = Counter()
+    for g in glass_list:
+        (group_num, prefix, suffix), gn, gc = g
+        group, num = group_num
+        if prefix != '':
+            prefixes[prefix] += 1
+        if suffix != '':
+            suffixes[suffix] += 1
+        groups[group] += 1
+        group_nums[group_num] += 1
+        if do_print:
+            fmt_3 = "{:14s} {:>2s}  {:8s}  {:12s}"
+            print(fmt_3.format(gn, prefix, group+num, suffix))
+    # filter group_nums to include only multi-use items
+    group_nums = {k: v for k, v in group_nums.items() if v > 1}
+    return groups, group_nums, prefixes, suffixes

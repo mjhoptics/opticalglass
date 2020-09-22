@@ -9,7 +9,27 @@
 """
 
 
+class Counter(dict):
+    """A dict that initializes a missing key's value to 0.
+
+    Example:
+        track_changes = Counter()
+        track_changes['something happened'] += 1
+        track_changes['something not found'] += 1
+        """
+
+    def __missing__(self, key):
+        return 0
+
+
 class Singleton(type):
+    """A metaclass implementation for the Singleton pattern.
+
+    Example:
+
+        class JustOne(metaclass=Singleton):
+            pass
+    """
     _instances = {}
 
     def __call__(cls, *args, **kwargs):
