@@ -19,6 +19,7 @@ instance of the appropriate catalog type, given the glass and catalog names.
 
 .. codeauthor: Michael J. Hayford
 """
+import itertools
 import logging
 from pathlib import Path
 
@@ -26,10 +27,12 @@ import xlrd
 import numpy as np
 from scipy import linalg
 
+from . import buchdahl
 from . import glasserror as ge
-from opticalglass.util import Singleton, Counter
-import opticalglass.buchdahl as buchdahl
-from opticalglass.spectral_lines import get_wavelength
+from .util import Singleton, Counter
+from .spectral_lines import get_wavelength
+
+from .caselessDictionary import CaselessDictionary
 
 
 def get_filepath(fname):
@@ -62,7 +65,8 @@ def calc_glass_constants(nd, nF, nC):
     return vd, PCd
 
 
-def calc_buchdahl_coords(nd, nF, nC, wlns=('d', 'F', 'C'), ctype=None):
+def calc_buchdahl_coords(nd, nF, nC, wlns=('d', 'F', 'C'),
+                         ctype=None, **kwargs):
     """Given central, blue and red refractive indices, calculate the Buchdahl
     chromatic coefficients.
 
@@ -167,6 +171,9 @@ class GlassCatalog:
         # build a list of decoded glass names
         self.__class__.glass_list = [(decode_glass_name(gn), gn, name)
                                      for gn in self.get_glass_names()]
+
+    def catalog_name(self):
+        return self.name
 
     def get_glass_names(self):
         """ returns a list of glass names """
@@ -308,6 +315,10 @@ class Glass:
     def name(self):
         """ returns the glass name, :attr:`gname` """
         return self.gname
+
+    def catalog_name(self):
+        """ returns the glass name, :attr:`gname` """
+        return self.catalog.catalog_name()
 
     def glass_item(self, dname):
         """ return the value of the **dname** item
@@ -457,3 +468,156 @@ def glass_catalog_stats(glass_list, do_print=False):
     # filter group_nums to include only multi-use items
     group_nums = {k: v for k, v in group_nums.items() if v > 1}
     return groups, group_nums, prefixes, suffixes
+
+
+class Robb1983Catalog(metaclass=Singleton):
+    """ glass catalog based on data in Robb, et als 1983 paper on Buchdahl's
+    chromatic coordinate
+
+    The data used by this class is from the 1983 paper by Paul N. Robb and
+    R. I. Mercado, `Calculation of refractive indices using Buchdahl’s
+    chromatic coordinate <https://doi.org/10.1364/AO.22.001198>`_ . The
+    copyright date for all 5 catalogs cited was 1980.
+
+    Args:
+        fname: filename, located in ``data`` directory
+
+    Attributes:
+        glass_db: dict lookup by catalog and glass name, value is decoded
+                  glassname and Buchdahl coefficients
+        glass_list: list of decoded_glassname, glassname, and catalog per glass
+
+    """
+
+    _cat_names = ["SCHOTT", "OHARA", "HOYA", "CORNING-FRANCE", "CHANCE"]
+
+    def __init__(self, fname='robb1983_data_final.txt'):
+        # Open the workbook
+        glass_db = CaselessDictionary()
+        glass_list = []
+        rndx_list = []
+        nu1_list = []
+        nu2_list = []
+        with get_filepath(fname).open() as f_input:
+            for line in f_input:
+                if line[0] == '#':
+                    if 'GLASS CATALOGUE' in line:
+                        tokens = line[1:].split()
+                        catalog = 'Robb1983.' + tokens[0]
+                        glass_db[catalog] = {}
+                else:
+                    tokens = line.split()
+                    gname = tokens[0]
+                    try:
+                        gname_decode = decode_glass_name(gname)
+                    except UnboundLocalError:
+                        print(catalog, gname)
+                    else:
+                        rndx = float(tokens[1])
+                        nu1 = float(tokens[2])
+                        nu2 = float(tokens[3])
+                        glass_db[catalog][gname] = (
+                            gname_decode, rndx, nu1, nu2)
+                        glass_list.append((gname_decode, gname, catalog))
+                        rndx_list.append(rndx)
+                        nu1_list.append(nu1)
+                        nu2_list.append(nu2)
+
+        self.glass_db = glass_db
+        self.glass_list = glass_list
+        self._glass_data = CaselessDictionary()
+
+    @property
+    def glass_data(self):
+        if len(self._glass_data) == 0:
+            for rbk, rbv in self.glass_db.items():
+                gnames = list(rbv.keys())
+                gdata = np.array([[d[1], d[2], d[3]] for d in rbv.values()])
+                self._glass_data[rbk] = gnames, gdata
+        return self._glass_data
+
+    def create_glass(self, gname, gcat):
+        catalog = gcat if 'Robb1983.' in gcat else 'Robb1983.' + gcat
+        try:
+            gdata = self.glass_db[catalog][gname]
+        except KeyError:
+            return None
+        else:
+            wv0 = buchdahl.get_wv('d')
+            gname_decode, rndx, nu1, nu2 = gdata
+            g = buchdahl.Buchdahl(wv0, rndx, (nu1, nu2), mat=gname, cat=gcat)
+            return g
+
+    def catalog_name(self):
+        return 'Robb1983'
+
+    def get_glass_names(self, gcat=None):
+        """ returns a list of glass names """
+        if gcat is not None:
+            return self.glass_data[gcat][0]
+        else:  # return all of the catalogs' names
+            gnames = [gn[0] for gn in self.glass_data.values()]
+            return list(itertools.chain.from_iterable(gnames))
+
+    def glass_map_data(self, wvl='d', **kwargs):
+        """ return index and dispersion data for all glasses in the catalog
+
+        Args:
+            wvl (str): the central wavelength for the data, either 'd' or 'e'
+
+        Returns:
+            index, V-number, partial dispersion, Buchdahl coefficients, and
+            glass names
+        """
+        return self.get_glass_map_arrays(wvl, 'F', 'C', **kwargs)
+
+    def get_glass_map_arrays(self, d_str, F_str, C_str, **kwargs):
+        """ return index and dispersion data arrays for input spectral range
+
+        Args:
+            nd_str (str): central wavelength string
+            nf_str (str): blue end wavelength string
+            nc_str (str): red end wavelength string
+
+        Returns:
+            index, V-number, partial dispersion, Buchdahl coefficients, and
+            glass names
+        """
+        wv_0 = buchdahl.get_wv('d')
+        wv_d = buchdahl.get_wv(d_str)
+        wv_F = buchdahl.get_wv(F_str)
+        wv_C = buchdahl.get_wv(C_str)
+
+        om_d = buchdahl.omega(wv_d - wv_0)
+        om_F = buchdahl.omega(wv_F - wv_0)
+        om_C = buchdahl.omega(wv_C - wv_0)
+
+        gnames, gdata = self.glass_data[kwargs['cat_name']]
+
+        omm_d = np.array([om_d, om_d**2])
+        nd = np.matmul(gdata[:, 1:], omm_d) + gdata[:, 0]
+
+        omm_F = np.array([om_F, om_F**2])
+        nF = np.matmul(gdata[:, 1:], omm_F) + gdata[:, 0]
+
+        omm_C = np.array([om_C, om_C**2])
+        nC = np.matmul(gdata[:, 1:], omm_C) + gdata[:, 0]
+
+        vd, PCd = calc_glass_constants(nd, nF, nC)
+
+        coefs = np.array(gdata[:, 1:3])
+        ctype = kwargs.get('ctype', None)
+        if ctype == "disp_coefs":
+            coefs[:, 0] /= (nd - 1)
+            coefs[:, 1] /= (nd - 1)
+
+        return nd, vd, PCd, coefs[:, 0], coefs[:, 1], gnames
+
+
+_robb1983_list = CaselessDictionary({
+        'Robb1983.Schott': Robb1983Catalog(),
+        'Robb1983.Ohara': Robb1983Catalog(),
+        'Robb1983.Hoya': Robb1983Catalog(),
+        'Robb1983.Corning-France': Robb1983Catalog(),
+        'Robb1983.Chance': Robb1983Catalog(),
+        })
