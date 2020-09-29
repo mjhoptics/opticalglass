@@ -10,7 +10,7 @@
 
 import numpy as np
 
-from opticalglass.spectral_lines import get_wavelength
+from .spectral_lines import get_wavelength
 
 
 def get_wv(wavelength):
@@ -59,7 +59,7 @@ class Buchdahl:
 
     """
 
-    def __init__(self, wv0, rind0, coefs, mat=''):
+    def __init__(self, wv0, rind0, coefs, mat='', cat=''):
         """
         Parameters
         ----------
@@ -71,14 +71,20 @@ class Buchdahl:
             the linear and quadratic coefficients of the model.
         mat : str
             a string label returned from the name() fct.
+        cat : str
+            a string label returned from the catalog_name() fct.
         """
         self.wv0 = wv0
         self.rind0 = rind0
         self.coefs = coefs
         self.label = mat
+        self._catalog_name = cat
 
     def name(self):
         return self.label
+
+    def catalog_name(self):
+        return self._catalog_name
 
     def glass_code(self):
         nd = self.rindex('d')
