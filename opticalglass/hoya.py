@@ -6,7 +6,7 @@
 .. codeauthor: Michael J. Hayford
 """
 from math import sqrt
-from opticalglass.util import Singleton
+from .util import Singleton
 
 from . import glass
 
@@ -35,6 +35,9 @@ class HoyaCatalog(glass.GlassCatalog, metaclass=Singleton):
                                      self.coef_col_offset,
                                      self.coef_col_offset+12))
         return [x*10**y for x, y in zip(c[::2], c[1::2])]
+
+    def create_glass(self, gname, gcat):
+        return HoyaGlass(gname)
 
 
 class HoyaGlass(glass.Glass):

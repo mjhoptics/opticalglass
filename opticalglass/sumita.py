@@ -8,7 +8,7 @@
 .. codeauthor: Michael J. Hayford
 """
 import logging
-from opticalglass.util import Singleton
+from .util import Singleton
 
 from math import sqrt
 
@@ -32,6 +32,9 @@ class SumitaCatalog(glass.GlassCatalog, metaclass=Singleton):
 
     def __init__(self, fname='SUMITA.xlsx'):
         super().__init__('Sumita', fname, 'GNAME', 'A0', 'n1548')
+
+    def create_glass(self, gname, gcat):
+        return SumitaGlass(gname)
 
 
 class SumitaGlass(glass.Glass):

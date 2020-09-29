@@ -6,7 +6,7 @@
 .. codeauthor: Michael J. Hayford
 """
 import logging
-from opticalglass.util import Singleton
+from .util import Singleton
 
 from math import sqrt
 
@@ -30,6 +30,9 @@ class OharaCatalog(glass.GlassCatalog, metaclass=Singleton):
 
     def __init__(self, fname='OHARA.xlsx'):
         super().__init__('Ohara', fname, 'Glass ', 'A1', 'n2325')
+
+    def create_glass(self, gname, gcat):
+        return OharaGlass(gname)
 
 
 class OharaGlass(glass.Glass):

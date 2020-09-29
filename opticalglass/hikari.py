@@ -9,7 +9,7 @@
 """
 
 import logging
-from opticalglass.util import Singleton
+from .util import Singleton
 
 from math import sqrt
 
@@ -35,6 +35,9 @@ class HikariCatalog(glass.GlassCatalog, metaclass=Singleton):
         super().__init__('Hikari', fname, 'Glass type', 'A0', 2.05809,
                          data_header_offset=1, glass_name_offset=2,
                          num_coefs=9)
+
+    def create_glass(self, gname, gcat):
+        return HikariGlass(gname)
 
 
 class HikariGlass(glass.Glass):

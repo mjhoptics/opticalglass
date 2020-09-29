@@ -6,7 +6,7 @@
 .. codeauthor: Michael J. Hayford
 """
 import logging
-from opticalglass.util import Singleton
+from .util import Singleton
 
 from math import sqrt
 
@@ -30,6 +30,9 @@ class SchottCatalog(glass.GlassCatalog, metaclass=Singleton):
 
     def __init__(self, fname='SCHOTT.xls'):
         super().__init__('Schott', fname, 'Glass', 'B1', '  n2325.4')
+
+    def create_glass(self, gname, gcat):
+        return SchottGlass(gname)
 
 
 class SchottGlass(glass.Glass):

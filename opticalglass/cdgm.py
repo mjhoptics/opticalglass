@@ -6,7 +6,7 @@
 .. codeauthor: Michael J. Hayford
 """
 import logging
-from opticalglass.util import Singleton
+from .util import Singleton
 
 from math import sqrt
 
@@ -38,6 +38,9 @@ class CDGMCatalog(glass.GlassCatalog, metaclass=Singleton):
         while gnames and (len(gnames[-1]) == 0 or gnames[-1] == 'Over!'):
             gnames.pop()
         return gnames
+
+    def create_glass(self, gname, gcat):
+        return CDGMGlass(gname)
 
 
 class CDGMGlass(glass.Glass):
