@@ -14,7 +14,19 @@ from . import ohara as o
 from . import schott as s
 from . import sumita as su
 
+from . import glass as cat_glass
 from . import glasserror as ge
+
+from .caselessDictionary import CaselessDictionary
+
+_catalog_list = CaselessDictionary({
+    'CDGM': c.CDGMCatalog(),
+    'Hikari': hi.HikariCatalog(),
+    'Hoya': h.HoyaCatalog(),
+    'Ohara': o.OharaCatalog(),
+    'Schott': s.SchottCatalog(),
+    'Sumita': su.SumitaCatalog(),
+    })
 
 CDGM, Hikari, Hoya, Ohara, Schott, Sumita = range(6)
 _cat_names = ["CDGM", "Hikari", "Hoya", "Ohara", "Schott", "Sumita"]
@@ -34,19 +46,10 @@ def create_glass(name, catalog):
 
     """
     def _create_glass(name, catalog):
-        cat_name = catalog.upper()
-        if cat_name == _cat_names_uc[CDGM]:
-            return c.CDGMGlass(name)
-        elif cat_name == _cat_names_uc[Hikari]:
-            return hi.HikariGlass(name)
-        elif cat_name == _cat_names_uc[Hoya]:
-            return h.HoyaGlass(name)
-        elif cat_name == _cat_names_uc[Ohara]:
-            return o.OharaGlass(name)
-        elif cat_name == _cat_names_uc[Schott]:
-            return s.SchottGlass(name)
-        elif cat_name == _cat_names_uc[Sumita]:
-            return su.SumitaGlass(name)
+        if catalog in _catalog_list:
+            return _catalog_list[catalog].create_glass(name, catalog)
+        elif "Robb1983" in catalog:
+            return cat_glass.Robb1983Catalog().create_glass(name, catalog)
         else:
             logging.info('glass catalog %s not found', catalog)
             raise ge.GlassCatalogNotFoundError(catalog)
@@ -75,39 +78,9 @@ def get_glass_catalog(catalog):
     Raises:
         GlassCatalogNotFoundError: if catalog isn't found
     """
-    cat_name = catalog.upper()
-    if cat_name == _cat_names_uc[CDGM]:
-        return c.CDGMCatalog()
-    elif cat_name == _cat_names_uc[Hikari]:
-        return hi.HikariCatalog()
-    elif cat_name == _cat_names_uc[Hoya]:
-        return h.HoyaCatalog()
-    elif cat_name == _cat_names_uc[Ohara]:
-        return o.OharaCatalog()
-    elif cat_name == _cat_names_uc[Schott]:
-        return s.SchottCatalog()
-    elif cat_name == _cat_names_uc[Sumita]:
-        return su.SumitaCatalog()
+    if catalog in _catalog_list:
+        return _catalog_list[catalog]
     else:
         logging.info('glass catalog %s not found', catalog)
         raise ge.GlassCatalogNotFoundError(catalog)
         return None
-
-
-class GlassMapModel():
-    """ Simple model to support Model/View architecture for Glass map views """
-
-    def __init__(self):
-        self.dataSetList = []
-        self.dataSetList.append((c.CDGMCatalog(), _cat_names[CDGM]))
-        self.dataSetList.append((hi.HikariCatalog(), _cat_names[Hikari]))
-        self.dataSetList.append((h.HoyaCatalog(), _cat_names[Hoya]))
-        self.dataSetList.append((o.OharaCatalog(), _cat_names[Ohara]))
-        self.dataSetList.append((s.SchottCatalog(), _cat_names[Schott]))
-        self.dataSetList.append((su.SumitaCatalog(), _cat_names[Sumita]))
-
-    def get_data_at(self, i, **kwargs):
-        return self.dataSetList[i][0].glass_map_data(**kwargs)
-
-    def get_data_set_label_at(self, i):
-        return self.dataSetList[i][1]
