@@ -37,3 +37,11 @@ class Singleton(type):
             cls._instances[cls] = (super(Singleton, cls).
                                    __call__(*args, **kwargs))
         return cls._instances[cls]
+
+
+def rgb2mpl(rgb):
+    """ convert 8 bit RGB data to 0 to 1 range for mpl """
+    if len(rgb) == 3:
+        return [rgb[0]/255., rgb[1]/255., rgb[2]/255., 1.0]
+    elif len(rgb) == 4:
+        return [rgb[0]/255., rgb[1]/255., rgb[2]/255., rgb[3]/255.]
