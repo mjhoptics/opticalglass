@@ -178,8 +178,8 @@ class PickTable(QTableView):
             si = self.indexAt(event.pos())
             pick_row = si.row()
             pick = self.model().pick_table[pick_row]
-            # comma separated list
-            mimeData.setText(pick[0] + ',' + pick[1])
+            # comma separated list: glass_name,catalog_name
+            mimeData.setText(pick[1] + ',' + pick[0])
             drag.setMimeData(mimeData)
 
             drag.exec_(Qt.CopyAction)
