@@ -44,6 +44,14 @@ spectral_lines
     :undoc-members:
     :show-inheritance:
 
+util
+++++
+
+.. automodule:: opticalglass.util
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 glasserror
 ++++++++++
 
@@ -54,6 +62,14 @@ glasserror
 
 GUI Submodules
 --------------
+
+glassmap
+++++++++
+
+.. automodule:: opticalglass.glassmap
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 glassmapviewer
 ++++++++++++++

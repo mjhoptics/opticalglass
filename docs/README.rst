@@ -31,7 +31,7 @@ On a Windows machine, the ``glassmap`` command will be located in a Scripts dire
 
    > optgla\Scripts\glassmap
 
-Clicking on a glass or glasses in the map will list the glasses and their catalog plus index, V-number and partial dispersion in the table at the right.
+Clicking on a glass or glasses in the map will list the glasses and their catalog plus index, V-number and partial dispersion in the table at the right. You can drag glasses from the table and drop the glass, catalog pair on the command line, e.g. as input for the create_glass function.
 
 .. image:: _images/RefractiveIndex.png
 
