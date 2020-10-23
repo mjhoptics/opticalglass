@@ -421,6 +421,8 @@ def decode_glass_name(glass_name):
             gn2 = gn[0]
             suffix = gn[1]
 
+    group = gn2
+    num = ''
     for i, char in enumerate(gn2):
         if char.isdigit():
             start = i
@@ -428,9 +430,9 @@ def decode_glass_name(glass_name):
                 i += 1
             group = gn2[:start].rstrip()
             num = gn2[start:i]
-            group_num = group, num
             break
     suffix = gn2[i:] if suffix == '' else suffix
+    group_num = group, num
     return group_num, prefix, suffix
 
 

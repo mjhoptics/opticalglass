@@ -46,7 +46,7 @@ def init_UI(gui_parent, fig):
     gmt = PickTable(gui_parent, pick_model)
     rightBar.addWidget(gmt)
 
-    return main_widget, gm, gmt, pick_model
+    return main_widget, pick_model
 
 
 def createPlotTypeBox(gui_parent, fig):
@@ -93,8 +93,7 @@ def on_plot_type_toggled(fig, button):
             plot_display_type = "Buchdahl Dispersion Coefficients"
 
     fig.plot_display_type = plot_display_type
-    fig.update_data()
-    fig.plot()
+    fig.refresh()
 
 
 def createCatalogGroupBox(gui_parent, fig):
@@ -134,18 +133,18 @@ class GlassMapViewer(QMainWindow):
 
         self.left = 50
         self.top = 150
-        self.width = 1100
+        self.width = 1110
         self.height = 650
         self.setGeometry(self.left, self.top, self.width, self.height)
 
         self.glass_db = GlassMapDB()
         self.db_display = [True]*len(self.glass_db.catalogs)
         self.plot_display_type = "Refractive Index"
-        self.fig = GlassMapFigure(self.glass_db, self.db_display,
-                                  self.plot_display_type,
+        self.fig = GlassMapFigure(self.glass_db, db_display=self.db_display,
+                                  plot_display_type=self.plot_display_type,
                                   refresh_gui=self.refresh_gui,
-                                  width=5, height=4)
-        self._main, _, self.gmt, self.pick_model = init_UI(self, self.fig)
+                                  )
+        self._main, self.pick_model = init_UI(self, self.fig)
         self.setCentralWidget(self._main)
 
         self.fig.plot()
@@ -164,13 +163,14 @@ class PickTable(QTableView):
         self.setModel(pick_model)
         self.setAlternatingRowColors(True)
         self.setMinimumWidth(285)
-        self.setMaximumWidth(335)
+        self.setMaximumWidth(345)
         self.setDragEnabled(True)
         self.pickRow = 0
-        for i, w in enumerate([52, 96, 61, 48, 60]):
+        for i, w in enumerate([53, 100, 63, 52, 60]):
             self.setColumnWidth(i, w)
 
     def mousePressEvent(self, event):
+        """Initiate glass drag and drop operation from here. """
         super().mousePressEvent(event)
         if (event.button() == Qt.LeftButton):
             drag = QDrag(self)

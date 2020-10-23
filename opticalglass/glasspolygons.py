@@ -10,7 +10,7 @@
 
 from matplotlib.patches import Polygon
 
-# The polygon corners are [10., 2.20] and [110., 1.35]
+# The polygon corners are [110., 1.35] and [10., 2.20]
 polygons = {'LAF': [[50., 1.66], [50., 2.20], [18.8, 2.20], [26., 1.81],
                     [30., 1.72], [36., 1.72]],
             'BAF': [[50., 1.54], [50., 1.66], [36., 1.72], [30., 1.72],
