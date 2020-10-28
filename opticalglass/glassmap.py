@@ -55,21 +55,21 @@ class GlassMapDB():
 class GlassMapSet():
     """Set of glass instances to be displayed in a GlassMapFigure. """
 
-    def __init__(self, glass_list, cat_name):
+    def __init__(self, glasses, cat_name):
         """The main requirement is the glass instance must respond to
         rindex() api
         """
-        self.glass_list = glass_list
+        self.glasses = glasses
         self.cat_name = cat_name
 
     def catalog_name(self):
         return self.cat_name
 
     def glass_map_data(self, wvl='d', **kwargs):
-        return calc_glass_map_arrays(self.glass_list, wvl, 'F', 'C', **kwargs)
+        return calc_glass_map_arrays(self.glasses, wvl, 'F', 'C', **kwargs)
 
 
-def calc_glass_map_arrays(glass_list, d_str, F_str, C_str, **kwargs):
+def calc_glass_map_arrays(glasses, d_str, F_str, C_str, **kwargs):
     """ return index and dispersion data arrays for input spectral range
 
     Args:
@@ -82,16 +82,16 @@ def calc_glass_map_arrays(glass_list, d_str, F_str, C_str, **kwargs):
         glass names
     """
 
-    nd = np.array([g.rindex(d_str) for g in glass_list])
-    nF = np.array([g.rindex(F_str) for g in glass_list])
-    nC = np.array([g.rindex(C_str) for g in glass_list])
+    nd = np.array([g.rindex(d_str) for g in glasses])
+    nF = np.array([g.rindex(F_str) for g in glasses])
+    nC = np.array([g.rindex(C_str) for g in glasses])
 
     vd, PCd = cat_glass.calc_glass_constants(nd, nF, nC)
 
     nd, coefs = cat_glass.calc_buchdahl_coords(
         nd, nF, nC, wlns=(d_str, F_str, C_str), **kwargs)
 
-    names = [g.name()+'/'+g.catalog_name() for g in glass_list]
+    names = [g.name()+'/'+g.catalog_name() for g in glasses]
     return nd, vd, PCd, coefs[0], coefs[1], names
 
 
