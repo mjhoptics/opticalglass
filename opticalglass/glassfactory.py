@@ -46,8 +46,17 @@ def create_glass(name, catalog):
 
     """
     def _create_glass(name, catalog):
+        gn_decode = cat_glass.decode_glass_name(name)
         if catalog in _catalog_list:
-            return _catalog_list[catalog].create_glass(name, catalog)
+            try:
+                # Lookup the decoded glass name., This avoids some problems
+                # with how design programs not exactly matching the
+                # manufacturer's names.
+                gn, gc = _catalog_list[catalog].glass_lookup[gn_decode]
+            except KeyError:
+                raise ge.GlassNotFoundError(catalog, name)
+            else:
+                return _catalog_list[catalog].create_glass(gn, gc)
         elif "Robb1983" in catalog:
             return cat_glass.Robb1983Catalog().create_glass(name, catalog)
         else:

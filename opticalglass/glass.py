@@ -168,9 +168,16 @@ class GlassCatalog:
         self.num_coefs = num_coefs
         self.index_col_offset = colnames.index(rindex_str)
 
-        # build a list of decoded glass names
-        self.__class__.glass_list = [(decode_glass_name(gn), gn, name)
-                                     for gn in self.get_glass_names()]
+        # build an alphabetical list of decoded glass names
+        glass_list = [(decode_glass_name(gn), gn, name)
+                      for gn in self.get_glass_names()]
+        glass_list = sorted(glass_list, key=lambda glass: glass[0][0])
+        # build a lookup dict of the glass defs keyed to decoded glass names
+        glass_lookup = {gn_decode: (gn, gc)
+                        for gn_decode, gn, gc in glass_list}
+        # attach these 'static' lists to class variables
+        self.__class__.glass_list = glass_list
+        self.__class__.glass_lookup = glass_lookup
 
     def catalog_name(self):
         return self.name
