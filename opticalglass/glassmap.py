@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # Copyright © 2020 Michael J. Hayford
-"""
+"""Glass map display, via Matplotlib
 
 .. Created on Thu Sep 24 22:09:48 2020
 
@@ -23,7 +23,18 @@ class GlassMapDB():
     """ Simple model to support Model/View architecture for Glass map views """
 
     def __init__(self, *args):
-        # if no arguments, use the default set of catalogs
+        """Initialize a GlassMapDb from a list of args
+
+        Args:
+            args: list of items to be included in the GlassMapDB:
+
+                - a dict of catalog names and their catalog instance
+                - a list of catalog names
+                - a list of :class:`~.glass.Glass` instances
+
+        If no arguments, use the default set of catalogs in
+        :mod:`~.glassfactory`, _catalog_list.
+        """
         if len(args) == 0:
             args = (gf._catalog_list,)
 
@@ -109,9 +120,22 @@ class GlassMapFigure(Figure):
 
     def __init__(self, glass_db, db_display=None, hover_glass_names=True,
                  plot_display_type="Refractive Index",
-                 # width=5, height=4,
                  refresh_gui=None, **kwargs):
-        # kwargs['figsize'] = (width, height)
+        """GlassMap figure initialization
+
+        Args:
+            glass_db: an instance of :class:`~.GlassMapDB`
+            db_display: list of boolean flags to control catalog display
+            hover_glass_names: if True display glass name list under cursor
+            plot_display_type: controls the type of data display. Supported types are
+
+                - "Refractive Index"
+                - "Partial Dispersion"
+                - "Buchdahl Coefficients"
+                - "Buchdahl Dispersion Coefficients"
+
+            refresh_gui: an optional function called when a glass is picked
+        """
         super().__init__(**kwargs)
         self.refresh_gui = refresh_gui
         self.glass_db = glass_db
@@ -145,6 +169,7 @@ class GlassMapFigure(Figure):
 
         The raw_data attribute is a list over catalogs. Each catalog has an
         item consisting of the catalog name and a tuple of vectors:
+
             n, v, p, coefs0, coefs1, glass_names
 
         """
@@ -211,7 +236,8 @@ class GlassMapFigure(Figure):
                          label=self.rawData[i][0], visible=display)
 
         if self.plot_display_type == "Refractive Index":
-            # provide a default minimum area, and update view limits accordingly
+            # provide a default minimum area, and update view limits
+            # accordingly
             viewLim = Bbox.union([self.home_bbox, self.ax.viewLim])
             self.update_axis_limits(viewLim.get_points())
 

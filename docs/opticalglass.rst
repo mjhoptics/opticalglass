@@ -68,6 +68,7 @@ glassmap
 
 .. automodule:: opticalglass.glassmap
     :members:
+    :special-members: __init__
     :undoc-members:
     :show-inheritance:
 
@@ -78,6 +79,15 @@ glassmapviewer
     :members:
     :undoc-members:
     :show-inheritance:
+
+glasspolygons
++++++++++++++
+
+.. automodule:: opticalglass.glasspolygons
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Catalog-specific Submodules
 ---------------------------
