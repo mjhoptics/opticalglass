@@ -3,6 +3,7 @@
 
 # Distribution / packaging
 .Python
+bin/
 build/
 develop-eggs/
 dist/
@@ -12,6 +13,7 @@ eggs/
 lib/
 lib64/
 parts/
+pyvenv.cfg
 sdist/
 var/
 wheels/

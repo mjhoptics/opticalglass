@@ -230,7 +230,7 @@ class GlassMapFigure(Figure):
             self.ax.plot(self.rawData[i][1][xi], self.rawData[i][1][yi],
                          linestyle='None', marker='o', markersize=5,
                          # linestyle='None', markersize=7,
-                         alpha=0.75, gid=i, picker=5,
+                         alpha=0.75, gid=i, pickradius=5,
                          color=self.dsc[i],
                          # marker=self.mkr[i], fillstyle='none',
                          label=self.rawData[i][0], visible=display)
