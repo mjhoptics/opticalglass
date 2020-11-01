@@ -5,7 +5,7 @@ with open("README.rst", "r") as fh:
 
 setuptools.setup(
     name="opticalglass",
-    version="0.6.0",
+    version="0.6.1",
     author="Michael J Hayford",
     author_email="mjhoptics@gmail.com",
     description="Tools for reading commercial optical glass catalogs",
@@ -15,7 +15,7 @@ setuptools.setup(
     url="https://github.com/mjhoptics/opticalglass",
     packages=setuptools.find_packages(),
     classifiers=[
-        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
         "Topic :: Scientific/Engineering :: Physics",
@@ -27,7 +27,7 @@ setuptools.setup(
         "numpy>=1.17.1",
         "scipy>=1.3.1",
         "matplotlib>=3.1.1",
-        "pyqt5==5.9.2"
+        "pyqt5<5.13"
         ],
     package_data={
         '': ['data/*.xlsx', 'data/*.xls', 'data/*.txt']
