@@ -21,7 +21,11 @@ from . import util
 
 
 class GlassMapDB():
-    """ Simple model to support Model/View architecture for Glass map views """
+    """ Simple model to support Model/View architecture for Glass map views
+
+    Attributes:
+        catalogs: list of objects that respond to :meth:`glass_map_data`
+    """
 
     def __init__(self, *args):
         """Initialize a GlassMapDb from a list of args
@@ -114,8 +118,7 @@ class GlassMapFigure(Figure):
         glass_db: an instance of :class:`~.GlassMapDB`
         db_display: list of boolean flags to control catalog display
         hover_glass_names: if True display glass name list under cursor
-        plot_display_type: controls the type of data display. Supported types
-        are
+        plot_display_type: controls the type of data display. Supported types are:
 
             - "Refractive Index"
             - "Partial Dispersion"
@@ -123,10 +126,9 @@ class GlassMapFigure(Figure):
             - "Buchdahl Dispersion Coefficients"
 
         refresh_gui: an optional function called when a glass is picked
-        pick_list: list of glasses selected by a mouse click. The on_pick fct
-        accumulates the pick_list. Filled with:
+        pick_list: list of glasses selected by a mouse click. The on_pick fct accumulates the pick_list. Filled with:
 
-                cat_name, glass_name, nd, vd, PCd
+                catalog_name, glass_name, nd, vd, PCd
 
     """
     dsc = [(56/255, 142/255, 142/255),  # sgi teal
@@ -143,21 +145,7 @@ class GlassMapFigure(Figure):
     def __init__(self, glass_db, db_display=None, hover_glass_names=True,
                  plot_display_type="Refractive Index",
                  refresh_gui=None, **kwargs):
-        """GlassMap figure initialization
-
-        Args:
-            glass_db: an instance of :class:`~.GlassMapDB`
-            db_display: list of boolean flags to control catalog display
-            hover_glass_names: if True display glass name list under cursor
-            plot_display_type: controls the type of data display. Supported types are
-
-                - "Refractive Index"
-                - "Partial Dispersion"
-                - "Buchdahl Coefficients"
-                - "Buchdahl Dispersion Coefficients"
-
-            refresh_gui: an optional function called when a glass is picked
-        """
+        """GlassMap figure initialization. """
         super().__init__(**kwargs)
         self.refresh_gui = refresh_gui
         self.glass_db = glass_db
@@ -395,12 +383,13 @@ class GlassMapFigure(Figure):
         axes. The two cases are:
 
             - if there were pick events, needsClear will be False so that items
-            from different artists can be accumulated in the pick_list. The
-            press event signals no further item accumulation. Flip needsClear
-            to True so the next pick or press event will clear the pick_list.
+              from different artists can be accumulated in the pick_list. The
+              press event signals no further item accumulation. Flip needsClear
+              to True so the next pick or press event will clear the pick_list.
 
             - if there were no pick events, needsClear will be True. Call
-            clear_pick_table to empty pick_list and reset needsClear to False.
+              clear_pick_table to empty pick_list and reset needsClear to False.
+
         """
         logging.debug("on_press: needsClear={}".format(self.needsClear))
         if self.needsClear:
