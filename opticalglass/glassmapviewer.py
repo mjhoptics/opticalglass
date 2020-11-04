@@ -7,7 +7,7 @@
 
 .. codeauthor: Michael J. Hayford
 """
-
+import logging
 import sys
 
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QHBoxLayout,
@@ -172,7 +172,9 @@ class PickTable(QTableView):
     def mousePressEvent(self, event):
         """Initiate glass drag and drop operation from here. """
         super().mousePressEvent(event)
-        if (event.button() == Qt.LeftButton):
+        if (
+                event.button() == Qt.LeftButton and
+                self.model().rowCount(0) > 0):
             drag = QDrag(self)
             mimeData = QMimeData()
             si = self.indexAt(event.pos())
@@ -237,6 +239,7 @@ class PlotCanvas(FigureCanvas):
     def __init__(self, gui_parent, fig):
         super().__init__(fig)
         self.setParent(gui_parent)
+        logging.debug("Canvas dpi: {}".format(fig.dpi))
 
         FigureCanvas.setSizePolicy(self,
                                    QSizePolicy.Expanding,
@@ -245,6 +248,11 @@ class PlotCanvas(FigureCanvas):
 
 
 def main():
+    logging.basicConfig(filename='opticalglass.log',
+                        filemode='w',
+                        format='%(asctime)s: %(message)s',
+                        level=logging.DEBUG)
+    logging.info("opticalglass started")
     qtapp = QApplication(sys.argv)
     qtwnd = GlassMapViewer()
     qtwnd.show()

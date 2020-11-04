@@ -7,6 +7,7 @@
 
 .. codeauthor: Michael J. Hayford
 """
+import logging
 import numpy as np
 
 from matplotlib.figure import Figure
@@ -107,6 +108,27 @@ def calc_glass_map_arrays(glasses, d_str, F_str, C_str, **kwargs):
 
 
 class GlassMapFigure(Figure):
+    """Matplotlib implementation of an optical glass map.
+
+    Attributes:
+        glass_db: an instance of :class:`~.GlassMapDB`
+        db_display: list of boolean flags to control catalog display
+        hover_glass_names: if True display glass name list under cursor
+        plot_display_type: controls the type of data display. Supported types
+        are
+
+            - "Refractive Index"
+            - "Partial Dispersion"
+            - "Buchdahl Coefficients"
+            - "Buchdahl Dispersion Coefficients"
+
+        refresh_gui: an optional function called when a glass is picked
+        pick_list: list of glasses selected by a mouse click. The on_pick fct
+        accumulates the pick_list. Filled with:
+
+                cat_name, glass_name, nd, vd, PCd
+
+    """
     dsc = [(56/255, 142/255, 142/255),  # sgi teal
            (133/255, 133/255, 133/255),  # grey 52
            (113/255, 113/255, 198/255),  # sgi slateblue
@@ -145,8 +167,30 @@ class GlassMapFigure(Figure):
         self.hover_glass_names = hover_glass_names
         self.needsClear = True
         self.pick_list = []
+        self.event_dict = {}
 
         self.update_data()
+
+    def connect_events(self, action_dict=None):
+        'connect to all the events we need'
+        if action_dict is None:
+            action_dict = {'motion_notify_event': self.on_hover,
+                           # 'button_press_event': self.on_press,
+                           'pick_event': self.on_pick,
+                           }
+        self.callback_ids = []
+        for event, action in action_dict.items():
+            self.event_dict[event] = action
+            cid = self.canvas.mpl_connect(event, action)
+            self.callback_ids.append(cid)
+
+    def disconnect_events(self):
+        'disconnect all the stored connection ids'
+        for clbk in self.callback_ids:
+            self.canvas.mpl_disconnect(clbk)
+        self.callback_ids = None
+        event_dict, self.event_dict = self.event_dict, {}
+        return event_dict
 
     def get_display_label(self):
         return self.plot_display_type
@@ -227,13 +271,16 @@ class GlassMapFigure(Figure):
             yi = 3
         self.ax.set_title(self.get_display_label())
         for i, display in enumerate(self.db_display):
-            self.ax.plot(self.rawData[i][1][xi], self.rawData[i][1][yi],
-                         linestyle='None', marker='o', markersize=5,
-                         # linestyle='None', markersize=7,
-                         alpha=0.75, gid=i, pickradius=5,
-                         color=self.dsc[i],
-                         # marker=self.mkr[i], fillstyle='none',
-                         label=self.rawData[i][0], visible=display)
+            line = self.ax.plot(self.rawData[i][1][xi], self.rawData[i][1][yi],
+                                linestyle='None', marker='o', markersize=5,
+                                # linestyle='None', markersize=7,
+                                alpha=0.75, gid=i,
+                                picker=True, pickradius=5,
+                                color=self.dsc[i],
+                                # marker=self.mkr[i], fillstyle='none',
+                                label=self.rawData[i][0], visible=display)
+            # set pickradius here because of a bug. Fixed in 3.3
+            line[0].set_pickradius(5.)
 
         if self.plot_display_type == "Refractive Index":
             # provide a default minimum area, and update view limits
@@ -241,12 +288,19 @@ class GlassMapFigure(Figure):
             viewLim = Bbox.union([self.home_bbox, self.ax.viewLim])
             self.update_axis_limits(viewLim.get_points())
 
-        self.canvas.mpl_connect('pick_event', self.on_pick)
-        self.canvas.mpl_connect('button_press_event', self.on_press)
-
+        # set up interactive event handling
+        # The pick events, one per artist, are sent before the sole button
+        # press event
+        actions = {'button_press_event': self.on_press,
+                   'pick_event': self.on_pick,
+                   }
         if self.hover_glass_names:
-            self.canvas.mpl_connect("motion_notify_event", self.on_hover)
+            actions['motion_notify_event'] = self.on_hover
 
+        self.connect_events(action_dict=actions)
+
+        # set up hover annotation
+        if self.hover_glass_names:
             self.hover_list = self.ax.annotate(
                 "", xy=(0, 0), xytext=(20, 20),
                 textcoords="offset points",
@@ -254,6 +308,7 @@ class GlassMapFigure(Figure):
                 arrowprops=dict(arrowstyle="->"))
             self.hover_list.set_visible(False)
 
+        # draw remaining stuff, axes, legend...
         if xi == 1:
             self.ax.invert_xaxis()
         self.draw_axes()
@@ -292,11 +347,11 @@ class GlassMapFigure(Figure):
         info_text = []
         if len(artists) > 0:
             for a in artists:
-                artist, info, id = a
-                if self.db_display[id]:
+                artist, info, cat = a
+                if self.db_display[cat]:
                     ind = info['ind']
-                    cat_name = self.rawData[id][0]
-                    n, v, p, coef0, coef1, glass_name = self.rawData[id][1]
+                    cat_name = self.rawData[cat][0]
+                    n, v, p, coef0, coef1, glass_name = self.rawData[cat][1]
                     for k in ind:
                         text = glass_name[k] + ', ' + cat_name
                         info_text.append(text)
@@ -313,7 +368,41 @@ class GlassMapFigure(Figure):
                 self.hover_list.set_visible(False)
                 self.canvas.draw_idle()
 
+    def on_pick(self, event):
+        """ handle picking glasses under the cursor.
+
+        One pick event for each catalog, extract selected glasses and add to
+        pick_list
+        """
+        logging.debug("on_pick: needsClear={}".format(self.needsClear))
+        if self.needsClear:
+            self.clear_pick_table()
+        line = event.artist
+        cat = line.get_gid()
+        if self.db_display[cat]:
+            ind = event.ind
+            cat_name = self.rawData[cat][0]
+            n, v, p, coef0, coef1, glass_name = self.rawData[cat][1]
+            for k in ind:
+                glass = (cat_name, glass_name[k], n[k], v[k], p[k])
+                self.pick_list.append(glass)
+
     def on_press(self, event):
+        """ handle mouse clicks within the diagram.
+
+        The button press event is sent after the pick events; it will be sent
+        in cases with no pick events, e.g. clicking in an empty area of the
+        axes. The two cases are:
+
+            - if there were pick events, needsClear will be False so that items
+            from different artists can be accumulated in the pick_list. The
+            press event signals no further item accumulation. Flip needsClear
+            to True so the next pick or press event will clear the pick_list.
+
+            - if there were no pick events, needsClear will be True. Call
+            clear_pick_table to empty pick_list and reset needsClear to False.
+        """
+        logging.debug("on_press: needsClear={}".format(self.needsClear))
         if self.needsClear:
             # If needsClear is still set, there have been no pick events so
             #  this is a click in an empty region of the plot.
@@ -325,19 +414,6 @@ class GlassMapFigure(Figure):
             self.needsClear = True
         if self.refresh_gui is not None:
             self.refresh_gui()
-
-    def on_pick(self, event):
-        if self.needsClear:
-            self.clear_pick_table()
-        line = event.artist
-        id = line.get_gid()
-        if self.db_display[id]:
-            ind = event.ind
-            dsLabel = self.rawData[id][0]
-            n, v, p, coef0, coef1, lbl = self.rawData[id][1]
-            for k in ind:
-                glass = (dsLabel, lbl[k], n[k], v[k], p[k])
-                self.pick_list.append(glass)
 
     def updateVisibility(self, indx, state):
         self.ax.lines[indx].set_visible(state)
