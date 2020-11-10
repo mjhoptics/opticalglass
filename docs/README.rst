@@ -16,6 +16,12 @@ To install :mod:`opticalglass` using pip, use
 
    > pip install opticalglass
 
+Alternatively, :mod:`opticalglass` can be installed from the conda-forge channel using conda
+
+.. code::
+
+   > conda install opticalglass --channel conda-forge
+
 Glass Map Application
 ---------------------
 

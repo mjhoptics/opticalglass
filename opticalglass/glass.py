@@ -382,32 +382,33 @@ def decode_glass_name(glass_name):
     composition, with a numeric qualifier. The composition group and product
     serial number are combined to form the basic product id, the group_num:
 
-        F2
-        SF56
+        - F2
+        - SF56
 
     Manufacturers will often use a single character prefix to indicate
     different categories of glasses, e.g. moldable or "New":
 
-        N-BK7
-        P-LASF50
+        - N-BK7
+        - P-LASF50
 
     Similarly, a suffix with one or more characters is often used to
     differentiate between different variations of the same base material.
 
-        N-SF57
-        N-SF57HT
-        N-SF57HTultra
+        - N-SF57
+        - N-SF57HT
+        - N-SF57HTultra
 
     This function takes an input glass name and returns a tuple of strings. A
     valid glass_name should always have a non-null group_num; prefixes and
     suffixes are optional and used differently by different manufacturers.
 
-        group_num, prefix, suffix
+        * group_num, prefix, suffix
+        * group, num = group_num
 
     Args:
         glass_name (str): a glass manufacturer's glass name
 
-    Returns: group_num, prefix, suffix
+    Returns: group_num, prefix, suffix, where group_num = group, num
 
     """
     gn = glass_name.split('-')

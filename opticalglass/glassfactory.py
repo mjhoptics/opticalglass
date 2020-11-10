@@ -3,6 +3,11 @@
 # Copyright © 2018 Michael J. Hayford
 """ Interfaces for commercial glass catalogs
 
+    The glassfactory module is intended to be the primary method by which glass
+    instances are created. The :func:`create_glass` is the public factory
+    function for this purpose. The public function :func:`get_glass_catalog`
+    returns the glass catalog instance corresponding to the input string.
+
 .. codeauthor: Michael J. Hayford
 """
 import logging
@@ -33,12 +38,17 @@ _cat_names = ["CDGM", "Hikari", "Hoya", "Ohara", "Schott", "Sumita"]
 _cat_names_uc = [cat.upper() for cat in _cat_names]
 
 
-def create_glass(name, catalog):
+def create_glass(*name_catalog):
     """ Factory function returning a catalog glass instance.
 
+    The input argument list can take several forms:
+
+        - 1 string argument in the form 'glass_name,catalog_name'
+        - 2 arguments. The first is a string glass name. The second is a
+          string or list of strings of catalog names.
+
     Arguments:
-        name: glass name
-        catalog: name of supported catalog (CDGM, Hoya, Ohara, Schott)
+        *name_catalog: tuple of 1 or 2 input items
 
     Raises:
         GlassCatalogNotFoundError: if catalog isn't found
@@ -62,6 +72,11 @@ def create_glass(name, catalog):
         else:
             logging.info('glass catalog %s not found', catalog)
             raise ge.GlassCatalogNotFoundError(catalog)
+
+    if len(name_catalog) == 2:
+        name, catalog = name_catalog
+    else:
+        name, catalog = name_catalog[0].split(',')
 
     if isinstance(catalog, str):
         return _create_glass(name, catalog)
