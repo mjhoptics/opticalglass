@@ -152,7 +152,15 @@ class GlassCatalogSpreadsheet:
         pass
 
     def get_data_for_glass(self, gindex, dindex=None, num=None):
-        """ returns an array of glass data for the glass at *gindex* """
+        """ returns an array of glass data for the glass at *gindex*
+
+        Args:
+            gindex: glass index into spreadsheet
+            dindex: the starting column of the desired data
+            num: number of data items (cells) to retrieve
+
+        Returns: list of data items
+        """
 
     def get_transmission_wvl(self, header_str):
         """Returns the wavelength value from the transmission data header string."""
@@ -322,7 +330,15 @@ class GlassCatalogXLS(GlassCatalogSpreadsheet):
         return dindex
 
     def get_data_for_glass(self, gindex, dindex=None, num=None):
-        """ returns an array of glass data for the glass at *gindex* """
+        """ returns an array of glass data for the glass at *gindex*
+
+        Args:
+            gindex: glass index into spreadsheet
+            dindex: the starting column of the desired data
+            num: number of data items (cells) to retrieve
+
+        Returns: list of data items
+        """
         if dindex is not None:  # get a partial row of at least 1 item
             num = num if num is not None else 1
             col_start = dindex
@@ -549,7 +565,15 @@ class GlassCatalogXLSX(GlassCatalogSpreadsheet):
         return dindex
 
     def get_data_for_glass(self, gindex, dindex=None, num=None):
-        """ returns an array of glass data for the glass at *gindex* """
+        """ returns an array of glass data for the glass at *gindex*
+
+        Args:
+            gindex: glass index into spreadsheet
+            dindex: the starting column of the desired data
+            num: number of data items (cells) to retrieve
+
+        Returns: list of data items
+        """
         if dindex is not None:  # get a partial row of at least 1 item
             num = num if num is not None else 1
             col_start = dindex
