@@ -13,7 +13,7 @@ from math import sqrt
 from . import glass
 
 
-class OharaCatalog(glass.GlassCatalog, metaclass=Singleton):
+class OharaCatalog(glass.GlassCatalogXLSX, metaclass=Singleton):
     #    data_header = 1
     #    data_start = 2
     #    num_glasses = 134
@@ -49,7 +49,7 @@ class OharaGlass(glass.Glass):
     def calc_rindex(self, wv_nm):
         wv = 0.001*wv_nm
         wv2 = wv*wv
-        coefs = self.catalog.glass_coefs(self.gindex)
+        coefs = self.coefs
         n2 = 1 + coefs[0]*wv2/(wv2 - coefs[3])
         n2 += coefs[1]*wv2/(wv2 - coefs[4])
         n2 += coefs[2]*wv2/(wv2 - coefs[5])

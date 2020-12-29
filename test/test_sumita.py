@@ -23,13 +23,14 @@ class SumitaTestCase(unittest.TestCase):
         ng = glass.rindex(435.84)
         nh = glass.rindex(404.66)
         nI = glass.rindex(365.01)
-        indxC = glass.glass_data()[self.catalog.data_index('nC')]
-        indxd = glass.glass_data()[self.catalog.data_index('nd')]
-        indxe = glass.glass_data()[self.catalog.data_index('ne')]
-        indxF = glass.glass_data()[self.catalog.data_index('nF')]
-        indxg = glass.glass_data()[self.catalog.data_index('ng')]
-        indxh = glass.glass_data()[self.catalog.data_index('nh')]
-        indxI = glass.glass_data()[self.catalog.data_index('ni')]
+        nline = self.catalog.nline_str
+        indxC = glass.glass_item(nline['nC'])
+        indxd = glass.glass_item(nline['nd'])
+        indxe = glass.glass_item(nline['ne'])
+        indxF = glass.glass_item(nline['nF'])
+        indxg = glass.glass_item(nline['ng'])
+        indxh = glass.glass_item(nline['nh'])
+        indxI = glass.glass_item(nline['ni'])
         self.assertAlmostEqual(nC, indxC, delta=tol)
         self.assertAlmostEqual(nd, indxd, delta=tol)
         self.assertAlmostEqual(ne, indxe, delta=tol)
@@ -40,27 +41,27 @@ class SumitaTestCase(unittest.TestCase):
 
     def test_ohara_catalog_glass_index(self):
         cafk95 = self.catalog.glass_index('K-CaFK95')  # first in list
-        self.assertEqual(cafk95, 0)
+        self.assertEqual(cafk95, 1)
         pbk40 = self.catalog.glass_index('K-PBK40')
-        self.assertEqual(pbk40, 6)
+        self.assertEqual(pbk40, 7)
         sk16 = self.catalog.glass_index('K-SK16')
-        self.assertEqual(sk16, 63)
+        self.assertEqual(sk16, 64)
         laskn1 = self.catalog.glass_index('K-LaSKn1')
-        self.assertEqual(laskn1, 100)
+        self.assertEqual(laskn1, 101)
         fir100uv = self.catalog.glass_index('K-FIR100UV')  # last in list
-        self.assertEqual(fir100uv, 133)
+        self.assertEqual(fir100uv, 134)
 
     def test_sumita_catalog_data_index(self):
         nd = self.catalog.data_index('nd')
-        self.assertEqual(nd, 15)
+        self.assertEqual(nd, 16)
         vd = self.catalog.data_index('vd')
-        self.assertEqual(vd, 3)
+        self.assertEqual(vd, 4)
         B1 = self.catalog.data_index('A4')
-        self.assertEqual(B1, 51)
+        self.assertEqual(B1, 52)
         glasscode = self.catalog.data_index('GTYPE')
-        self.assertEqual(glasscode, 1)
+        self.assertEqual(glasscode, 2)
         date = self.catalog.data_index('T1_550')
-        self.assertEqual(date, 96)
+        self.assertEqual(date, 97)
 
     def test_sumita_glass_pbk40(self):
         glass = su.SumitaGlass('K-PBK40')

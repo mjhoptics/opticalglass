@@ -20,13 +20,14 @@ class HoyaTestCase(unittest.TestCase):
         ng = glass.rindex(435.84)
         nh = glass.rindex(404.66)
         nI = glass.rindex(365.01)
-        indxC = glass.glass_data()[self.catalog.data_index('nC')]
-        indxd = glass.glass_data()[self.catalog.data_index('nd')]
-        indxe = glass.glass_data()[self.catalog.data_index('ne')]
-        indxF = glass.glass_data()[self.catalog.data_index('nF')]
-        indxg = glass.glass_data()[self.catalog.data_index('ng')]
-        indxh = glass.glass_data()[self.catalog.data_index('nh')]
-        indxI = glass.glass_data()[self.catalog.data_index('ni')]
+        nline = self.catalog.nline_str
+        indxC = glass.glass_item(nline['nC'])
+        indxd = glass.glass_item(nline['nd'])
+        indxe = glass.glass_item(nline['ne'])
+        indxF = glass.glass_item(nline['nF'])
+        indxg = glass.glass_item(nline['ng'])
+        indxh = glass.glass_item(nline['nh'])
+        indxI = glass.glass_item(nline['ni'])
         self.assertAlmostEqual(nC, indxC, delta=tol)
         self.assertAlmostEqual(nd, indxd, delta=tol)
         self.assertAlmostEqual(ne, indxe, delta=tol)
@@ -37,25 +38,25 @@ class HoyaTestCase(unittest.TestCase):
 
     def test_hoya_catalog_glass_index(self):
         fc5 = self.catalog.glass_index('FC5')  # first in list
-        self.assertEqual(fc5, 0)
+        self.assertEqual(fc5, 1)
         fcd1 = self.catalog.glass_index('FCD1')
-        self.assertEqual(fcd1, 1)
+        self.assertEqual(fcd1, 2)
         ef2 = self.catalog.glass_index('E-F2')
-        self.assertEqual(ef2, 28)
+        self.assertEqual(ef2, 29)
         bsc7 = self.catalog.glass_index('BSC7')
-        self.assertEqual(bsc7, 11)
+        self.assertEqual(bsc7, 12)
         mctaf1 = self.catalog.glass_index('MC-TAF1')  # last in list
-        self.assertEqual(mctaf1, 193)
+        self.assertEqual(mctaf1, 194)
 
     def test_hoya_catalog_data_index(self):
         nd = self.catalog.data_index('nd')
-        self.assertEqual(nd, 4)
+        self.assertEqual(nd, 5)
         vd = self.catalog.data_index('νd')
-        self.assertEqual(vd, 5)
+        self.assertEqual(vd, 6)
         A0 = self.catalog.data_index('A0')
-        self.assertEqual(A0, 28)
+        self.assertEqual(A0, 29)
         n1529 = self.catalog.data_index('n1529.6')
-        self.assertEqual(n1529, 10)
+        self.assertEqual(n1529, 11)
 
     def test_hoya_glass_fcd1(self):
         fcd1 = h.HoyaGlass('FCD1')

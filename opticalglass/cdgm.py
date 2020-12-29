@@ -13,7 +13,7 @@ from math import sqrt
 from . import glass
 
 
-class CDGMCatalog(glass.GlassCatalog, metaclass=Singleton):
+class CDGMCatalog(glass.GlassCatalogXLS, metaclass=Singleton):
     #    data_header = 0
     #    data_start = 2
     #    num_glasses = 240
@@ -33,7 +33,7 @@ class CDGMCatalog(glass.GlassCatalog, metaclass=Singleton):
 
     def get_glass_names(self):
         """ returns a list of glass names """
-        gnames = self.xl_data.col_values(self.name_col_offset, self.data_start)
+        gnames = super().get_glass_names()
         # filter out any empty cells at the end
         while gnames and (len(gnames[-1]) == 0 or gnames[-1] == 'Over!'):
             gnames.pop()
@@ -57,7 +57,7 @@ class CDGMGlass(glass.Glass):
     def calc_rindex(self, wv_nm):
         wv = 0.001*wv_nm
         wv2 = wv*wv
-        coefs = self.catalog.glass_coefs(self.gindex)
+        coefs = self.coefs
         n2 = coefs[0] + coefs[1]*wv2
         wvm2 = 1/wv2
         n2 = n2 + wvm2*(coefs[2] + wvm2*(coefs[3]

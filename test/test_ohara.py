@@ -20,13 +20,14 @@ class OharaTestCase(unittest.TestCase):
         ng = glass.rindex(435.84)
         nh = glass.rindex(404.66)
         nI = glass.rindex(365.01)
-        indxC = glass.glass_data()[self.catalog.data_index('nC')]
-        indxd = glass.glass_data()[self.catalog.data_index('nd')]
-        indxe = glass.glass_data()[self.catalog.data_index('ne')]
-        indxF = glass.glass_data()[self.catalog.data_index('nF')]
-        indxg = glass.glass_data()[self.catalog.data_index('ng')]
-        indxh = glass.glass_data()[self.catalog.data_index('nh')]
-        indxI = glass.glass_data()[self.catalog.data_index('ni')]
+        nline = self.catalog.nline_str
+        indxC = glass.glass_item(nline['nC'])
+        indxd = glass.glass_item(nline['nd'])
+        indxe = glass.glass_item(nline['ne'])
+        indxF = glass.glass_item(nline['nF'])
+        indxg = glass.glass_item(nline['ng'])
+        indxh = glass.glass_item(nline['nh'])
+        indxI = glass.glass_item(nline['ni'])
         self.assertAlmostEqual(nC, indxC, delta=tol)
         self.assertAlmostEqual(nd, indxd, delta=tol)
         self.assertAlmostEqual(ne, indxe, delta=tol)
@@ -37,27 +38,27 @@ class OharaTestCase(unittest.TestCase):
 
     def test_ohara_catalog_glass_index(self):
         sfpl51 = self.catalog.glass_index('S-FPL51')  # first in list
-        self.assertEqual(sfpl51, 0)
+        self.assertEqual(sfpl51, 1)
         stim2 = self.catalog.glass_index('S-TIM 2')
-        self.assertEqual(stim2, 41)
+        self.assertEqual(stim2, 42)
         sbsl7 = self.catalog.glass_index('S-BSL 7')
-        self.assertEqual(sbsl7, 6)
+        self.assertEqual(sbsl7, 7)
         snph1 = self.catalog.glass_index('S-NPH 1')
-        self.assertEqual(snph1, 126)
+        self.assertEqual(snph1, 127)
         snph53 = self.catalog.glass_index('S-NPH53')  # last in list
-        self.assertEqual(snph53, 133)
+        self.assertEqual(snph53, 134)
 
     def test_ohara_catalog_data_index(self):
         nd = self.catalog.data_index('nd')
-        self.assertEqual(nd, 16)
+        self.assertEqual(nd, 17)
         vd = self.catalog.data_index('νd')
-        self.assertEqual(vd, 24)
+        self.assertEqual(vd, 25)
         B1 = self.catalog.data_index('B1')
-        self.assertEqual(B1, 63)
+        self.assertEqual(B1, 64)
         glasscode = self.catalog.data_index('Code(d)')
-        self.assertEqual(glasscode, 2)
+        self.assertEqual(glasscode, 3)
         date = self.catalog.data_index(' D0')
-        self.assertEqual(date, 154)
+        self.assertEqual(date, 155)
 
     def test_ohara_glass_stim2(self):
         glass = o.OharaGlass('S-TIM 2')

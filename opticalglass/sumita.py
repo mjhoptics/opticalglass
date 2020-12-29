@@ -15,7 +15,7 @@ from math import sqrt
 from . import glass
 
 
-class SumitaCatalog(glass.GlassCatalog, metaclass=Singleton):
+class SumitaCatalog(glass.GlassCatalogXLSX, metaclass=Singleton):
     #    data_header = 0
     #    data_start = 2
     #    num_glasses = 240
@@ -36,6 +36,10 @@ class SumitaCatalog(glass.GlassCatalog, metaclass=Singleton):
     def create_glass(self, gname, gcat):
         return SumitaGlass(gname)
 
+    def get_transmission_wvl(self, header_str):
+        """Returns the wavelength value from the transmission data header string."""
+        return float(header_str[len('T2_'):])
+
 
 class SumitaGlass(glass.Glass):
     catalog = SumitaCatalog()
@@ -51,7 +55,7 @@ class SumitaGlass(glass.Glass):
     def calc_rindex(self, wv_nm):
         wv = 0.001*wv_nm
         wv2 = wv*wv
-        coefs = self.catalog.glass_coefs(self.gindex)
+        coefs = self.coefs
         n2 = coefs[0] + coefs[1]*wv2
         wvm2 = 1/wv2
         n2 = n2 + wvm2*(coefs[2] + wvm2*(coefs[3]

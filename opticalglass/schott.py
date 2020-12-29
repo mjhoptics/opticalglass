@@ -13,7 +13,7 @@ from math import sqrt
 from . import glass
 
 
-class SchottCatalog(glass.GlassCatalog, metaclass=Singleton):
+class SchottCatalog(glass.GlassCatalogXLS, metaclass=Singleton):
     #    data_header = 3
     #    data_start = 4
     #    num_glasses = 123
@@ -34,6 +34,10 @@ class SchottCatalog(glass.GlassCatalog, metaclass=Singleton):
     def create_glass(self, gname, gcat):
         return SchottGlass(gname)
 
+    def get_transmission_wvl(self, header_str):
+        """Returns the wavelength value from the transmission data header string."""
+        return float(header_str[len('TAUI10/'):])
+
 
 class SchottGlass(glass.Glass):
     catalog = SchottCatalog()
@@ -49,7 +53,7 @@ class SchottGlass(glass.Glass):
     def calc_rindex(self, wv_nm):
         wv = 0.001*wv_nm
         wv2 = wv*wv
-        coefs = self.catalog.glass_coefs(self.gindex)
+        coefs = self.coefs
         n2 = 1. + coefs[0]*wv2/(wv2 - coefs[3])
         n2 = n2 + coefs[1]*wv2/(wv2 - coefs[4])
         n2 = n2 + coefs[2]*wv2/(wv2 - coefs[5])
