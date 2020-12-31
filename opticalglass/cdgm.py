@@ -29,7 +29,9 @@ class CDGMCatalog(glass.GlassCatalogXLS, metaclass=Singleton):
                  'ni': 'ni'}
 
     def __init__(self, fname='CDGM.xls'):
-        super().__init__('CDGM', fname, 'Glass', 'A0', 'nt')
+        super().__init__('CDGM', fname, 'Glass', 'A0', 'nt',
+                         transmission_offset=106, num_wvls=34,
+                         transmission_header_offset=1)
 
     def get_glass_names(self):
         """ returns a list of glass names """

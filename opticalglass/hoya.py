@@ -28,7 +28,9 @@ class HoyaCatalog(glass.GlassCatalogXLSX, metaclass=Singleton):
 
     def __init__(self, fname='HOYA.xlsx'):
         super().__init__('Hoya', fname, 'Glass\u3000Type', 'A0', 'n1529.6',
-                         num_coefs=12, data_header_offset=1)
+                         num_coefs=12, data_header_offset=1,
+                         transmission_offset=464, num_wvls=44,
+                         transmission_header_offset=2)
 
     def glass_coefs(self, gindex):
         c = super().glass_coefs(gindex)

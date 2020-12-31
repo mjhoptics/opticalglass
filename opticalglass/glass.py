@@ -147,7 +147,7 @@ class GlassCatalogSpreadsheet:
         """ returns a list of glass names """
         pass
 
-    def get_column_names(self, dindex=None, num=None):
+    def get_column_names(self, dindex=None, num=None, add_offset=0):
         """ returns a list of column headers """
         pass
 
@@ -166,7 +166,7 @@ class GlassCatalogSpreadsheet:
         """Returns the wavelength value from the transmission data header string."""
         pass
 
-    def transmission_data(self, gindex, transmission_offset, num_wvls):
+    def transmission_data(self, gindex):
         """ returns an array of transmission data for the glass at *gindex*
 
         Args:
@@ -177,17 +177,19 @@ class GlassCatalogSpreadsheet:
         Returns:
             list of wavelength, transmittance pairs
         """
-        header = self.get_column_names(dindex=transmission_offset,
-                                       num=num_wvls)
+        header = self.get_column_names(
+            dindex=self.transmission_offset,
+            num=self.num_wvls,
+            add_offset=self.transmission_header_offset)
 
         data = self.get_data_for_glass(gindex,
-                                       dindex=transmission_offset,
-                                       num=num_wvls)
+                                       dindex=self.transmission_offset,
+                                       num=self.num_wvls)
 
         trns_data = []
         for h, d in zip(header, data):
             w = self.get_transmission_wvl(h)
-            if d is not None and d != '':
+            if d is not None and d != '' and d != ' ' and d != '-':
                 trns_data.append((w, d))
         return trns_data
 
@@ -220,7 +222,9 @@ class GlassCatalogXLS(GlassCatalogSpreadsheet):
     """
 
     def __init__(self, name, fname, glass_str, coef_str, rindex_str,
-                 num_coefs=6, data_header_offset=0, glass_name_offset=1):
+                 num_coefs=6, data_header_offset=0, glass_name_offset=1,
+                 transmission_offset=0, num_wvls=0,
+                 transmission_header_offset=0):
         # data_index is zero-based
         self.based = 0
         self.name = name
@@ -254,6 +258,11 @@ class GlassCatalogXLS(GlassCatalogSpreadsheet):
         self.num_coefs = num_coefs
         self.index_col_offset = colnames.index(rindex_str)
 
+        # data slice for 10mm transmission
+        self.transmission_offset = transmission_offset
+        self.num_wvls = num_wvls
+        self.transmission_header_offset = transmission_header_offset
+
         # build an alphabetical list of decoded glass names
         glass_list = [(decode_glass_name(gn), gn, name)
                       for gn in self.get_glass_names()]
@@ -276,15 +285,17 @@ class GlassCatalogXLS(GlassCatalogSpreadsheet):
             gnames.pop()
         return gnames
 
-    def get_column_names(self, dindex=None, num=None):
+    def get_column_names(self, dindex=None, num=None, add_offset=0):
         """ returns a list of column headers """
         if dindex is not None:  # get a partial row of at least 1 item
             num = num if num is not None else 1
             col_start = dindex
-            glass_data = self.xl_data.row_values(self.data_header,
-                                                 col_start, col_start+num)
+            row_start = self.data_header + add_offset
+            colnames = self.xl_data.row_values(row_start,
+                                               col_start, col_start+num)
         else:  # get the entire row
-            colnames = self.xl_data.row_values(self.data_header, 0)
+            row_start = self.data_header + add_offset
+            colnames = self.xl_data.row_values(row_start, 0)
 
         return colnames
 
@@ -409,7 +420,9 @@ class GlassCatalogXLSX(GlassCatalogSpreadsheet):
     """
 
     def __init__(self, name, fname, glass_str, coef_str, rindex_str,
-                 num_coefs=6, data_header_offset=0, glass_name_offset=1):
+                 num_coefs=6, data_header_offset=0, glass_name_offset=1,
+                 transmission_offset=0, num_wvls=0,
+                 transmission_header_offset=0):
         # data_index is one-based
         self.based = 1
         self.name = name
@@ -475,6 +488,11 @@ class GlassCatalogXLSX(GlassCatalogSpreadsheet):
         self.num_coefs = num_coefs
         self.index_col_offset = colnames.index(rindex_str)+1
 
+        # data slice for 10mm transmission
+        self.transmission_offset = transmission_offset
+        self.num_wvls = num_wvls
+        self.transmission_header_offset = transmission_header_offset
+
         # build an alphabetical list of decoded glass names
         glass_list = [(decode_glass_name(gn), gn, name)
                       for gn in self.get_glass_names()]
@@ -499,19 +517,19 @@ class GlassCatalogXLSX(GlassCatalogSpreadsheet):
         gnames = list(next(cols))
         return gnames
 
-    def get_column_names(self, dindex=None, num=None):
+    def get_column_names(self, dindex=None, num=None, add_offset=0):
         """ returns a list of column headers """
         if dindex is not None:  # get a partial row of at least 1 item
             num = num if num is not None else 1
             col_start = dindex
-            row_start = self.data_header
+            row_start = self.data_header + add_offset
             rows = self.ws.iter_rows(min_col=col_start,
                                      max_col=col_start+num-1,
                                      min_row=row_start,
                                      max_row=row_start,
                                      values_only=True)
         else:  # get the entire row
-            row_start = self.data_header
+            row_start = self.data_header + add_offset
             rows = self.ws.iter_rows(min_col=1,
                                      max_col=self.num_columns,
                                      min_row=row_start,
@@ -721,6 +739,13 @@ class Glass:
             float: the refractive index at wv_nm
         """
         pass
+
+    def transmission_data(self):
+        """ returns an array of transmission data for the glass
+
+        Returns: list of wavelength, transmittance pairs for 10mm sample
+        """
+        return self.catalog.transmission_data(self.gindex)
 
 
 def decode_glass_name(glass_name):

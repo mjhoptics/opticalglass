@@ -29,7 +29,8 @@ class SchottCatalog(glass.GlassCatalogXLS, metaclass=Singleton):
                  'ni': '  ni'}
 
     def __init__(self, fname='SCHOTT.xls'):
-        super().__init__('Schott', fname, 'Glass', 'B1', '  n2325.4')
+        super().__init__('Schott', fname, 'Glass', 'B1', '  n2325.4',
+                         transmission_offset=67, num_wvls=30)
 
     def create_glass(self, gname, gcat):
         return SchottGlass(gname)

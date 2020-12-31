@@ -29,7 +29,8 @@ class OharaCatalog(glass.GlassCatalogXLSX, metaclass=Singleton):
                  'ni': 'ni'}
 
     def __init__(self, fname='OHARA.xlsx'):
-        super().__init__('Ohara', fname, 'Glass ', 'A1', 'n2325')
+        super().__init__('Ohara', fname, 'Glass ', 'A1', 'n2325',
+                         transmission_offset=81, num_wvls=32)
 
     def create_glass(self, gname, gcat):
         return OharaGlass(gname)

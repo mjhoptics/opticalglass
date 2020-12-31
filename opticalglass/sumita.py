@@ -31,7 +31,8 @@ class SumitaCatalog(glass.GlassCatalogXLSX, metaclass=Singleton):
                  'ni': 'ni'}
 
     def __init__(self, fname='SUMITA.xlsx'):
-        super().__init__('Sumita', fname, 'GNAME', 'A0', 'n1548')
+        super().__init__('Sumita', fname, 'GNAME', 'A0', 'n1548',
+                         transmission_offset=106, num_wvls=27)
 
     def create_glass(self, gname, gcat):
         return SumitaGlass(gname)
