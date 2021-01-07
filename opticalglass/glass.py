@@ -675,6 +675,8 @@ class Glass:
     def sync_to_restore(self):
         """ hook routine to restore the gindex given gname """
         self.gindex = self.catalog.glass_index(self.gname)
+        if not hasattr(self, 'coefs'):
+            self.coefs = self.catalog.glass_coefs(self.gindex)
 
     def glass_code(self, nd_str, vd_str):
         """ returns the 6 digit glass code, combining index and V-number """
