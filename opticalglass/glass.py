@@ -161,6 +161,7 @@ class GlassCatalogSpreadsheet:
 
         Returns: list of data items
         """
+        pass
 
     def get_transmission_wvl(self, header_str):
         """Returns the wavelength value from the transmission data header string."""
