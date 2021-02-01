@@ -25,9 +25,9 @@ copyright = '2017-2021, Michael J. Hayford'
 author = 'Michael J. Hayford'
 
 # The short X.Y version
-version = '0.7.1'
+version = '0.7.2'
 # The full version, including alpha/beta/rc tags
-release = '0.7.1'
+release = '0.7.2'
 
 
 # -- General configuration ---------------------------------------------------
