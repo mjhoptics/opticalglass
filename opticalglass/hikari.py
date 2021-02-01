@@ -11,7 +11,7 @@
 import logging
 from .util import Singleton
 
-from math import sqrt
+import numpy as np
 
 from . import glass
 
@@ -68,4 +68,4 @@ class HikariGlass(glass.Glass):
                                     wvm2*(coefs[6] +
                                           wvm2*(coefs[7] +
                                                 wvm2*coefs[8])))))
-        return sqrt(n2)
+        return np.sqrt(n2)

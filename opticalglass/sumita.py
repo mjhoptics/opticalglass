@@ -10,7 +10,7 @@
 import logging
 from .util import Singleton
 
-from math import sqrt
+import numpy as np
 
 from . import glass
 
@@ -61,4 +61,4 @@ class SumitaGlass(glass.Glass):
         wvm2 = 1/wv2
         n2 = n2 + wvm2*(coefs[2] + wvm2*(coefs[3]
                         + wvm2*(coefs[4] + wvm2*coefs[5])))
-        return sqrt(n2)
+        return np.sqrt(n2)

@@ -95,7 +95,10 @@ class Buchdahl:
 
     def rindex(self, wvl):
         """Returns the refractive index from the quadratic model at wvl."""
-        om = omega(get_wv(wvl) - self.wv0)
+        return self.calc_rindex(get_wavelength(wvl))
+
+    def calc_rindex(self, wv_nm):
+        om = omega((wv_nm*1e-3) - self.wv0)
         return self.rind0 + self.coefs[0]*om + self.coefs[1]*om**2
 
 

@@ -736,10 +736,10 @@ class Glass:
         **Must be provided by the derived class**
 
         Args:
-            wv_nm (float): wavelength in nm for the refractive index query
+            wv_nm (float or numpy array): wavelength in nm for the refractive index query
 
         Returns:
-            float: the refractive index at wv_nm
+            float or numpy array: the refractive index at wv_nm
         """
         pass
 

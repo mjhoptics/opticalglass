@@ -8,7 +8,7 @@
 import logging
 from .util import Singleton
 
-from math import sqrt
+import numpy as np
 
 from . import glass
 
@@ -58,4 +58,4 @@ class SchottGlass(glass.Glass):
         n2 = 1. + coefs[0]*wv2/(wv2 - coefs[3])
         n2 = n2 + coefs[1]*wv2/(wv2 - coefs[4])
         n2 = n2 + coefs[2]*wv2/(wv2 - coefs[5])
-        return sqrt(n2)
+        return np.sqrt(n2)

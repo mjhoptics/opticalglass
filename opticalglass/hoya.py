@@ -5,7 +5,8 @@
 
 .. codeauthor: Michael J. Hayford
 """
-from math import sqrt
+
+import numpy as np
 from .util import Singleton
 
 from . import glass
@@ -60,4 +61,4 @@ class HoyaGlass(glass.Glass):
         wvm2 = 1/wv2
         n2 = n2 + wvm2*(coefs[2] + wvm2*(coefs[3]
                         + wvm2*(coefs[4] + wvm2*coefs[5])))
-        return sqrt(n2)
+        return np.sqrt(n2)
