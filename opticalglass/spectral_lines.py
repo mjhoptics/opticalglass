@@ -5,7 +5,7 @@
 
 .. codeauthor: Michael J. Hayford
 """
-
+import numpy as np
 
 spectral_lines = [[2325.42, '', 'infrared mercury line', 'Hg'],
                   [1970.09, '', 'infrared mercury line', 'Hg'],
@@ -89,9 +89,9 @@ def get_wavelength(wvl):
     Raises:
         KeyError: if ``wvl`` is not in the spectra dictionary
     """
-    if isinstance(wvl, float):
+    if isinstance(wvl, np.float):
         return wvl
-    elif isinstance(wvl, int):
+    elif isinstance(wvl, (int, np.integer)):
         return float(wvl)
     else:
         return spectra_uc[wvl.upper()]
