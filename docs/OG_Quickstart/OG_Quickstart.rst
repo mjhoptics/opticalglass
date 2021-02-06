@@ -120,6 +120,20 @@ Use the :func:`~.glass.calc_glass_constants` function to calculate the optical c
 Plot Refractive Index vs Wavelength
 -----------------------------------
 
+You can get all of the refractive indices for a NumPy array of wavelengths using the :meth:`~.glass.Glass.calc_rindex` method of the glass object. This is (potentially) faster than using a loop over wavelengths and :meth:`~.glass.Glass.rindex`.
+
+.. code:: ipython3
+
+    wl = np.linspace(365., 700., num=75)
+    rn = bk7.calc_rindex(wl)
+    plt.plot(wl,rn)
+
+
+
+
+.. image:: output_15_1.png
+
+
 .. code:: ipython3
 
     wl=[]
@@ -132,7 +146,7 @@ Plot Refractive Index vs Wavelength
 
 
 
-.. image:: output_15_1.png
+.. image:: output_16_1.png
 
 
 Display a Glass Map
@@ -149,7 +163,7 @@ The data plotted is controlled by :class:`~.glassmap.GlassMapDB`,the glass_db li
 
 
 
-.. image:: output_17_0.png
+.. image:: output_18_0.png
 
 
 Drag and Drop to the Command Line
@@ -225,6 +239,6 @@ Plot Transmission vs Wavelength
 
 
 
-.. image:: output_26_1.png
+.. image:: output_27_1.png
 
 

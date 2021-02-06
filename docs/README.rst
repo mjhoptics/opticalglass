@@ -58,7 +58,9 @@ The Buchdahl Dispersion Coefficient display can be used to find glass pairs that
 Python Data Model
 -----------------
 
-Two families of objects are provided to manage access to glass data. The :class:`~.glass.GlassCatalogSpreadsheet` base class manages the generic operations on the catalog. Subclasses of :class:`~.glass.GlassCatalogSpreadsheet` provide specific mapping information for the vendor spreadsheet format. The :class:`~.glass.Glass` base class manages the generic operations on the individual glass instances, principally the index interpolation function :func:`~.glass.Glass.calc_rindex`.
+Two families of objects are provided to manage access to glass data. The :class:`~.glass.GlassCatalogSpreadsheet` base class manages the generic operations on the catalog. Subclasses of :class:`~.glass.GlassCatalogSpreadsheet` provide specific mapping information for the vendor spreadsheet format.
+
+The :class:`~.glass.Glass` base class manages the generic operations on the individual glass instances. These include refractive index interpolation using either the :meth:`~.glass.Glass.calc_rindex` or the :meth:`~.glass.Glass.rindex` methods. The :meth:`~.glass.Glass.transmission_data` method returns transmission data (10mm sample thickness) for the glass instance.
 
 A factory interface to :class:`~.glass.Glass` creation is the function :func:`~.glassfactory.create_glass` that returns a :class:`~.glass.Glass` instance of the appropriate catalog type, given the glass and catalog names.
 
