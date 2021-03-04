@@ -153,7 +153,7 @@ class GlassMapViewer(QMainWindow):
         self.pick_model.fill_table(self.fig.pick_list)
 
 
-_pt_header = ["Catalog", "Glass", "Nd", "Vd", "P C,d"]
+_pt_header = ["Catalog", "Glass", "Nd", "Vd", "P F,d"]
 _pt_format = ["{:s}", "{:s}", "{:7.5f}", "{:5.2f}", "{:6.4f}"]
 
 

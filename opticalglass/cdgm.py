@@ -20,13 +20,19 @@ class CDGMCatalog(glass.GlassCatalogXLS, metaclass=Singleton):
     #    name_col_offset = 0
     #    coef_col_offset = 21
     #    index_col_offset = 2
-    nline_str = {'nC': 'nc',
-                 'nd': 'nd',
-                 'ne': 'ne',
-                 'nF': 'nF',
-                 'ng': 'ng',
-                 'nh': 'nh',
-                 'ni': 'ni'}
+    nline_str = {'t': 'nt',
+                 's': 'ns',
+                 'r': 'nr',
+                 'C': 'nc',
+                 "C'": "nc'",
+                 'D': 'nD',
+                 'd': 'nd',
+                 'e': 'ne',
+                 'F': 'nF',
+                 "F'": "nF'",
+                 'g': 'ng',
+                 'h': 'nh',
+                 'i': 'ni'}
 
     def __init__(self, fname='CDGM.xls'):
         super().__init__('CDGM', fname, 'Glass', 'A0', 'nt',

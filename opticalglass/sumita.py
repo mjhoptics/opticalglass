@@ -22,13 +22,19 @@ class SumitaCatalog(glass.GlassCatalogXLSX, metaclass=Singleton):
     #    name_col_offset = 0
     #    coef_col_offset = 21
     #    index_col_offset = 2
-    nline_str = {'nC': 'nC',
-                 'nd': 'nd',
-                 'ne': 'ne',
-                 'nF': 'nF',
-                 'ng': 'ng',
-                 'nh': 'nh',
-                 'ni': 'ni'}
+    nline_str = {'t': 'nt',
+                 's': 'ns',
+                 'r': 'nr',
+                 'C': 'nC',
+                 "C'": "nC'",
+                 'D': 'nD',
+                 'd': 'nd',
+                 'e': 'ne',
+                 'F': 'nF',
+                 "F'": "nF'",
+                 'g': 'ng',
+                 'h': 'nh',
+                 'i': 'ni'}
 
     def __init__(self, fname='SUMITA.xlsx'):
         super().__init__('Sumita', fname, 'GNAME', 'A0', 'n1548',

@@ -19,13 +19,19 @@ class HoyaCatalog(glass.GlassCatalogXLSX, metaclass=Singleton):
     #    name_col_offset = 2
     #    coef_col_offset = 28
     #    index_col_offset = 10
-    nline_str = {'nC': 'nC',
-                 'nd': 'nd',
-                 'ne': 'ne',
-                 'nF': 'nF',
-                 'ng': 'ng',
-                 'nh': 'nh',
-                 'ni': 'ni'}
+    nline_str = {'t': 'nt',
+                 's': 'ns',
+                 'r': 'nr',
+                 'C': 'nC',
+                 "C'": "nC'",
+                 'D': 'nD',
+                 'd': 'nd',
+                 'e': 'ne',
+                 'F': 'nF',
+                 "F'": "nF'",
+                 'g': 'ng',
+                 'h': 'nh',
+                 'i': 'ni'}
 
     def __init__(self, fname='HOYA.xlsx'):
         super().__init__('Hoya', fname, 'Glass\u3000Type', 'A0', 'n1529.6',

@@ -61,11 +61,11 @@ def get_filepath(fname):
 
 
 def calc_glass_constants(nd, nF, nC):
-    """Given central, blue and red refractive indices, calculate Vd and PCd."""
+    """Given central, blue and red refractive indices, calculate Vd and PFd."""
     dFC = nF-nC
     vd = (nd - 1.0)/dFC
-    PCd = (nd-nC)/dFC
-    return vd, PCd
+    PFd = (nF-nd)/dFC
+    return vd, PFd
 
 
 def calc_buchdahl_coords(nd, nF, nC, wlns=('d', 'F', 'C'),
@@ -125,19 +125,19 @@ def get_glass_map_arrays(cat, d_str, F_str, C_str, **kwargs):
         glass names
     """
     nd = np.array(
-            cat.catalog_data(cat.data_index(cat.nline_str['n'+d_str])))
+            cat.catalog_data(cat.data_index(cat.nline_str[d_str])))
     nF = np.array(
-            cat.catalog_data(cat.data_index(cat.nline_str['n'+F_str])))
+            cat.catalog_data(cat.data_index(cat.nline_str[F_str])))
     nC = np.array(
-            cat.catalog_data(cat.data_index(cat.nline_str['n'+C_str])))
+            cat.catalog_data(cat.data_index(cat.nline_str[C_str])))
 
-    vd, PCd = calc_glass_constants(nd, nF, nC)
+    vd, PFd = calc_glass_constants(nd, nF, nC)
 
     nd, coefs = calc_buchdahl_coords(
         nd, nF, nC, wlns=(d_str, F_str, C_str), **kwargs)
 
     names = cat.get_glass_names()
-    return nd, vd, PCd, coefs[0], coefs[1], names
+    return nd, vd, PFd, coefs[0], coefs[1], names
 
 
 class GlassCatalogSpreadsheet:

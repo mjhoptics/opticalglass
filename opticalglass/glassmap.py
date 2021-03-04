@@ -244,7 +244,7 @@ class GlassMapFigure(Figure):
             self.draw_glass_polygons()
         elif self.plot_display_type == "Partial Dispersion":
             self.x_label = r'$\mathrm{V_d}$'
-            self.y_label = r'$\mathrm{P_{C-d}}$'
+            self.y_label = r'$\mathrm{P_{F-d}}$'
             xi = 1
             yi = 2
         elif self.plot_display_type == "Buchdahl Coefficients":

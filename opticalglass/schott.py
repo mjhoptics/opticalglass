@@ -20,13 +20,19 @@ class SchottCatalog(glass.GlassCatalogXLS, metaclass=Singleton):
     #    name_col_offset = 0
     #    coef_col_offset = 6
     #    index_col_offset = 117
-    nline_str = {'nC': '  nC',
-                 'nd': '  nd',
-                 'ne': '  ne',
-                 'nF': '  nF',
-                 'ng': '  ng',
-                 'nh': '  nh',
-                 'ni': '  ni'}
+    nline_str = {'t': '  nt',
+                 's': '  ns',
+                 'r': '  nr',
+                 'C': '  nC',
+                 "C'": "  nC'",
+                 'D': '  nD',
+                 'd': '  nd',
+                 'e': '  ne',
+                 'F': '  nF',
+                 "F'": "  nF'",
+                 'g': '  ng',
+                 'h': '  nh',
+                 'i': '  ni'}
 
     def __init__(self, fname='SCHOTT.xls'):
         super().__init__('Schott', fname, 'Glass', 'B1', '  n2325.4',

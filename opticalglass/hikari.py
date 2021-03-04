@@ -23,13 +23,19 @@ class HikariCatalog(glass.GlassCatalogXLS, metaclass=Singleton):
     #    name_col_offset = 0
     #    coef_col_offset = 21
     #    index_col_offset = 2
-    nline_str = {'nC': 'C\n0.656273',
-                 'nd': 'd\n0.587562',
-                 'ne': 'e\n0.546074',
-                 'nF': 'F\n0.486133',
-                 'ng': 'g\n0.435835',
-                 'nh': 'h\n0.404656',
-                 'ni': 'i\n0.365015'}
+    nline_str = {'t': 't\n1.01398',
+                 's': 's\n0.85211',
+                 'r': 'r\n0.706519',
+                 'C': 'C\n0.656273',
+                 "C'": "C'\n0.643847",
+                 'D': 'D\n0.589294',
+                 'd': 'd\n0.587562',
+                 'e': 'e\n0.546074',
+                 'F': 'F\n0.486133',
+                 "F'": "nF'\n0.479992",
+                 'g': 'g\n0.435835',
+                 'h': 'h\n0.404656',
+                 'i': 'i\n0.365015'}
 
     def __init__(self, fname='HIKARI.xls'):
         super().__init__('Hikari', fname, 'Glass type', 'A0', 2.05809,
