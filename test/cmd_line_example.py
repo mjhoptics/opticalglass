@@ -52,8 +52,8 @@ nC, nd, nF
 # In[8]:
 
 
-vd, PCd = og.glass.calc_glass_constants(nd, nF, nC)
-nd, vd, PCd
+vd, PFd = og.glass.calc_glass_constants(nd, nF, nC)
+nd, vd, PFd
 
 
 # In[9]:
@@ -61,8 +61,8 @@ nd, vd, PCd
 
 dFC = nF-nC
 vd = (nd - 1.0)/dFC
-PCd = (nd-nC)/dFC
-nd, vd, PCd
+PFd = (nF-nd)/dFC
+nd, vd, PFd
 
 
 # In[10]:

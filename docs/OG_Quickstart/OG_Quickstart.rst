@@ -76,15 +76,15 @@ Use the :func:`~.glass.calc_glass_constants` function to calculate the optical c
 
 .. code:: ipython3
 
-    vd, PCd = og.glass.calc_glass_constants(nd, nF, nC)
-    nd, vd, PCd
+    vd, PFd = og.glass.calc_glass_constants(nd, nF, nC)
+    nd, vd, PFd
 
 
 
 
 .. parsed-literal::
 
-    (1.5168000345005885, 64.1673362374998, 0.30763657034898056)
+    (1.5168000345005885, 64.1673362374998, 0.6923634296510195)
 
 
 
@@ -92,15 +92,15 @@ Use the :func:`~.glass.calc_glass_constants` function to calculate the optical c
 
     dFC = nF-nC
     vd = (nd - 1.0)/dFC
-    PCd = (nd-nC)/dFC
-    nd, vd, PCd
+    PFd = (nF-nd)/dFC
+    nd, vd, PFd
 
 
 
 
 .. parsed-literal::
 
-    (1.5168000345005885, 64.1673362374998, 0.30763657034898056)
+    (1.5168000345005885, 64.1673362374998, 0.6923634296510195)
 
 
 
