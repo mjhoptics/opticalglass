@@ -93,5 +93,7 @@ def get_wavelength(wvl):
         return wvl
     elif isinstance(wvl, (int, np.integer)):
         return float(wvl)
+    elif wvl == 'D':
+        return spectra[wvl]
     else:
         return spectra_uc[wvl.upper()]
