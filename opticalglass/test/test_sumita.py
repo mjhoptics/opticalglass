@@ -11,33 +11,14 @@
 import unittest
 import opticalglass.sumita as su
 
+from opticalglass.test.util import compare_indices
+
 
 class SumitaTestCase(unittest.TestCase):
     catalog = su.SumitaCatalog()
-
-    def compare_indices(self, glass, tol=5e-6):
-        nC = glass.rindex(656.27)
-        nd = glass.rindex(587.56)
-        ne = glass.rindex(546.07)
-        nF = glass.rindex(486.13)
-        ng = glass.rindex(435.84)
-        nh = glass.rindex(404.66)
-        nI = glass.rindex(365.01)
-        nline = self.catalog.nline_str
-        indxC = glass.glass_item(nline['C'])
-        indxd = glass.glass_item(nline['d'])
-        indxe = glass.glass_item(nline['e'])
-        indxF = glass.glass_item(nline['F'])
-        indxg = glass.glass_item(nline['g'])
-        indxh = glass.glass_item(nline['h'])
-        indxI = glass.glass_item(nline['i'])
-        self.assertAlmostEqual(nC, indxC, delta=tol)
-        self.assertAlmostEqual(nd, indxd, delta=tol)
-        self.assertAlmostEqual(ne, indxe, delta=tol)
-        self.assertAlmostEqual(nF, indxF, delta=tol)
-        self.assertAlmostEqual(ng, indxg, delta=tol)
-        self.assertAlmostEqual(nh, indxh, delta=tol)
-        self.assertAlmostEqual(nI, indxI, delta=tol)
+    # Sumita doesn't tabulate the 's' spectral line
+    spectral_lines = ['t', 'r', 'C', "C'", 'D', 'd',
+                      'e', 'F', "F'", 'g', 'h', 'i']
 
     def test_ohara_catalog_glass_index(self):
         cafk95 = self.catalog.glass_index('K-CaFK95')  # first in list
@@ -67,19 +48,22 @@ class SumitaTestCase(unittest.TestCase):
         glass = su.SumitaGlass('K-PBK40')
         self.assertIsNotNone(glass.gindex)
         self.assertEqual(glass.name(), 'K-PBK40')
-        self.compare_indices(glass, tol=1.1e-5)
+        compare_indices(self, glass, SumitaTestCase.catalog, tol=1.1e-5,
+                        slines=SumitaTestCase.spectral_lines)
 
     def test_sumita_glass_sk16(self):
         glass = su.SumitaGlass('K-SK16')
         self.assertIsNotNone(glass.gindex)
         self.assertEqual(glass.name(), 'K-SK16')
-        self.compare_indices(glass, tol=2.5e-6)
+        compare_indices(self, glass, SumitaTestCase.catalog, tol=4.5e-6,
+                        slines=SumitaTestCase.spectral_lines)
 
     def test_sumita_glass_laskn1(self):
         glass = su.SumitaGlass('K-LaSKn1')
         self.assertIsNotNone(glass.gindex)
         self.assertEqual(glass.name(), 'K-LaSKn1')
-        self.compare_indices(glass, tol=7.5e-6)
+        compare_indices(self, glass, SumitaTestCase.catalog, tol=7.5e-6,
+                        slines=SumitaTestCase.spectral_lines)
 
 
 if __name__ == '__main__':

@@ -23,8 +23,8 @@ class HikariCatalog(glass.GlassCatalogXLS, metaclass=Singleton):
     #    name_col_offset = 0
     #    coef_col_offset = 21
     #    index_col_offset = 2
-    nline_str = {'t': 't\n1.01398',
-                 's': 's\n0.85211',
+    nline_str = {'t': "ｔ\n1.01398",
+                 's': "ｓ\n0.85211",
                  'r': 'r\n0.706519',
                  'C': 'C\n0.656273',
                  "C'": "C'\n0.643847",
@@ -32,7 +32,7 @@ class HikariCatalog(glass.GlassCatalogXLS, metaclass=Singleton):
                  'd': 'd\n0.587562',
                  'e': 'e\n0.546074',
                  'F': 'F\n0.486133',
-                 "F'": "nF'\n0.479992",
+                 "F'": "F'\n0.479992",
                  'g': 'g\n0.435835',
                  'h': 'h\n0.404656',
                  'i': 'i\n0.365015'}

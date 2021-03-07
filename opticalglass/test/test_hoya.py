@@ -8,33 +8,11 @@
 import unittest
 import opticalglass.hoya as h
 
+from opticalglass.test.util import compare_indices
+
 
 class HoyaTestCase(unittest.TestCase):
     catalog = h.HoyaCatalog()
-
-    def compare_indices(self, glass, tol=5e-6):
-        nC = glass.rindex(656.27)
-        nd = glass.rindex(587.56)
-        ne = glass.rindex(546.07)
-        nF = glass.rindex(486.13)
-        ng = glass.rindex(435.84)
-        nh = glass.rindex(404.66)
-        nI = glass.rindex(365.01)
-        nline = self.catalog.nline_str
-        indxC = glass.glass_item(nline['C'])
-        indxd = glass.glass_item(nline['d'])
-        indxe = glass.glass_item(nline['e'])
-        indxF = glass.glass_item(nline['F'])
-        indxg = glass.glass_item(nline['g'])
-        indxh = glass.glass_item(nline['h'])
-        indxI = glass.glass_item(nline['i'])
-        self.assertAlmostEqual(nC, indxC, delta=tol)
-        self.assertAlmostEqual(nd, indxd, delta=tol)
-        self.assertAlmostEqual(ne, indxe, delta=tol)
-        self.assertAlmostEqual(nF, indxF, delta=tol)
-        self.assertAlmostEqual(ng, indxg, delta=tol)
-        self.assertAlmostEqual(nh, indxh, delta=tol)
-        self.assertAlmostEqual(nI, indxI, delta=tol)
 
     def test_hoya_catalog_glass_index(self):
         fc5 = self.catalog.glass_index('FC5')  # first in list
@@ -62,19 +40,19 @@ class HoyaTestCase(unittest.TestCase):
         fcd1 = h.HoyaGlass('FCD1')
         self.assertIsNotNone(fcd1.gindex)
         self.assertEqual(fcd1.name(), 'FCD1')
-        self.compare_indices(fcd1)
+        compare_indices(self, fcd1, HoyaTestCase.catalog)
 
     def test_hoya_glass_ef2(self):
         ef2 = h.HoyaGlass('E-F2')
         self.assertIsNotNone(ef2.gindex)
         self.assertEqual(ef2.name(), 'E-F2')
-        self.compare_indices(ef2)
+        compare_indices(self, ef2, HoyaTestCase.catalog)
 
     def test_hoya_glass_bsc7(self):
         bsc7 = h.HoyaGlass('BSC7')
         self.assertIsNotNone(bsc7.gindex)
         self.assertEqual(bsc7.name(), 'BSC7')
-        self.compare_indices(bsc7)
+        compare_indices(self, bsc7, HoyaTestCase.catalog)
 
 
 if __name__ == '__main__':
