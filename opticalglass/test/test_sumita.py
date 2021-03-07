@@ -17,8 +17,7 @@ from opticalglass.test.util import compare_indices
 class SumitaTestCase(unittest.TestCase):
     catalog = su.SumitaCatalog()
     # Sumita doesn't tabulate the 's' spectral line
-    spectral_lines = ['t', 'r', 'C', "C'", 'D', 'd',
-                      'e', 'F', "F'", 'g', 'h', 'i']
+    remove_lines = ['s']
 
     def test_ohara_catalog_glass_index(self):
         cafk95 = self.catalog.glass_index('K-CaFK95')  # first in list
@@ -49,21 +48,21 @@ class SumitaTestCase(unittest.TestCase):
         self.assertIsNotNone(glass.gindex)
         self.assertEqual(glass.name(), 'K-PBK40')
         compare_indices(self, glass, SumitaTestCase.catalog, tol=1.1e-5,
-                        slines=SumitaTestCase.spectral_lines)
+                        remove_lines=SumitaTestCase.remove_lines)
 
     def test_sumita_glass_sk16(self):
         glass = su.SumitaGlass('K-SK16')
         self.assertIsNotNone(glass.gindex)
         self.assertEqual(glass.name(), 'K-SK16')
         compare_indices(self, glass, SumitaTestCase.catalog, tol=4.5e-6,
-                        slines=SumitaTestCase.spectral_lines)
+                        remove_lines=SumitaTestCase.remove_lines)
 
     def test_sumita_glass_laskn1(self):
         glass = su.SumitaGlass('K-LaSKn1')
         self.assertIsNotNone(glass.gindex)
         self.assertEqual(glass.name(), 'K-LaSKn1')
         compare_indices(self, glass, SumitaTestCase.catalog, tol=7.5e-6,
-                        slines=SumitaTestCase.spectral_lines)
+                        remove_lines=SumitaTestCase.remove_lines)
 
 
 if __name__ == '__main__':
