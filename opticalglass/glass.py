@@ -60,11 +60,15 @@ def get_filepath(fname):
     return pth/'data'/fname
 
 
-def calc_glass_constants(nd, nF, nC):
+def calc_glass_constants(nd, nF, nC, *partials):
     """Given central, blue and red refractive indices, calculate Vd and PFd."""
     dFC = nF-nC
     vd = (nd - 1.0)/dFC
     PFd = (nF-nd)/dFC
+    if len(partials) == 2:
+        n4, n5 = partials
+        P45 = (n4-n5)/dFC
+        return nd, vd, PFd, P45
     return vd, PFd
 
 
@@ -124,6 +128,8 @@ def get_glass_map_arrays(cat, d_str, F_str, C_str, **kwargs):
         index, V-number, partial dispersion, Buchdahl coefficients, and
         glass names
     """
+    names = cat.get_glass_names()
+
     nd = np.array(
             cat.catalog_data(cat.data_index(cat.nline_str[d_str])))
     nF = np.array(
@@ -131,13 +137,20 @@ def get_glass_map_arrays(cat, d_str, F_str, C_str, **kwargs):
     nC = np.array(
             cat.catalog_data(cat.data_index(cat.nline_str[C_str])))
 
-    vd, PFd = calc_glass_constants(nd, nF, nC)
-
     nd, coefs = calc_buchdahl_coords(
         nd, nF, nC, wlns=(d_str, F_str, C_str), **kwargs)
 
-    names = cat.get_glass_names()
-    return nd, vd, PFd, coefs[0], coefs[1], names
+    if 'partials' in kwargs:
+        wl_a, wl_b = kwargs['partials']
+        na = np.array(
+            cat.catalog_data(cat.data_index(cat.nline_str[wl_a])))
+        nb = np.array(
+            cat.catalog_data(cat.data_index(cat.nline_str[wl_b])))
+        nd, vd, PFd, Pab = calc_glass_constants(nd, nF, nC, na, nb)
+    else:
+        vd, Pab = calc_glass_constants(nd, nF, nC)
+
+    return nd, vd, Pab, coefs[0], coefs[1], names
 
 
 class GlassCatalogSpreadsheet:

@@ -11,8 +11,8 @@ import logging
 import sys
 
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QHBoxLayout,
-                             QVBoxLayout, QSizePolicy, QGroupBox, QCheckBox,
-                             QRadioButton, QTableView)
+                             QVBoxLayout, QGridLayout, QSizePolicy, QGroupBox,
+                             QCheckBox, QRadioButton, QTableView, QLabel)
 from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, QMimeData
 from PyQt5.QtGui import QDrag
 
@@ -36,8 +36,13 @@ def init_UI(gui_parent, fig):
     rightBar = QVBoxLayout()
     layout.addLayout(rightBar)
 
+    plotPartialsBar = QHBoxLayout()
     plotTypeGroup = createPlotTypeBox(gui_parent, fig)
-    rightBar.addWidget(plotTypeGroup)
+    plotPartialsBar.addWidget(plotTypeGroup)
+
+    partialsGroup = createPartialsBox(gui_parent, fig)
+    plotPartialsBar.addWidget(partialsGroup)
+    rightBar.addLayout(plotPartialsBar)
 
     catalogGroup = createCatalogGroupBox(gui_parent, fig)
     rightBar.addWidget(catalogGroup)
@@ -51,6 +56,7 @@ def init_UI(gui_parent, fig):
 
 def createPlotTypeBox(gui_parent, fig):
     groupBox = QGroupBox("Plot Type", gui_parent)
+    groupBox.setMaximumWidth(190)
 
     index_btn = QRadioButton("Refractive Index")
     index_btn.setChecked(True)
@@ -62,7 +68,7 @@ def createPlotTypeBox(gui_parent, fig):
     buchdahl_btn = QRadioButton("Buchdahl Coefficients")
     buchdahl_btn.toggled.connect(lambda:
                                  on_plot_type_toggled(fig, buchdahl_btn))
-    buchdahl_disp_btn = QRadioButton("Buchdahl Dispersion Coefficients")
+    buchdahl_disp_btn = QRadioButton("Buchdahl Dispersion\nCoefficients")
     buchdahl_disp_btn.toggled.connect(
         lambda: on_plot_type_toggled(fig, buchdahl_disp_btn))
 
@@ -73,6 +79,74 @@ def createPlotTypeBox(gui_parent, fig):
     vbox.addWidget(buchdahl_disp_btn)
 
     groupBox.setLayout(vbox)
+
+    return groupBox
+
+
+def createPartialsBox(gui_parent, fig):
+    def on_ui_changed(fig, button):
+        is_changed = False
+        if button.text() == "Default range":
+            if button.isChecked() is True:
+                short = short_wl_default.text()
+                long = long_wl_default.text()
+                is_changed = True
+        elif button.text() == "Blue range":
+            if button.isChecked() is True:
+                short = short_wl_blue.text()
+                long = long_wl_blue.text()
+                is_changed = True
+        elif button.text() == "Red range":
+            if button.isChecked() is True:
+                short = short_wl_red.text()
+                long = long_wl_red.text()
+                is_changed = True
+        if is_changed:
+            fig.partials = (short, long)
+            fig.refresh()
+
+    groupBox = QGroupBox("Partial Dispersion", gui_parent)
+    groupBox.setMaximumWidth(190)
+
+    F_d_btn = QRadioButton("Default range")
+    F_d_btn.setChecked(True)
+    F_d_btn.toggled.connect(lambda:
+                            on_ui_changed(fig, F_d_btn))
+    short_wl_default = QLabel()
+    short_wl_default.setText('F')
+
+    long_wl_default = QLabel()
+    long_wl_default.setText('d')
+
+    blue_btn = QRadioButton("Blue range")
+    blue_btn.toggled.connect(lambda:
+                             on_ui_changed(fig, blue_btn))
+    short_wl_blue = QLabel()
+    short_wl_blue.setText('g')
+
+    long_wl_blue = QLabel()
+    long_wl_blue.setText('F')
+
+    red_btn = QRadioButton("Red range")
+    red_btn.toggled.connect(lambda:
+                            on_ui_changed(fig, red_btn))
+    short_wl_red = QLabel()
+    short_wl_red.setText('d')
+
+    long_wl_red = QLabel()
+    long_wl_red.setText('C')
+
+    layout = QGridLayout()
+    groupBox.setLayout(layout)
+    layout.addWidget(F_d_btn, 0, 0)
+    layout.addWidget(short_wl_default, 0, 1)
+    layout.addWidget(long_wl_default, 0, 2)
+    layout.addWidget(blue_btn, 1, 0)
+    layout.addWidget(short_wl_blue, 1, 1)
+    layout.addWidget(long_wl_blue, 1, 2)
+    layout.addWidget(red_btn, 2, 0)
+    layout.addWidget(short_wl_red, 2, 1)
+    layout.addWidget(long_wl_red, 2, 2)
 
     return groupBox
 
@@ -88,7 +162,7 @@ def on_plot_type_toggled(fig, button):
     elif button.text() == "Buchdahl Coefficients":
         if button.isChecked() is True:
             plot_display_type = "Buchdahl Coefficients"
-    elif button.text() == "Buchdahl Dispersion Coefficients":
+    elif button.text() == "Buchdahl Dispersion\nCoefficients":
         if button.isChecked() is True:
             plot_display_type = "Buchdahl Dispersion Coefficients"
 
@@ -190,19 +264,23 @@ class PickTable(QTableView):
 class PickModel(QAbstractTableModel):
     def __init__(self, fig):
         super().__init__()
+        self.fig = fig
         self.num_rows = 0
         self.pick_table = []
+        self.pt_header = _pt_header
 
     def rowCount(self, index):
         return self.num_rows
 
     def columnCount(self, index):
-        return len(_pt_header)
+        return len(self.pt_header)
 
     def headerData(self, section, orientation, role):
         if role == Qt.DisplayRole:
             if orientation == Qt.Horizontal:
-                return _pt_header[section]
+                if section == 4:
+                    self.pt_header[section] = "P %s-%s" % self.fig.partials
+                return self.pt_header[section]
             elif orientation == Qt.Vertical:
                 return None
         else:

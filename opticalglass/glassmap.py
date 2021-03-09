@@ -92,23 +92,30 @@ def calc_glass_map_arrays(glasses, d_str, F_str, C_str, **kwargs):
         nd_str (str): central wavelength string
         nf_str (str): blue end wavelength string
         nc_str (str): red end wavelength string
+        partials (tuple): kwarg if present, 2 wvls, wl4 and wl5, wl4 < wl5
 
     Returns:
         index, V-number, partial dispersion, Buchdahl coefficients, and
         glass names
     """
+    names = [g.name()+'/'+g.catalog_name() for g in glasses]
 
     nd = np.array([g.rindex(d_str) for g in glasses])
     nF = np.array([g.rindex(F_str) for g in glasses])
     nC = np.array([g.rindex(C_str) for g in glasses])
 
-    vd, PCd = cat_glass.calc_glass_constants(nd, nF, nC)
-
     nd, coefs = cat_glass.calc_buchdahl_coords(
         nd, nF, nC, wlns=(d_str, F_str, C_str), **kwargs)
 
-    names = [g.name()+'/'+g.catalog_name() for g in glasses]
-    return nd, vd, PCd, coefs[0], coefs[1], names
+    if 'partials' in kwargs:
+        wl4, wl5 = kwargs['partials']
+        n4 = np.array([g.rindex(wl4) for g in glasses])
+        n5 = np.array([g.rindex(wl5) for g in glasses])
+        nd, vd, PFd, Pab = cat_glass.calc_glass_constants(nd, nF, nC, n4, n5)
+    else:
+        vd, Pab = cat_glass.calc_glass_constants(nd, nF, nC)
+
+    return nd, vd, Pab, coefs[0], coefs[1], names
 
 
 class GlassMapFigure(Figure):
@@ -152,6 +159,7 @@ class GlassMapFigure(Figure):
         num_catalogs = len(glass_db.catalogs)
         self.db_display = db_display if db_display else [True]*num_catalogs
         self.plot_display_type = plot_display_type
+        self.partials = ('F', 'd')
         self.hover_glass_names = hover_glass_names
         self.needsClear = True
         self.pick_list = []
@@ -210,7 +218,8 @@ class GlassMapFigure(Figure):
                 if self.plot_display_type == "Buchdahl Dispersion Coefficients"
                 else None)
         for i, display in enumerate(self.db_display):
-            gmap_data = self.glass_db.get_data_at(i, ctype=ctyp)
+            gmap_data = self.glass_db.get_data_at(i, ctype=ctyp,
+                                                  partials=self.partials)
             n, v, p, coefs0, coefs1, glass_names = gmap_data
             catalog_name = self.glass_db.get_data_set_label_at(i)
             self.rawData.append([catalog_name,
@@ -244,7 +253,7 @@ class GlassMapFigure(Figure):
             self.draw_glass_polygons()
         elif self.plot_display_type == "Partial Dispersion":
             self.x_label = r'$\mathrm{V_d}$'
-            self.y_label = r'$\mathrm{P_{F-d}}$'
+            self.y_label = r'$\mathrm{P_{%s-%s}}$' % self.partials
             xi = 1
             yi = 2
         elif self.plot_display_type == "Buchdahl Coefficients":
