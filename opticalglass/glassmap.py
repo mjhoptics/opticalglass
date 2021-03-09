@@ -89,6 +89,7 @@ def calc_glass_map_arrays(glasses, d_str, F_str, C_str, **kwargs):
     """ return index and dispersion data arrays for input spectral range
 
     Args:
+        glasses (list): input list of glass instances
         nd_str (str): central wavelength string
         nf_str (str): blue end wavelength string
         nc_str (str): red end wavelength string

@@ -61,7 +61,19 @@ def get_filepath(fname):
 
 
 def calc_glass_constants(nd, nF, nC, *partials):
-    """Given central, blue and red refractive indices, calculate Vd and PFd."""
+    """Given central, blue and red refractive indices, calculate Vd and PFd.
+    
+    Args:
+        nd, nF, nC: refractive indices at central, short and long wavelengths
+        partials (tuple): if present, 2 ref indxs, n4 and n5, wl4 < wl5
+        
+    Returns:
+        V-number and relative partial dispersion from F to d
+
+    If `partials` is present, the return values include the central wavelength
+    index and the relative partial dispersion between the 2 refractive indices
+    provided from `partials`.
+    """
     dFC = nF-nC
     vd = (nd - 1.0)/dFC
     PFd = (nF-nd)/dFC
@@ -120,9 +132,11 @@ def get_glass_map_arrays(cat, d_str, F_str, C_str, **kwargs):
     """ return index and dispersion data arrays for input spectral range
 
     Args:
-        nd_str (str): central wavelength string
-        nf_str (str): blue end wavelength string
-        nc_str (str): red end wavelength string
+        cat: glass catalog instance, source for returned data
+        d_str (str): central wavelength string
+        F_str (str): blue end wavelength string
+        C_str (str): red end wavelength string
+        partials (tuple): kwarg if present, 2 wvls, wl4 and wl5, wl4 < wl5
 
     Returns:
         index, V-number, partial dispersion, Buchdahl coefficients, and

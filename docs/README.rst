@@ -43,7 +43,7 @@ As you hover over the glasses in the map, a pop-up list shows which glasses are 
 
 .. image:: _images/RefractiveIndex.png
 
-Partial dispersion data can be displayed by clicking on the plot type in the upper right hand panel.
+Partial dispersion data can be displayed by clicking on the plot type in the upper right hand panel. Partials may be displayed for one of several different wavebands by making the choice in the Partial Dispersion box.
 
 .. image:: _images/PartialDispersion.png
 
@@ -51,7 +51,7 @@ Display of different catalogs can be controlled by selecting or unselecting chec
 
 .. image:: _images/BuchdahlCoefficients.png
 
-The Buchdahl Dispersion Coefficient display can be used to find glass pairs that can be corrected at 3 wavelengths. Robb and Mercado showed that glasses lying along the same vector from the origin of the dispersion diagram would be color corrrected at 3 wavelegths.
+The Buchdahl Dispersion Coefficient display can be used to find glass pairs that can be corrected at 3 wavelengths. Robb and Mercado showed that glasses lying along the same vector from the origin of the dispersion diagram would be color corrected at 3 wavelegths.
 
 .. image:: _images/BuchdahlDispersion.png
 
