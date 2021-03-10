@@ -19,27 +19,27 @@ class HikariTestCase(unittest.TestCase):
 
     def test_hikari_catalog_glass_index(self):
         fk5 = self.catalog.glass_index('J-FK5')  # first in list
-        self.assertEqual(fk5, 0)
+        self.assertEqual(fk5, 1)
         bk7a = self.catalog.glass_index('J-BK7A')
-        self.assertEqual(bk7a, 9)
+        self.assertEqual(bk7a, 11)
         sk16 = self.catalog.glass_index('J-SK16')
-        self.assertEqual(sk16, 39)
+        self.assertEqual(sk16, 42)
         lasf02 = self.catalog.glass_index('J-LASF02')
-        self.assertEqual(lasf02, 104)
+        self.assertEqual(lasf02, 110)
         lasfh24hs = self.catalog.glass_index('J-LASFH24HS')  # last in list
-        self.assertEqual(lasfh24hs, 131)
+        self.assertEqual(lasfh24hs, 139)
 
     def test_hikari_catalog_data_index(self):
         nd = self.catalog.data_index(self.catalog.nline_str['d'])
-        self.assertEqual(nd, 16)
+        self.assertEqual(nd, 17)
         vd = self.catalog.data_index('νd')
-        self.assertEqual(vd, 24)
+        self.assertEqual(vd, 25)
         A5 = self.catalog.data_index('A5/λ^6')
-        self.assertEqual(A5, 60)
-        glasscode = self.catalog.data_index('Code(d)')
-        self.assertEqual(glasscode, 1)
+        self.assertEqual(A5, 61)
+        glasscode = self.catalog.data_index('コードCode(d)')
+        self.assertEqual(glasscode, 2)
         date = self.catalog.data_index('550nm')
-        self.assertEqual(date, 115)
+        self.assertEqual(date, 121)
 
     def test_hikari_glass_bk7(self):
         glass = hi.HikariGlass('J-BK7A')

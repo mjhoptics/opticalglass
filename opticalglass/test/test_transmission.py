@@ -44,7 +44,7 @@ class TransmissionTestCase(unittest.TestCase):
         # t_data = glass.transmission_data()
         # print(glass.gname, glass.gindex, t_data[0][0], t_data[0][1],
         #       t_data[-1][0], t_data[-1][1], len(t_data))
-        self.compare_transmission(glass, 280.0, 0.01, 2400.0, 0.63, 33)
+        self.compare_transmission(glass, 280.0, 0.11, 2400.0, 0.63, 32)
 
     def test_hikari_glass_jlasf010(self):
         glass = gf.create_glass('J-LASF010', 'Hikari')
@@ -53,7 +53,7 @@ class TransmissionTestCase(unittest.TestCase):
         # t_data = glass.transmission_data()
         # print(glass.gname, glass.gindex, t_data[0][0], t_data[0][1],
         #       t_data[-1][0], t_data[-1][1], len(t_data))
-        self.compare_transmission(glass, 350.0, 0.14, 2400.0, 0.72, 26)
+        self.compare_transmission(glass, 340.0, 0.03, 2400.0, 0.72, 26)
 
     def test_hoya_glass_pcd51(self):
         glass = gf.create_glass('PCD51', 'Hoya')

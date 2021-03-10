@@ -16,7 +16,7 @@ import numpy as np
 from . import glass
 
 
-class HikariCatalog(glass.GlassCatalogXLS, metaclass=Singleton):
+class HikariCatalog(glass.GlassCatalogXLSX, metaclass=Singleton):
     #    data_header = 0
     #    data_start = 2
     #    num_glasses = 240
@@ -37,11 +37,11 @@ class HikariCatalog(glass.GlassCatalogXLS, metaclass=Singleton):
                  'h': 'h\n0.404656',
                  'i': 'i\n0.365015'}
 
-    def __init__(self, fname='HIKARI.xls'):
-        super().__init__('Hikari', fname, 'Glass type', 'A0', 2.05809,
+    def __init__(self, fname='HIKARI.xlsx'):
+        super().__init__('Hikari', fname, '硝種  Glass type', 'A0', 2.05809,
                          data_header_offset=1, glass_name_offset=2,
                          num_coefs=9,
-                         transmission_offset=96, num_wvls=33)
+                         transmission_offset=103, num_wvls=32)
 
     def create_glass(self, gname, gcat):
         return HikariGlass(gname)
