@@ -742,6 +742,20 @@ class Glass:
         else:
             return self.glass_data()[dindex-self.catalog.based]
 
+    def meas_rindex(self, wvl):
+        """ returns the measured refractive index at wvl
+
+        Args:
+            wvl: a string with a spectral line identifier
+
+        Returns:
+            float: the refractive index at wvl
+
+        Raises:
+            KeyError: if *wvl* is not in the spectra dictionary
+        """
+        return self.glass_item(self.catalog.nline_str[wvl])
+
     def rindex(self, wvl):
         """ returns the interpolated refractive index at wvl
 
