@@ -60,7 +60,7 @@ Python Data Model
 
 Two families of objects are provided to manage access to glass data. The :class:`~.glass.GlassCatalogSpreadsheet` base class manages the generic operations on the catalog. Subclasses of :class:`~.glass.GlassCatalogSpreadsheet` provide specific mapping information for the vendor spreadsheet format.
 
-The :class:`~.glass.Glass` base class manages the generic operations on the individual glass instances. These include refractive index interpolation using either the :meth:`~.glass.Glass.calc_rindex` or the :meth:`~.glass.Glass.rindex` methods. The :meth:`~.glass.Glass.transmission_data` method returns transmission data (10mm sample thickness) for the glass instance.
+The :class:`~.glass.Glass` base class manages the generic operations on the individual glass instances. These include refractive index interpolation using either the :meth:`~.glass.Glass.calc_rindex` or the :meth:`~.glass.Glass.rindex` methods. The :meth:`~.glass.Glass.meas_rindex` method, with a spectral line argument, e.g. 'd', 'F', 'C', will return the measured index data from the catalog. The :meth:`~.glass.Glass.transmission_data` method returns transmission data (10mm sample thickness) for the glass instance.
 
 A factory interface to :class:`~.glass.Glass` creation is the function :func:`~.glassfactory.create_glass` that returns a :class:`~.glass.Glass` instance of the appropriate catalog type, given the glass and catalog names.
 
