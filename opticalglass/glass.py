@@ -828,8 +828,10 @@ def decode_glass_name(glass_name):
 
     Returns: group_num, prefix, suffix, where group_num = group, num
 
+    Returned strings are uppercase.
+
     """
-    gn = glass_name.split('-')
+    gn = glass_name.upper().split('-')
     suffix = ''
     if len(gn) == 1:
         prefix = ''
