@@ -13,7 +13,7 @@ import numpy as np
 from . import glass
 
 
-class OharaCatalog(glass.GlassCatalogXLSX, metaclass=Singleton):
+class OharaCatalogExcel(glass.GlassCatalogXLSX, metaclass=Singleton):
     #    data_header = 1
     #    data_start = 2
     #    num_glasses = 134
@@ -42,6 +42,41 @@ class OharaCatalog(glass.GlassCatalogXLSX, metaclass=Singleton):
         return OharaGlass(gname)
 
 
+class OharaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
+
+    def __init__(self, fname='OHARA.xlsx'):
+        # the xl_df has indices and columns that match the Excel worksheet border.
+        # the index runs from 1 to xl_df.shape[0]
+        # the columns match the pattern 'A', 'B', 'C', ... 'Z', 'AA', 'AB', ...
+        # this facilitates transferring areas on the spreadsheet to areas in the catalog DataFrame
+        
+        num_rows = 2  # number of header rows in the imported spreadsheet
+        category_row = 1  # row with categories
+        header_row = 2  # row with data item/header info
+        data_col = 'C'  # first column of data in the imported spreadsheet
+        args = num_rows, category_row , header_row, data_col
+        
+        series_mappings = [
+            ('refractive indices', (lambda h: h.split('n')[-1]), 
+             header_row, 'E', 'X'),
+            ('dispersion coefficients', None, header_row, 'BI', 'BN'),
+            ('internal transmission mm, 10', None, header_row, 'CC', 'DH'),
+            ]
+        item_mappings = [
+            ('abbe number', 'vd', header_row, 'Y'),
+            ('abbe number', 've', header_row, 'Z'),
+            ]
+        kwargs = dict(
+            data_extent = (3, 136, data_col, 'GA'),
+            name_col_offset = 'B',
+            )
+        super().__init__('Ohara', fname, series_mappings, item_mappings, 
+                         *args, **kwargs)
+
+    def create_glass(self, gname, gcat):
+        return OharaGlass(gname)
+
+
 class OharaGlass(glass.Glass):
     catalog = OharaCatalog()
 
@@ -49,9 +84,6 @@ class OharaGlass(glass.Glass):
         if catalog is not None:
             self.catalog = catalog
         super().__init__(gname)
-
-    def glass_code(self):
-        return super().glass_code('nd', 'νd')
 
     def calc_rindex(self, wv_nm):
         wv = 0.001*wv_nm

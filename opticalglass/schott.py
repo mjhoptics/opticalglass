@@ -13,7 +13,7 @@ import numpy as np
 from . import glass
 
 
-class SchottCatalog(glass.GlassCatalogXLS, metaclass=Singleton):
+class SchottCatalogExcel(glass.GlassCatalogXLS, metaclass=Singleton):
     #    data_header = 3
     #    data_start = 4
     #    num_glasses = 123
@@ -46,6 +46,46 @@ class SchottCatalog(glass.GlassCatalogXLS, metaclass=Singleton):
         return float(header_str[len('TAUI10/'):])
 
 
+class SchottCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
+
+    def get_transmission_wvl(header_str):
+        """Returns the wavelength value from the transmission data header string."""
+        return float(header_str[len('TAUI10/'):])
+
+    def __init__(self, fname='SCHOTT.xls'):
+        # the xl_df has indices and columns that match the Excel worksheet border.
+        # the index runs from 1 to xl_df.shape[0]
+        # the columns match the pattern 'A', 'B', 'C', ... 'Z', 'AA', 'AB', ...
+        # this facilitates transferring areas on the spreadsheet to areas in the catalog DataFrame
+        
+        num_rows = 4  # number of header rows in the imported spreadsheet
+        category_row = 3  # row with categories
+        header_row = 4  # row with data item/header info
+        data_col = 'B'  # first column of data in the imported spreadsheet
+        args = num_rows, category_row , header_row, data_col
+        
+        series_mappings = [
+            ('refractive indices', (lambda h: h.split('n')[-1]), 
+             header_row, 'DM', 'EI'),
+            ('dispersion coefficients', None, header_row, 'G', 'L'),
+            ('internal transmission mm, 10', 
+             SchottCatalog.get_transmission_wvl, header_row, 'BP', 'CS'),
+            ]
+        item_mappings = [
+            ('abbe number', 'vd', header_row, 'D'),
+            ('abbe number', 've', header_row, 'E'),
+            ]
+        kwargs = dict(
+            data_extent = (5, 127, data_col, 'FJ'),
+            name_col_offset = 'A',
+            )
+        super().__init__('Schott', fname, series_mappings, item_mappings, 
+                         *args, **kwargs)
+
+    def create_glass(self, gname, gcat):
+        return SchottGlass(gname)
+
+
 class SchottGlass(glass.Glass):
     catalog = SchottCatalog()
 
@@ -53,9 +93,6 @@ class SchottGlass(glass.Glass):
         if catalog is not None:
             self.catalog = catalog
         super().__init__(gname)
-
-    def glass_code(self):
-        return super().glass_code('nd', 'vd')
 
     def calc_rindex(self, wv_nm):
         wv = 0.001*wv_nm

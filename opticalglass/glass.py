@@ -28,6 +28,7 @@ import xlrd
 from openpyxl import load_workbook
 
 import numpy as np
+import pandas as pd
 from scipy import linalg
 
 from . import buchdahl
@@ -144,22 +145,17 @@ def get_glass_map_arrays(cat, d_str, F_str, C_str, **kwargs):
     """
     names = cat.get_glass_names()
 
-    nd = np.array(
-            cat.catalog_data(cat.data_index(cat.nline_str[d_str])))
-    nF = np.array(
-            cat.catalog_data(cat.data_index(cat.nline_str[F_str])))
-    nC = np.array(
-            cat.catalog_data(cat.data_index(cat.nline_str[C_str])))
+    nd = cat.df['refractive indices'][d_str].to_numpy(dtype=float)
+    nF = cat.df['refractive indices'][F_str].to_numpy(dtype=float)
+    nC = cat.df['refractive indices'][C_str].to_numpy(dtype=float)
 
     nd, coefs = calc_buchdahl_coords(
         nd, nF, nC, wlns=(d_str, F_str, C_str), **kwargs)
 
     if 'partials' in kwargs:
         wl_a, wl_b = kwargs['partials']
-        na = np.array(
-            cat.catalog_data(cat.data_index(cat.nline_str[wl_a])))
-        nb = np.array(
-            cat.catalog_data(cat.data_index(cat.nline_str[wl_b])))
+        na = cat.df['refractive indices'][wl_a].to_numpy(dtype=float)
+        nb = cat.df['refractive indices'][wl_b].to_numpy(dtype=float)
         nd, vd, PFd, Pab = calc_glass_constants(nd, nF, nC, na, nb)
     else:
         vd, Pab = calc_glass_constants(nd, nF, nC)
@@ -678,7 +674,7 @@ class GlassCatalogXLSX(GlassCatalogSpreadsheet):
         return get_glass_map_arrays(self, wvl, 'F', 'C', **kwargs)
 
 
-class Glass:
+class GlassExcel:
     """ base optical glass
 
     Attributes:
@@ -790,6 +786,818 @@ class Glass:
         Returns: list of wavelength, transmittance pairs for 10mm sample
         """
         return self.catalog.transmission_data(self.gindex)
+
+def xl_cols():
+    caps_word = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    cols = list(caps_word)
+    
+    for c1 in caps_word:
+        for c2 in caps_word:
+            cols.append(c1 + c2)
+    return cols
+
+
+def xl2df(fname):
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=UserWarning)
+        worksheet_df = pd.read_excel(get_filepath(fname), header=None)
+    shape = worksheet_df.shape
+    worksheet_df.index = pd.RangeIndex(start=1, stop=shape[0]+1, step=1)
+    worksheet_df.columns = xl_cols()[:shape[1]]
+    return worksheet_df
+
+
+def df2gcat(xldf, r0, rk, c0, ck, **kwargs):
+    name_col_offset = kwargs['name_col_offset']
+    # data_header = kwargs['data_header']
+    glass_cat = xldf.loc[r0:rk, c0:ck]
+    glass_cat.index = xldf.loc[r0:rk, name_col_offset]
+    glass_cat.index.name = 'Glass'
+    # glass_cat.columns = xldf.loc[xldf.index[data_header], c0:ck]
+    return glass_cat
+
+
+def fill_in_nans(s):
+    categories = {}
+    data_header = []
+    c_last = 'general'
+    r1 = rk = 0, s.index[0]
+    for i, item in enumerate(s.items()):
+        indx, c = item
+        if not pd.isna(c):
+            if c != c_last:
+                if c_last is not None:
+                    categories[c_last] = (r1, rk)
+                c_last = c
+                r1 = i, indx
+            rk = i+1, indx
+            data_header.append(c)
+        else:
+            rk = i+1, indx
+            data_header.append(c_last)
+    return data_header, categories
+
+
+def gen_data_headers(cat_df, num_rows):
+    data_headers = []
+    categories = []
+    for i in range(num_rows):
+        data_header, df_categories = fill_in_nans(cat_df.iloc[i])
+        data_headers.append(data_header)
+        categories.append(df_categories)
+    return data_headers, categories
+
+
+class GlassCatalogPandasV1(GlassCatalogSpreadsheet):
+    """ Pandas-based glass catalog
+
+    Args:
+        name: name of the glass catalog
+        fname: excel filename, located in ``data`` directory
+        glass_str: the header string for the Glass column in fname
+        coef_str: the header string for the first refractive index coefficient
+                  column in fname
+        rindex_str: the header string for the first refractive index value
+                    column in fname
+
+    Attributes:
+        num_glasses: number of glasses in the catalog
+        num_columns: number of colums in the spreadsheet
+        data_header: the row containing the data header labels
+        data_start: first row in the spreadsheet contain glass data
+        name_col_offset: the column offset for glass_str
+        coef_col_offset: the column offset for coef_str
+        num_coefs: the number of coefficients in the index equation
+        index_col_offset: the column offset for rindex_str
+        nline_str: a dict of strings mapping header strings used for index for
+                   spectral lines. **Must be provided by the derived class**
+    """
+
+    def __init__(self, name, fname, *args, **kwargs):
+        # data_index is one-based
+        self.based = 0
+        self.name = name
+        # Open the workbook
+        worksheet_df = xl2df(fname)
+        self.glass_cat = glass_cat = df2gcat(worksheet_df, *args, **kwargs)
+
+        self.gnames = gnames = self.get_glass_names()
+        self.num_glasses = len(gnames)
+
+        self.colnames = colnames = self.get_column_names()
+        self.num_columns = len(colnames)
+
+        coef_str = kwargs['coef_str']
+        self.coef_col_offset = self.glass_cat.columns.get_loc(coef_str)
+        self.num_coefs = kwargs['num_coefs']
+        rindex_str = kwargs['rindex_str']
+        self.index_col_offset = self.glass_cat.columns.get_loc(rindex_str)
+
+        # data slice for 10mm transmission
+        self.transmission_offset = kwargs['transmission_offset']
+        self.num_wvls = kwargs['num_wvls']
+        twv = kwargs['transmission_wvl_shape']
+        self.transmission_wvls = worksheet_df.iloc[twv[0]][twv[2]:twv[3]]
+
+        # build an alphabetical list of decoded glass names
+        glass_list = [(decode_glass_name(gn), gn, name)
+                      for gn in gnames]
+        glass_list = sorted(glass_list, key=lambda glass: glass[0][0])
+        # build a lookup dict of the glass defs keyed to decoded glass names
+        glass_lookup = {gn_decode: (gn, gc)
+                        for gn_decode, gn, gc in glass_list}
+        # attach these 'static' lists to class variables
+        self.__class__.glass_list = glass_list
+        self.__class__.glass_lookup = glass_lookup
+
+    def catalog_name(self):
+        return self.name
+
+    def get_glass_names(self):
+        """ returns a list of glass names """
+        return self.glass_cat.index.array
+
+    def get_column_names(self, dindex=None, num=None, add_offset=0):
+        """ returns a list of column headers """
+        return self.glass_cat.columns.array
+
+    def glass_index(self, gname):
+        """ returns the glass index (row) for glass name `gname`
+
+        Args:
+            gname (str): glass name
+
+        Returns:
+            int: the 0-based index (row) of the requested glass
+        """
+        return self.glass_cat.index.get_loc(gname)
+
+    def data_index(self, dname):
+        """ returns the data index (column) for data `dname`
+
+        Args:
+            dname (str): header string for data
+
+        Returns:
+            int: the 1-based index (column) of the requested data
+
+        Raises:
+            GlassDataNotFoundError: if *dname* doesn't match any header string
+        """
+        dname_iloc = self.glass_cat.columns.get_loc(dname)
+        if isinstance(dname_iloc, int):
+            return dname_iloc
+        for i, b in enumerate(dname_iloc, start=1):
+            if b:
+                break
+        return i
+
+    def get_data_for_glass(self, gname, dindex=None, num=None):
+        """ returns an array of glass data for the glass at *gname*
+
+        Args:
+            gname: glass index into spreadsheet
+            dindex: the starting column of the desired data
+            num: number of data items (cells) to retrieve
+
+        Returns: list of data items
+        """
+        if isinstance(gname, int):
+            gname = self.glass_cat.index[gname]
+        glass_data = self.glass_cat.loc[gname]
+        if dindex is not None:  # get a partial row of at least 1 item
+            num = num if num is not None else 1
+            if isinstance(dindex, str):
+                dindex = glass_data.index.get_loc(dindex)
+            glass_data = glass_data.iloc[dindex:dindex+num]
+
+        return glass_data
+
+    def glass_data(self, gindex):
+        """ returns an array of data for the glass at *gindex* """
+        glass_data = self.get_data_for_glass(gindex)
+        return glass_data
+
+    def glass_coefs(self, gname):
+        """ returns an array of glass coefficients for the glass at *gname* """
+        glass_data = self.get_data_for_glass(gname,
+                                             dindex=self.coef_col_offset,
+                                             num=self.num_coefs)
+        return glass_data
+
+    def catalog_data(self, dindex):
+        """ returns an array of data at column *dindex* for all glasses """
+        dname = self.ws.columns[dindex]
+        return self.ws[dname]
+
+    def get_transmission_wvl(self, header_str):
+        """Returns the wavelength value from the transmission data header string."""
+        return float(header_str)
+
+    def transmission_data(self, gname):
+        """ returns an array of transmission data for the glass at *gindex*
+
+        Args:
+            gindex: glass index into spreadsheet
+            transmission_offset: the starting column of the transmission data
+            num_wvls: number of wavelengths for the data
+
+        Returns:
+            list of wavelength, transmittance pairs
+        """
+        data = self.get_data_for_glass(gname,
+                                       dindex=self.transmission_offset,
+                                       num=self.num_wvls)
+        trns_data = []
+        for h, d in zip(self.transmission_wvls, data):
+            w = self.get_transmission_wvl(h)
+            if d is not None and not pd.isna(d):
+                trns_data.append((w, d))
+        return trns_data
+
+    def glass_map_data(self, wvl='d', **kwargs):
+        """ return index and dispersion data for all glasses in the catalog
+
+        Args:
+            wvl (str): the central wavelength for the data, either 'd' or 'e'
+
+        Returns:
+            index, V-number, partial dispersion, Buchdahl coefficients, and
+            glass names
+        """
+        return get_glass_map_arrays(self, wvl, 'F', 'C', **kwargs)
+
+
+class GlassV1:
+    """ base optical glass, for use with pandas
+
+    Attributes:
+        gname: the glass name
+        gindex: the index into the glass list
+        catalog: the GlassCatalog this glass is associated with.
+                 **Must be provided by the derived class**
+        coefs: list of coefficients for calculating refractive index vs wv
+    """
+
+    def __init__(self, gname):
+        # self.gindex = self.catalog.glass_index(gname)
+        self.gname = gname
+        self.coefs = self.catalog.glass_coefs(gname)
+
+    def __str__(self):
+        return self.catalog.name + ' ' + self.name() + ': ' + self.glass_code()
+
+    def __repr__(self):
+        return "{!s}('{}')".format(type(self).__name__, self.gname)
+
+    def sync_to_restore(self):
+        """ hook routine to restore coefs, if needed """
+        # self.gindex = self.catalog.glass_index(self.gname)
+        if not hasattr(self, 'coefs'):
+            self.coefs = self.catalog.glass_coefs(self.gindex)
+
+    def glass_code(self, nd_str, vd_str):
+        """ returns the 6 digit glass code, combining index and V-number """
+        nd = self.glass_item(nd_str)
+        vd = self.glass_item(vd_str)
+        return str(1000*round((nd - 1), 3) + round(vd/100, 3))
+
+    def glass_data(self):
+        """ returns the raw spreadsheet data for the glass as a Series """
+        return self.catalog.glass_cat.loc[self.gname]
+
+    def name(self):
+        """ returns the glass name, :attr:`gname` """
+        return self.gname
+
+    def catalog_name(self):
+        """ returns the glass name, :attr:`gname` """
+        return self.catalog.catalog_name()
+
+    def glass_item(self, dname):
+        """ return the value of the **dname** item
+
+        Args:
+            dname (str): header string for data
+
+        Returns:
+            the *dname* data
+
+        Raises:
+            GlassDataNotFoundError: if *dname* doesn't match any header string
+        """
+        return self.glass_data()[dname]
+
+    def meas_rindex(self, wvl):
+        """ returns the measured refractive index at wvl
+
+        Args:
+            wvl: a string with a spectral line identifier
+
+        Returns:
+            float: the refractive index at wvl
+
+        Raises:
+            KeyError: if *wvl* is not in the spectra dictionary
+        """
+        return self.glass_item(self.catalog.nline_str[wvl])
+
+    def rindex(self, wvl):
+        """ returns the interpolated refractive index at wvl
+
+        Args:
+            wvl: either the wavelength in nm or a string with a spectral line
+                 identifier. for the refractive index query
+
+        Returns:
+            float: the refractive index at wv_nm
+
+        Raises:
+            KeyError: if ``wvl`` is not in the spectra dictionary
+        """
+        return self.calc_rindex(get_wavelength(wvl))
+
+    def calc_rindex(self, wv_nm):
+        """ returns the interpolated refractive index at wv_nm
+
+        **Must be provided by the derived class**
+
+        Args:
+            wv_nm (float or numpy array): wavelength in nm for the refractive index query
+
+        Returns:
+            float or numpy array: the refractive index at wv_nm
+        """
+        pass
+
+    def transmission_data(self):
+        """ returns an array of transmission data for the glass
+
+        Returns: list of wavelength, transmittance pairs for 10mm sample
+        """
+        return self.catalog.transmission_data(self.gname) 
+
+
+standard_categories = dict(
+    refractive_indices = 'refractive indices',
+    dispersion_coefficients = 'dispersion coefficients',
+    internal_transmission_10 = 'internal transmission mm, 10',
+   )
+  
+    
+def replace_category_headers(data_headers, worksheet_df, row, old_keys, new_keys):
+    for key in new_keys.keys():
+        # span = categories_by_row[row][old_keys[key]]
+        # s1, sk = span[0][0], span[1][0]
+        cols = worksheet_df.columns
+        row, _, col1, colk = old_keys[key]
+        s1, sk = cols.get_loc(col1), cols.get_loc(colk)+1
+        for i in range(s1, sk):
+            data_headers[row][i] = new_keys[key]
+
+
+def build_glass_cat_index(cat, worksheet_df, *args, **kwargs):
+    num_rows, category_row , header_row, data_col = args
+    refractive_indices = kwargs['refractive_indices']
+    dispersion_coefficients = kwargs['dispersion_coefficients']
+    internal_transmission_10 = kwargs['internal_transmission_10']
+
+    # setup the data headers for the glass catalog dataframe
+    data_headers, categories_by_row = gen_data_headers(worksheet_df, num_rows)
+    mindx0 = pd.MultiIndex.from_arrays([data_headers[category_row][:], 
+                                        data_headers[header_row][:]], 
+                                       names=['category', 'data item'])
+
+    # some spreadsheets have duplicate column headers; get rid of those
+    if mindx0.has_duplicates:
+        dups = mindx0.duplicated()
+        dups1 = [worksheet_df.columns[i] for i, b in enumerate(dups) if b == True]
+        worksheet_df.drop(columns=dups1, inplace=True)
+
+    # generate data headers again; should be all unique
+    data_headers, categories_by_row = gen_data_headers(worksheet_df, num_rows)
+    cols = worksheet_df.columns
+
+    # data slice for measured/calculated refractive index data
+    # spanrn = categories_by_row[category_row][refractive_indices]
+    # s1, sk = spanrn[0][0], spanrn[1][0]
+    row, _, col1, colk = kwargs['refractive_indices']
+    s1, sk = cols.get_loc(col1), cols.get_loc(colk)+1
+    refractive_index_wvls = [h.split('n')[-1]
+                             for h in data_headers[row][s1:sk]]
+    data_headers[header_row][s1:sk] = refractive_index_wvls
+
+    # data slice for 10mm transmission
+    # span10 = categories_by_row[category_row][internal_transmission_10]
+    # s1, sk = span10[0][0], span10[1][0]
+    row, _, col1, colk = kwargs['internal_transmission_10']
+    s1, sk = cols.get_loc(col1), cols.get_loc(colk)+1
+
+    def get_transmission_wvl_fct(header_str):
+        """Returns the wavelength value from the transmission data header string."""
+        return float(header_str)
+
+    get_transmission_wvl = kwargs['get_transmission_wvl']
+    get_transmission_wvl = (get_transmission_wvl_fct 
+                            if get_transmission_wvl is not None 
+                            else kwargs['get_transmission_wvl'])
+    transmission_wvl = [get_transmission_wvl(h)
+                        for h in data_headers[row][s1:sk]]
+    data_headers[header_row][s1:sk] = transmission_wvl
+
+    # replace vendor specific categories with standard ones
+    replace_category_headers(data_headers, worksheet_df, category_row,
+                             kwargs, standard_categories)
+
+    mindx = pd.MultiIndex.from_arrays([data_headers[category_row][data_col:],
+                                       data_headers[header_row][data_col:]],
+                                      names=['category', 'data item'])
+
+    # make a new df from the data area of the worksheet
+    r0, rk, c0, ck = kwargs['data_extent']
+    glass_cat = worksheet_df.loc[r0:rk, c0:ck]
+    glass_cat.index = worksheet_df.loc[r0:rk, kwargs['name_col_offset']]
+    glass_cat.index.name = 'glass'
+    glass_cat.columns = mindx
+
+    return glass_cat
+
+
+def gen_data_headers_only(cat_df, num_rows):
+    data_headers = []
+    for i in range(num_rows):
+        data_header = [item[1] for item in cat_df.iloc[i].items()]
+        data_headers.append(data_header)
+    return data_headers
+
+
+def build_glass_cat_orig(worksheet_df, series_mappings, item_mappings, 
+                         *args, **kwargs):
+    num_rows, category_row , header_row, data_col = args
+
+    # # setup the data headers for the glass catalog dataframe
+    # data_headers, categories_by_row = gen_data_headers(worksheet_df, num_rows)
+    # mindx0 = pd.MultiIndex.from_arrays([data_headers[category_row][:], 
+    #                                     data_headers[header_row][:]], 
+    #                                    names=['category', 'data item'])
+
+    # # some spreadsheets have duplicate column headers; get rid of those
+    # if mindx0.has_duplicates:
+    #     dups = mindx0.duplicated()
+    #     dups1 = [worksheet_df.columns[i] for i, b in enumerate(dups) if b == True]
+    #     worksheet_df.drop(columns=dups1, inplace=True)
+
+    # generate data headers again; should be all unique
+    data_headers = gen_data_headers_only(worksheet_df, num_rows)
+    cols = worksheet_df.columns
+
+    for m in series_mappings:
+        category, fct, row, col1, colk = m
+        s1, sk = cols.get_loc(col1), cols.get_loc(colk)+1
+        for si, h_item in enumerate(data_headers[row][s1:sk], start=s1):
+            item = h_item if fct is None else fct(h_item)
+            data_headers[header_row][si] = item
+            data_headers[category_row][si] = category
+
+    for m in item_mappings:
+        category, hdr, row, col = m
+        s = cols.get_loc(col)
+        item = data_headers[row][s]
+        if callable(hdr):
+            h_item = hdr(item)
+        elif hdr is not None:
+            h_item = hdr
+        else:
+            h_item = item
+        data_headers[header_row][si] = h_item
+        data_headers[category_row][si] = category
+
+    mindx = pd.MultiIndex.from_arrays([data_headers[category_row][data_col:],
+                                       data_headers[header_row][data_col:]],
+                                      names=['category', 'data item'])
+
+    # make a new df from the data area of the worksheet
+    r0, rk, c0, ck = kwargs['data_extent']
+    glass_cat = worksheet_df.loc[r0:rk, c0:ck]
+    glass_cat.index = worksheet_df.loc[r0:rk, kwargs['name_col_offset']]
+    glass_cat.index.name = 'glass'
+    glass_cat.columns = mindx
+
+    return glass_cat
+
+
+def build_glass_cat(worksheet_df, series_mappings, item_mappings, 
+                    *args, **kwargs):
+    num_rows, category_row , header_row, data_col = args
+
+    # generate data headers again; should be all unique
+    headers = worksheet_df.loc[1:num_rows].copy().astype('object')
+
+    for m in series_mappings:
+        category, action, row, col1, colk = m
+        for idx in headers.loc[row].loc[col1:colk].index:
+            if action is not None:
+                headers.at[header_row, idx] = action(headers.loc[row, idx])
+            else:
+                headers.at[header_row, idx] = headers.loc[row, idx]
+            headers.at[category_row, idx] = category
+
+    for m in item_mappings:
+        category, hdr, row, col = m
+        item = headers.loc[row, col]
+        if callable(hdr):
+            h_item = hdr(item)
+        elif hdr is not None:
+            h_item = hdr
+        else:
+            h_item = item
+        headers.at[header_row, col] = h_item
+        headers.at[category_row, col] = category
+
+    mindx = pd.MultiIndex.from_arrays([headers.loc[category_row, data_col:],
+                                       headers.loc[header_row, data_col:]],
+                                      names=['category', 'data item'])
+
+    # make a new df from the data area of the worksheet
+    r0, rk, c0, ck = kwargs['data_extent']
+    glass_cat = worksheet_df.loc[r0:rk, c0:ck]
+    glass_cat.index = worksheet_df.loc[r0:rk, kwargs['name_col_offset']]
+    glass_cat.index.name = 'glass'
+    glass_cat.columns = mindx
+
+    # weed out any duplicate or empty columns
+    if glass_cat.columns.has_duplicates:
+        dups = glass_cat.columns.duplicated()
+        dups1 = [glass_cat.columns[i] for i, b in enumerate(dups) if b == True]
+        glass_cat.drop(columns=dups1, inplace=True)
+
+    # infer dtypes so that downstream numpy routines don't complain about object data
+    glass_cat = glass_cat.convert_dtypes()
+
+    return glass_cat
+
+class GlassCatalogPandas(GlassCatalogSpreadsheet):
+    """ Pandas-based glass catalog
+
+    Args:
+        name: name of the glass catalog
+        fname: excel filename, located in ``data`` directory
+        glass_str: the header string for the Glass column in fname
+        coef_str: the header string for the first refractive index coefficient
+                  column in fname
+        rindex_str: the header string for the first refractive index value
+                    column in fname
+
+    Attributes:
+        num_glasses: number of glasses in the catalog
+        num_columns: number of colums in the spreadsheet
+        data_header: the row containing the data header labels
+        data_start: first row in the spreadsheet contain glass data
+        name_col_offset: the column offset for glass_str
+        coef_col_offset: the column offset for coef_str
+        num_coefs: the number of coefficients in the index equation
+        index_col_offset: the column offset for rindex_str
+        nline_str: a dict of strings mapping header strings used for index for
+                   spectral lines. **Must be provided by the derived class**
+    """
+
+    # def __init__(self, name, fname, *args, **kwargs):
+    def __init__(self, name, fname, series_mappings, item_mappings, 
+                 *args, **kwargs):
+
+        self.name = name
+        # Open the workbook
+        worksheet_df = xl2df(fname)
+        self.df = build_glass_cat(worksheet_df, series_mappings, item_mappings, 
+                                  *args, **kwargs)
+        # self.df = build_glass_cat_index(self, worksheet_df, *args, **kwargs)
+
+        # build an alphabetical list of decoded glass names
+        gnames = self.df.index.array
+        glass_list = [(decode_glass_name(gn), gn, name)
+                      for gn in gnames]
+        glass_list = sorted(glass_list, key=lambda glass: glass[0][0])
+        # build a lookup dict of the glass defs keyed to decoded glass names
+        glass_lookup = {gn_decode: (gn, gc)
+                        for gn_decode, gn, gc in glass_list}
+        # attach these 'static' lists to class variables
+        self.__class__.glass_list = glass_list
+        self.__class__.glass_lookup = glass_lookup
+
+    def catalog_name(self):
+        return self.name
+
+    def get_glass_names(self):
+        """ returns a list of glass names """
+        return self.df.index.array
+
+    def get_column_names(self, dindex=None, num=None, add_offset=0):
+        """ returns a list of column headers """
+        return self.df.columns.array
+
+    def glass_index(self, gname):
+        """ returns the glass index (row) for glass name `gname`
+
+        Args:
+            gname (str): glass name
+
+        Returns:
+            int: the 0-based index (row) of the requested glass
+        """
+        return self.df.index.get_loc(gname)
+
+    def data_index(self, dname):
+        """ returns the data index (column) for data `dname`
+
+        Args:
+            dname (str): header string for data
+
+        Returns:
+            int: the 1-based index (column) of the requested data
+
+        Raises:
+            GlassDataNotFoundError: if *dname* doesn't match any header string
+        """
+        dname_iloc = self.df.columns.get_loc(dname)
+        if isinstance(dname_iloc, int):
+            return dname_iloc
+        for i, b in enumerate(dname_iloc, start=1):
+            if b:
+                break
+        return i
+
+    def get_data_for_glass(self, gname, dindex=None, num=None):
+        """ returns an array of glass data for the glass at *gname*
+
+        Args:
+            gname: glass index into spreadsheet
+            dindex: the starting column of the desired data
+            num: number of data items (cells) to retrieve
+
+        Returns: list of data items
+        """
+        if isinstance(gname, int):
+            gname = self.df.index[gname]
+        glass_data = self.df.loc[gname]
+        if dindex is not None:  # get a partial row of at least 1 item
+            num = num if num is not None else 1
+            if isinstance(dindex, str):
+                dindex = glass_data.index.get_loc(dindex)
+            glass_data = glass_data.iloc[dindex:dindex+num]
+
+        return glass_data
+
+    def glass_data(self, gindex):
+        """ returns an array of data for the glass at *gindex* """
+        glass_data = self.get_data_for_glass(gindex)
+        return glass_data
+
+    def glass_coefs(self, gname):
+        """ returns an array of glass coefficients for the glass at *gname* """
+        glas = self.df.loc[gname]
+        coefs = glas['dispersion coefficients'].to_numpy(dtype=float)
+        return coefs
+
+    def catalog_data(self, dindex):
+        """ returns an array of data at column *dindex* for all glasses """
+        dname = self.ws.columns[dindex]
+        return self.ws[dname]
+
+    def transmission_data(self, gname):
+        """ returns an array of transmission data for the glass at *gindex*
+
+        Args:
+            gindex: glass index into spreadsheet
+            transmission_offset: the starting column of the transmission data
+            num_wvls: number of wavelengths for the data
+
+        Returns:
+            list of wavelength, transmittance pairs
+        """
+        gla = self.df.loc[gname]
+        return gla['internal transmission mm, 10'].array
+
+    def glass_map_data(self, wvl='d', **kwargs):
+        """ return index and dispersion data for all glasses in the catalog
+
+        Args:
+            wvl (str): the central wavelength for the data, either 'd' or 'e'
+
+        Returns:
+            index, V-number, partial dispersion, Buchdahl coefficients, and
+            glass names
+        """
+        return get_glass_map_arrays(self, wvl, 'F', 'C', **kwargs)
+
+
+class Glass:
+    """ base optical glass, for use with pandas
+
+    Attributes:
+        gname: the glass name
+        glas: the Series for `gname`
+        catalog: the GlassCatalog this glass is associated with.
+                 **Must be provided by the derived class**
+        coefs: list of coefficients for calculating refractive index vs wv
+    """
+
+    def __init__(self, gname):
+        self.gname = gname
+        self.glas = self.catalog.df.loc[gname]
+        self.coefs = self.catalog.glass_coefs(gname)
+
+    def __str__(self):
+        return self.catalog.name + ' ' + self.name() + ': ' + self.glass_code()
+
+    def __repr__(self):
+        return "{!s}('{}')".format(type(self).__name__, self.gname)
+
+    def sync_to_restore(self):
+        """ hook routine to restore coefs, if needed """
+        if not hasattr(self, 'coefs'):
+            self.coefs = self.catalog.glass_coefs(self.gname)
+
+    def glass_code(self, d_str='d', vd_str='vd'):
+        """ returns the 6 digit glass code, combining index and V-number """
+        nd = self.glas['refractive indices'][d_str]
+        vd = self.glas['abbe number'][vd_str]
+        return str(1000*round((nd - 1), 3) + round(vd/100, 3))
+
+    def glass_data(self):
+        """ returns the raw spreadsheet data for the glass as a Series """
+        return self.glas
+
+    def name(self):
+        """ returns the glass name, :attr:`gname` """
+        return self.gname
+
+    def catalog_name(self):
+        """ returns the glass name, :attr:`gname` """
+        return self.catalog.catalog_name()
+
+    def glass_item(self, dname):
+        """ return the value of the **dname** item
+
+        Args:
+            dname (str): header string for data
+
+        Returns:
+            the *dname* data
+
+        Raises:
+            GlassDataNotFoundError: if *dname* doesn't match any header string
+        """
+        return self.glas[dname]
+
+    def meas_rindex(self, wvl):
+        """ returns the measured refractive index at wvl
+
+        Args:
+            wvl: a string with a spectral line identifier
+
+        Returns:
+            float: the refractive index at wvl
+
+        Raises:
+            KeyError: if *wvl* is not in the spectra dictionary
+        """
+        rindx = self.glas['refractive indices'][wvl]
+        return rindx
+
+    def rindex(self, wvl):
+        """ returns the interpolated refractive index at wvl
+
+        Args:
+            wvl: either the wavelength in nm or a string with a spectral line
+                 identifier. for the refractive index query
+
+        Returns:
+            float: the refractive index at wv_nm
+
+        Raises:
+            KeyError: if ``wvl`` is not in the spectra dictionary
+        """
+        return self.calc_rindex(get_wavelength(wvl))
+
+    def calc_rindex(self, wv_nm):
+        """ returns the interpolated refractive index at wv_nm
+
+        **Must be provided by the derived class**
+
+        Args:
+            wv_nm (float or numpy array): wavelength in nm for the refractive index query
+
+        Returns:
+            float or numpy array: the refractive index at wv_nm
+        """
+        pass
+
+    def transmission_data(self):
+        """ returns an array of transmission data for the glass
+
+        Returns: list of wavelength, transmittance pairs for 10mm sample
+        """
+        return self.glas['internal transmission mm, 10'].array
 
 
 def decode_glass_name(glass_name):
