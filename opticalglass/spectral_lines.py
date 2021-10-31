@@ -6,6 +6,7 @@
 .. codeauthor: Michael J. Hayford
 """
 import numpy as np
+import pandas as pd
 
 spectral_lines = [[2325.42, '', 'infrared mercury line', 'Hg'],
                   [1970.09, '', 'infrared mercury line', 'Hg'],
@@ -80,15 +81,16 @@ def get_wavelength(wvl):
         In [5]: wl_fl = get_wavelength(555.0); wl_fl
         Out[5]: 555.0
 
-        In [6]: wl_f = get_wavelength('f'); wl_f
+        In [6]: wl_f = get_wavelength('F'); wl_f
         Out[6]: 486.1327
 
     Args:
-        wvl: either the wavelength in nm or a string with a spectral line
-             identifier. Case insensitive.
+        wvl: either the wavelength in nm, a string with a spectral line
+             identifier or a pandas Index. Case sensitive - Fraunhofer lines 
+             have a proper capitalization. The keys need to match exactly.
 
     Returns:
-        float: the wavelength in nm
+        float: the wavelength in nm, or a numpy array of floats
 
     Raises:
         KeyError: if ``wvl`` is not in the spectra dictionary
@@ -97,7 +99,8 @@ def get_wavelength(wvl):
         return wvl
     elif isinstance(wvl, (int, np.integer)):
         return float(wvl)
-    elif wvl == 'D':
-        return spectra[wvl]
+    elif isinstance(wvl, pd.Index):
+        wvls = [(w if isinstance(w, np.float) else spectra[w]) for w in wvl]
+        return np.array(wvls)
     else:
-        return spectra_uc[wvl.upper()]
+        return spectra[wvl]
