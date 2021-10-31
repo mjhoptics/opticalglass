@@ -48,6 +48,15 @@ class SchottCatalogExcel(glass.GlassCatalogXLS, metaclass=Singleton):
 
 class SchottCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
 
+    def get_rindx_wvl(header_str):
+        """Returns the wavelength value from the refractive index data header string."""
+        hdr = header_str.split('n')[-1]
+        try:
+            h = float(hdr)
+        except ValueError:
+            h = hdr
+        return h
+
     def get_transmission_wvl(header_str):
         """Returns the wavelength value from the transmission data header string."""
         return float(header_str[len('TAUI10/'):])
@@ -65,15 +74,19 @@ class SchottCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
         args = num_rows, category_row , header_row, data_col
         
         series_mappings = [
-            ('refractive indices', (lambda h: h.split('n')[-1]), 
-             header_row, 'DM', 'EI'),
+            ('refractive indices', SchottCatalog.get_rindx_wvl, header_row, 
+             'DM', 'EI'),
             ('dispersion coefficients', None, header_row, 'G', 'L'),
             ('internal transmission mm, 10', 
              SchottCatalog.get_transmission_wvl, header_row, 'BP', 'CS'),
+            ('chemical properties', None, header_row, 'CU', 'CY'),
+            ('thermal properties', None, header_row, 'DA', 'DG'),
+            ('mechanical properties', None, header_row, 'DH', 'DK'),
             ]
         item_mappings = [
             ('abbe number', 'vd', header_row, 'D'),
             ('abbe number', 've', header_row, 'E'),
+            ('specific gravity', 'd', header_row, 'CZ'),
             ]
         kwargs = dict(
             data_extent = (5, 127, data_col, 'FJ'),

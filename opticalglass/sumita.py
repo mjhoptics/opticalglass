@@ -50,6 +50,15 @@ class SumitaCatalogExcel(glass.GlassCatalogXLSX, metaclass=Singleton):
 
 class SumitaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
 
+    def get_rindx_wvl(header_str):
+        """Returns the wavelength value from the refractive index data header string."""
+        hdr = header_str.split('n')[-1]
+        try:
+            h = float(hdr)
+        except ValueError:
+            h = hdr
+        return h
+
     def get_transmission_wvl(header_str):
         """Returns the wavelength value from the transmission data header string."""
         return float(header_str[len('T2_'):])
@@ -67,15 +76,19 @@ class SumitaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
         args = num_rows, category_row , header_row, data_col
         
         series_mappings = [
-            ('refractive indices', (lambda h: h.split('n')[-1]), 
+            ('refractive indices', SumitaCatalog.get_rindx_wvl, 
              header_row, 'H', 'V'),
             ('dispersion coefficients', None, header_row, 'AV', 'BA'),
             ('internal transmission mm, 10', 
              SumitaCatalog.get_transmission_wvl, header_row, 'DB', 'EB'),
+            ('chemical properties', None, header_row, 'BQ', 'BT'),
+            ('thermal properties', None, header_row, 'BI', 'BP'),
+            ('mechanical properties', None, header_row, 'BB', 'BH'),
             ]
         item_mappings = [
             ('abbe number', 'vd', header_row, 'D'),
             ('abbe number', 've', header_row, 'E'),
+            ('specific gravity', 'd', header_row, 'BX'),
             ]
         kwargs = dict(
             data_extent = (3, 136, data_col, 'FC'),

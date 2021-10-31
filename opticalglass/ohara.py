@@ -43,6 +43,14 @@ class OharaCatalogExcel(glass.GlassCatalogXLSX, metaclass=Singleton):
 
 
 class OharaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
+    def get_rindx_wvl(header_str):
+        """Returns the wavelength value from the refractive index data header string."""
+        hdr = header_str.split('n')[-1]
+        try:
+            h = float(hdr)
+        except ValueError:
+            h = hdr
+        return h
 
     def __init__(self, fname='OHARA.xlsx'):
         # the xl_df has indices and columns that match the Excel worksheet border.
@@ -57,14 +65,18 @@ class OharaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
         args = num_rows, category_row , header_row, data_col
         
         series_mappings = [
-            ('refractive indices', (lambda h: h.split('n')[-1]), 
+            ('refractive indices', OharaCatalog.get_rindx_wvl, 
              header_row, 'E', 'X'),
             ('dispersion coefficients', None, header_row, 'BI', 'BN'),
             ('internal transmission mm, 10', None, header_row, 'CC', 'DH'),
+            ('chemical properties', None, header_row, 'FT', 'FY'),
+            ('thermal properties', None, header_row, 'FE', 'FI'),
+            ('mechanical properties', None, header_row, 'FM', 'FS'),
             ]
         item_mappings = [
             ('abbe number', 'vd', header_row, 'Y'),
             ('abbe number', 've', header_row, 'Z'),
+            ('specific gravity', 'd', header_row, 'GA'),
             ]
         kwargs = dict(
             data_extent = (3, 136, data_col, 'GA'),

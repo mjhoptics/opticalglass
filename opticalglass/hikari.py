@@ -84,10 +84,16 @@ class HikariCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
             ('dispersion coefficients', None, header_row, 'BD', 'BL'),
             ('internal transmission mm, 10', HikariCatalog.get_transmission_wvl,
              header_row, 'CY', 'ED'),
+            ('chemical properties', None, header_row, 'CH', 'CL'),
+            ('thermal properties', None, header_row, 'BW', 'CF'),
+            ('mechanical properties', None, header_row, 'CM', 'CR'),
             ]
         item_mappings = [
             ('abbe number', 'vd', header_row, 'Y'),
             ('abbe number', 've', header_row, 'Z'),
+            ('refractive indices', 't', header_row, 'I'),
+            ('refractive indices', 's', header_row, 'J'),
+            ('specific gravity', 'd', header_row, 'CG'),
             ]
         kwargs = dict(
             data_extent = (4, 163, data_col, 'GE'),

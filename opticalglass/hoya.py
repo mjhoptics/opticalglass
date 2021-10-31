@@ -67,10 +67,16 @@ class HoyaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
              2, 'K', 'AA'),
             ('dispersion coefficients', None, 2, 'AC', 'AN'),
             ('internal transmission mm, 10', None, 4, 'QV', 'SM'),
+            ('chemical properties', None, 4, 'BW', 'CC'),
+            ('thermal properties', None, 4, 'CD', 'DE'),
+            ('mechanical properties', None, 4, 'DF', 'DL'),
             ]
         item_mappings = [
             ('abbe number', 'vd', header_row, 'F'),
             ('abbe number', 've', header_row, 'I'),
+            ('refractive indices', (lambda h: float(h)), header_row, 'K'),
+            ('refractive indices', (lambda h: float(h)), header_row, 'L'),
+            ('specific gravity', 'd', header_row, 'ND'),
             ]
         kwargs = dict(
             data_extent = (5, 198, 'D', 'TA'),

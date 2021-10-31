@@ -70,12 +70,16 @@ class CDGMCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
              category_row, 'C', 'P'),
             ('dispersion coefficients', None, category_row, 'V', 'AA'),
             ('internal transmission mm, 10', None, header_row, 'DC', 'EK'),
+            ('chemical properties', None, category_row, 'AW', 'BA'),
+            ('thermal properties', None, category_row, 'BB', 'BI'),
+            ('mechanical properties', None, category_row, 'BJ', 'BO'),
             ]
         item_mappings = [
             ('refractive indices', 'C', header_row, 'F'),
             ('refractive indices', "C'", header_row, 'G'),
             ('abbe number', 'vd', header_row, 'R'),
             ('abbe number', 've', header_row, 'S'),
+            ('specific gravity', 'd', header_row, 'BP'),
             ]
         kwargs = dict(
             data_extent = (3, 242, data_col, 'FZ'),
