@@ -1495,7 +1495,6 @@ class Glass:
 
     Attributes:
         gname: the glass name
-        glas: the Series for `gname`
         catalog: the GlassCatalog this glass is associated with.
                  **Must be provided by the derived class**
         coefs: list of coefficients for calculating refractive index vs wv
@@ -1503,7 +1502,6 @@ class Glass:
 
     def __init__(self, gname):
         self.gname = gname
-        self.glas = self.catalog.df.loc[gname]
         self.coefs = self.catalog.glass_coefs(gname)
 
     def __str__(self):
@@ -1519,13 +1517,14 @@ class Glass:
 
     def glass_code(self, d_str='d', vd_str='vd'):
         """ returns the 6 digit glass code, combining index and V-number """
-        nd = self.glas['refractive indices'][d_str]
-        vd = self.glas['abbe number'][vd_str]
+        glas = self.glass_data()
+        nd = glas['refractive indices'][d_str]
+        vd = glas['abbe number'][vd_str]
         return str(1000*round((nd - 1), 3) + round(vd/100, 3))
 
     def glass_data(self):
         """ returns the raw spreadsheet data for the glass as a Series """
-        return self.glas
+        return self.catalog.df.loc[self.gname]
 
     def name(self):
         """ returns the glass name, :attr:`gname` """
@@ -1534,20 +1533,6 @@ class Glass:
     def catalog_name(self):
         """ returns the glass name, :attr:`gname` """
         return self.catalog.catalog_name()
-
-    def glass_item(self, dname):
-        """ return the value of the **dname** item
-
-        Args:
-            dname (str): header string for data
-
-        Returns:
-            the *dname* data
-
-        Raises:
-            GlassDataNotFoundError: if *dname* doesn't match any header string
-        """
-        return self.glas[dname]
 
     def meas_rindex(self, wvl):
         """ returns the measured refractive index at wvl
@@ -1561,7 +1546,7 @@ class Glass:
         Raises:
             KeyError: if *wvl* is not in the spectra dictionary
         """
-        rindx = self.glas['refractive indices'][wvl]
+        rindx = self.glass_data()['refractive indices'][wvl]
         return rindx
 
     def rindex(self, wvl):
@@ -1597,7 +1582,8 @@ class Glass:
 
         Returns: list of wavelength, transmittance pairs for 10mm sample
         """
-        return self.glas['internal transmission mm, 10'].array
+        glas = self.glass_data()
+        return glas['internal transmission mm, 10'].to_numpy(dtype=float)
 
 
 def decode_glass_name(glass_name):
