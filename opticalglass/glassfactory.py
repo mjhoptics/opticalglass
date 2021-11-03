@@ -21,6 +21,7 @@ _catalog_list = CaselessDictionary()
 
 CDGM, Hikari, Hoya, Ohara, Schott, Sumita = range(6)
 _cat_names = ["CDGM", "Hikari", "Hoya", "Ohara", "Schott", "Sumita"]
+_cat_names_uc = [cat.upper() for cat in _cat_names]
 
 
 def create_glass(*name_catalog):
@@ -96,7 +97,13 @@ def get_glass_catalog(cat_name, mod_name=None, cls_name=None):
         return _catalog_list[cat_name]
     else:
         try:
-            glass_cat = cat_glass.glass_catalog_factory(cat_name)
+            if "Robb1983" in cat_name:
+                glass_cat = cat_glass.glass_catalog_factory(
+                    cat_name,
+                    mod_name='opticalglass.glass',
+                    cls_name='Robb1983Catalog')
+            else:
+                glass_cat = cat_glass.glass_catalog_factory(cat_name)
         except ge.GlassError as gerr:
             raise gerr
         else:

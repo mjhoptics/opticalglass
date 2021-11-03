@@ -15,39 +15,6 @@ import numpy as np
 from . import glass
 
 
-class SumitaCatalogExcel(glass.GlassCatalogXLSX, metaclass=Singleton):
-    #    data_header = 0
-    #    data_start = 2
-    #    num_glasses = 240
-    #    name_col_offset = 0
-    #    coef_col_offset = 21
-    #    index_col_offset = 2
-    nline_str = {'t': 'nt',
-                 's': 'ns',
-                 'r': 'nr',
-                 'C': 'nC',
-                 "C'": "nC'",
-                 'D': 'nD',
-                 'd': 'nd',
-                 'e': 'ne',
-                 'F': 'nF',
-                 "F'": "nF'",
-                 'g': 'ng',
-                 'h': 'nh',
-                 'i': 'ni'}
-
-    def __init__(self, fname='SUMITA.xlsx'):
-        super().__init__('Sumita', fname, 'GNAME', 'A0', 'n1548',
-                         transmission_offset=106, num_wvls=27)
-
-    def create_glass(self, gname, gcat):
-        return SumitaGlass(gname)
-
-    def get_transmission_wvl(self, header_str):
-        """Returns the wavelength value from the transmission data header string."""
-        return float(header_str[len('T2_'):])
-
-
 class SumitaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
 
     def get_rindx_wvl(header_str):
@@ -104,9 +71,12 @@ class SumitaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
 class SumitaGlass(glass.GlassPandas):
     catalog = None
 
-    def __init__(self, gname):
+    def initialize_catalog(self):
         if SumitaGlass.catalog is None:
             SumitaGlass.catalog = SumitaCatalog()
+        
+    def __init__(self, gname):
+        self.initialize_catalog()
         super().__init__(gname)
 
     def calc_rindex(self, wv_nm):

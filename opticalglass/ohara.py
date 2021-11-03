@@ -13,35 +13,6 @@ import numpy as np
 from . import glass
 
 
-class OharaCatalogExcel(glass.GlassCatalogXLSX, metaclass=Singleton):
-    #    data_header = 1
-    #    data_start = 2
-    #    num_glasses = 134
-    #    name_col_offset = 1
-    #    coef_col_offset = 60
-    #    index_col_offset = 4
-    nline_str = {'t': 'nt',
-                 's': 'ns',
-                 'r': 'nr',
-                 'C': 'nC',
-                 "C'": "nC'",
-                 'D': 'nD',
-                 'd': 'nd',
-                 'e': 'ne',
-                 'F': 'nF',
-                 "F'": "nF'",
-                 'g': 'ng',
-                 'h': 'nh',
-                 'i': 'ni'}
-
-    def __init__(self, fname='OHARA.xlsx'):
-        super().__init__('Ohara', fname, 'Glass ', 'A1', 'n2325',
-                         transmission_offset=81, num_wvls=32)
-
-    def create_glass(self, gname, gcat):
-        return OharaGlass(gname)
-
-
 class OharaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
     def get_rindx_wvl(header_str):
         """Returns the wavelength value from the refractive index data header string."""
@@ -92,9 +63,12 @@ class OharaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
 class OharaGlass(glass.GlassPandas):
     catalog = None
 
-    def __init__(self, gname):
+    def initialize_catalog(self):
         if OharaGlass.catalog is None:
             OharaGlass.catalog = OharaCatalog()
+        
+    def __init__(self, gname):
+        self.initialize_catalog()
         super().__init__(gname)
 
     def calc_rindex(self, wv_nm):

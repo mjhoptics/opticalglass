@@ -16,43 +16,6 @@ import numpy as np
 from . import glass
 
 
-class HikariCatalogExcel(glass.GlassCatalogXLSX, metaclass=Singleton):
-    #    data_header = 0
-    #    data_start = 2
-    #    num_glasses = 240
-    #    name_col_offset = 0
-    #    coef_col_offset = 21
-    #    index_col_offset = 2
-    nline_str = {'t': "ｔ\n1.01398",
-                 's': "ｓ\n0.85211",
-                 'r': 'r\n0.706519',
-                 'C': 'C\n0.656273',
-                 "C'": "C'\n0.643847",
-                 'D': 'D\n0.589294',
-                 'd': 'd\n0.587562',
-                 'e': 'e\n0.546074',
-                 'F': 'F\n0.486133',
-                 "F'": "F'\n0.479992",
-                 'g': 'g\n0.435835',
-                 'h': 'h\n0.404656',
-                 'i': 'i\n0.365015'}
-
-    def __init__(self, fname='HIKARI.xlsx'):
-        super().__init__('Hikari', fname, '硝種  Glass type', 'A0', 2.05809,
-                         data_header_offset=1, glass_name_offset=2,
-                         num_coefs=9,
-                         transmission_offset=103, num_wvls=32)
-
-    def create_glass(self, gname, gcat):
-        return HikariGlass(gname)
-
-    def get_transmission_wvl(self, header_str):
-        """Returns the wavelength value from the transmission data header string."""
-        return float(header_str[:-len('nm')])
-
-
-
-
 class HikariCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
     def get_rindx_wvl(header_str):
         """Returns the wavelength value from the refractive index data header string."""
@@ -109,9 +72,12 @@ class HikariCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
 class HikariGlass(glass.GlassPandas):
     catalog = None
 
-    def __init__(self, gname):
+    def initialize_catalog(self):
         if HikariGlass.catalog is None:
             HikariGlass.catalog = HikariCatalog()
+        
+    def __init__(self, gname):
+        self.initialize_catalog()
         super().__init__(gname)
 
     def calc_rindex(self, wv_nm):
