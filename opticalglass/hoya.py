@@ -94,12 +94,12 @@ class HoyaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
         return HoyaGlass(gname)
 
 
-class HoyaGlass(glass.Glass):
-    catalog = HoyaCatalog()
+class HoyaGlass(glass.GlassPandas):
+    catalog = None
 
-    def __init__(self, gname, catalog=None):
-        if catalog is not None:
-            self.catalog = catalog
+    def __init__(self, gname):
+        if HoyaGlass.catalog is None:
+            HoyaGlass.catalog = HoyaCatalog()
         super().__init__(gname)
 
     def calc_rindex(self, wv_nm):

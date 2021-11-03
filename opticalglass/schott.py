@@ -99,12 +99,12 @@ class SchottCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
         return SchottGlass(gname)
 
 
-class SchottGlass(glass.Glass):
-    catalog = SchottCatalog()
+class SchottGlass(glass.GlassPandas):
+    catalog = None
 
-    def __init__(self, gname, catalog=None):
-        if catalog is not None:
-            self.catalog = catalog
+    def __init__(self, gname):
+        if SchottGlass.catalog is None:
+            SchottGlass.catalog = SchottCatalog()
         super().__init__(gname)
 
     def calc_rindex(self, wv_nm):

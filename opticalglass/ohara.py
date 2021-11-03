@@ -89,12 +89,12 @@ class OharaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
         return OharaGlass(gname)
 
 
-class OharaGlass(glass.Glass):
-    catalog = OharaCatalog()
+class OharaGlass(glass.GlassPandas):
+    catalog = None
 
-    def __init__(self, gname, catalog=None):
-        if catalog is not None:
-            self.catalog = catalog
+    def __init__(self, gname):
+        if OharaGlass.catalog is None:
+            OharaGlass.catalog = OharaCatalog()
         super().__init__(gname)
 
     def calc_rindex(self, wv_nm):

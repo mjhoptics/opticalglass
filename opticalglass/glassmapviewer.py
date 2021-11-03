@@ -21,6 +21,7 @@ from matplotlib.backends.backend_qt5agg \
              NavigationToolbar2QT as NavigationToolbar)
 
 from opticalglass.glassmap import GlassMapFigure, GlassMapDB
+from opticalglass import glassfactory
 
 
 def init_UI(gui_parent, fig):
@@ -211,7 +212,7 @@ class GlassMapViewer(QMainWindow):
         self.height = 650
         self.setGeometry(self.left, self.top, self.width, self.height)
 
-        self.glass_db = GlassMapDB()
+        self.glass_db = GlassMapDB(glassfactory._cat_names)
         self.db_display = [True]*len(self.glass_db.catalogs)
         self.plot_display_type = "Refractive Index"
         self.fig = GlassMapFigure(self.glass_db, db_display=self.db_display,

@@ -9,6 +9,7 @@
 """
 
 import numpy as np
+from scipy import linalg
 
 from .spectral_lines import get_wavelength
 
@@ -38,6 +39,50 @@ def model_from_glasses(gla1, gla2):
     m = (v1_gla1 - v1_gla2)/(v2_gla1 - v2_gla2)
     b = v1_gla1 - m*v2_gla1
     return b, m
+
+
+def calc_buchdahl_coords(nd, nF, nC, wlns=('d', 'F', 'C'),
+                         ctype=None, **kwargs):
+    """Given central, blue and red refractive indices, calculate the Buchdahl
+    chromatic coefficients.
+
+    Arguments:
+        nd: central refractive index
+        nF: "blue" refractive index
+        nC: "red" refractive index
+        wlns: wavelengths for the 3 refractive indices
+        ctype: if "disp_coefs", return dispersion coefficients, otherwise the
+               quadratic coefficients
+    """
+    wv0 = get_wv(wlns[0])
+
+    omF = omega(get_wv(wlns[1]) - wv0)
+    omC = omega(get_wv(wlns[2]) - wv0)
+
+    a = np.array([[omF, omF**2], [omC, omC**2]])
+    b = np.array([nF-nd, nC-nd])
+    coefs = np.linalg.solve(a, b)
+    if ctype == "disp_coefs":
+        coefs /= (nd - 1)
+    return nd, coefs
+
+
+def fit_buchdahl_coords(indices, degree=2,
+                        wlns=['d', 'h', 'g', 'F', 'e', 'C', 'r']):
+    """Given central, 4 blue and 2 red refractive indices, do a least squares
+    fit for the Buchdahl chromatic coefficients.
+    """
+    rind0 = indices[0]
+    wv0 = get_wv(wlns[0])
+    om = [omega(get_wv(w) - wv0) for w in wlns]
+
+    a = np.array([[o**(i+1) for i in range(degree)] for o in om])
+    b = np.array(indices) - rind0
+
+    results = linalg.lstsq(a, b)
+    coefs = results[0]
+
+    return rind0, coefs
 
 
 class Buchdahl:

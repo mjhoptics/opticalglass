@@ -101,12 +101,12 @@ class SumitaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
         return SumitaGlass(gname)
 
 
-class SumitaGlass(glass.Glass):
-    catalog = SumitaCatalog()
+class SumitaGlass(glass.GlassPandas):
+    catalog = None
 
-    def __init__(self, gname, catalog=None):
-        if catalog is not None:
-            self.catalog = catalog
+    def __init__(self, gname):
+        if SumitaGlass.catalog is None:
+            SumitaGlass.catalog = SumitaCatalog()
         super().__init__(gname)
 
     def calc_rindex(self, wv_nm):

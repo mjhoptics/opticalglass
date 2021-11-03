@@ -45,3 +45,27 @@ def rgb2mpl(rgb):
         return [rgb[0]/255., rgb[1]/255., rgb[2]/255., 1.0]
     elif len(rgb) == 4:
         return [rgb[0]/255., rgb[1]/255., rgb[2]/255., rgb[3]/255.]
+
+
+def calc_glass_constants(nd, nF, nC, *partials):
+    """Given central, blue and red refractive indices, calculate Vd and PFd.
+    
+    Args:
+        nd, nF, nC: refractive indices at central, short and long wavelengths
+        partials (tuple): if present, 2 ref indxs, n4 and n5, wl4 < wl5
+        
+    Returns:
+        V-number and relative partial dispersion from F to d
+
+    If `partials` is present, the return values include the central wavelength
+    index and the relative partial dispersion between the 2 refractive indices
+    provided from `partials`.
+    """
+    dFC = nF-nC
+    vd = (nd - 1.0)/dFC
+    PFd = (nF-nd)/dFC
+    if len(partials) == 2:
+        n4, n5 = partials
+        P45 = (n4-n5)/dFC
+        return nd, vd, PFd, P45
+    return vd, PFd

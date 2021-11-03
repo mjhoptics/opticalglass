@@ -12,30 +12,15 @@
 """
 import logging
 
-from . import cdgm as c
-from . import hikari as hi
-from . import hoya as h
-from . import ohara as o
-from . import schott as s
-from . import sumita as su
-
 from . import glass as cat_glass
 from . import glasserror as ge
 
 from .caselessDictionary import CaselessDictionary
 
-_catalog_list = CaselessDictionary({
-    'CDGM': c.CDGMCatalog(),
-    'Hikari': hi.HikariCatalog(),
-    'Hoya': h.HoyaCatalog(),
-    'Ohara': o.OharaCatalog(),
-    'Schott': s.SchottCatalog(),
-    'Sumita': su.SumitaCatalog(),
-    })
+_catalog_list = CaselessDictionary()
 
 CDGM, Hikari, Hoya, Ohara, Schott, Sumita = range(6)
 _cat_names = ["CDGM", "Hikari", "Hoya", "Ohara", "Schott", "Sumita"]
-_cat_names_uc = [cat.upper() for cat in _cat_names]
 
 
 def create_glass(*name_catalog):
@@ -57,6 +42,11 @@ def create_glass(*name_catalog):
     """
     def _create_glass(name, catalog):
         gn_decode = cat_glass.decode_glass_name(name)
+        if catalog not in _catalog_list:
+            try:
+                cat = get_glass_catalog(catalog)
+            except ge.GlassError as gerr:
+                raise gerr
         if catalog in _catalog_list:
             try:
                 # Lookup the decoded glass name., This avoids some problems
@@ -93,7 +83,7 @@ def create_glass(*name_catalog):
         raise ge.GlassNotFoundError(catalog, name)
 
 
-def get_glass_catalog(catalog):
+def get_glass_catalog(cat_name, mod_name=None, cls_name=None):
     """ Function returning a glass catalog instance.
 
     Arguments:
@@ -102,9 +92,13 @@ def get_glass_catalog(catalog):
     Raises:
         GlassCatalogNotFoundError: if catalog isn't found
     """
-    if catalog in _catalog_list:
-        return _catalog_list[catalog]
+    if cat_name in _catalog_list:
+        return _catalog_list[cat_name]
     else:
-        logging.info('glass catalog %s not found', catalog)
-        raise ge.GlassCatalogNotFoundError(catalog)
-        return None
+        try:
+            glass_cat = cat_glass.glass_catalog_factory(cat_name)
+        except ge.GlassError as gerr:
+            raise gerr
+        else:
+            _catalog_list[cat_name] = glass_cat
+            return glass_cat

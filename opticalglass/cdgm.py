@@ -93,12 +93,12 @@ class CDGMCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
         return CDGMGlass(gname)
 
 
-class CDGMGlass(glass.Glass):
-    catalog = CDGMCatalog()
+class CDGMGlass(glass.GlassPandas):
+    catalog = None
 
-    def __init__(self, gname, catalog=None):
-        if catalog is not None:
-            self.catalog = catalog
+    def __init__(self, gname):
+        if CDGMGlass.catalog is None:
+            CDGMGlass.catalog = CDGMCatalog()
         super().__init__(gname)
 
     def calc_rindex(self, wv_nm):

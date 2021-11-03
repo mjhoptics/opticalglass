@@ -106,12 +106,12 @@ class HikariCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
         return HikariGlass(gname)
 
 
-class HikariGlass(glass.Glass):
-    catalog = HikariCatalog()
+class HikariGlass(glass.GlassPandas):
+    catalog = None
 
-    def __init__(self, gname, catalog=None):
-        if catalog is not None:
-            self.catalog = catalog
+    def __init__(self, gname):
+        if HikariGlass.catalog is None:
+            HikariGlass.catalog = HikariCatalog()
         super().__init__(gname)
 
     def calc_rindex(self, wv_nm):
