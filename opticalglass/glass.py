@@ -25,9 +25,6 @@ import logging
 import warnings
 from pathlib import Path
 
-import xlrd
-from openpyxl import load_workbook
-
 import numpy as np
 import pandas as pd
 
