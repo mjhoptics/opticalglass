@@ -149,6 +149,7 @@ def build_glass_cat(worksheet_df, series_mappings, item_mappings,
                     *args, **kwargs):
     """ Apply series and item mappings to worksheet_df, and return catalog df. """
     num_rows, category_row , header_row, data_col = args
+    r0, rk, c0, ck = kwargs['data_extent']
 
     # generate data headers again; should be all unique
     headers = worksheet_df.loc[1:num_rows].copy().astype('object')
@@ -174,12 +175,11 @@ def build_glass_cat(worksheet_df, series_mappings, item_mappings,
         headers.at[header_row, col] = h_item
         headers.at[category_row, col] = category
 
-    mindx = pd.MultiIndex.from_arrays([headers.loc[category_row, data_col:],
-                                       headers.loc[header_row, data_col:]],
+    mindx = pd.MultiIndex.from_arrays([headers.loc[category_row, data_col:ck],
+                                       headers.loc[header_row, data_col:ck]],
                                       names=['category', 'data item'])
 
     # make a new df from the data area of the worksheet
-    r0, rk, c0, ck = kwargs['data_extent']
     glass_cat = worksheet_df.loc[r0:rk, c0:ck]
     glass_cat.index = worksheet_df.loc[r0:rk, kwargs['name_col_offset']]
     glass_cat.index.name = 'glass'
