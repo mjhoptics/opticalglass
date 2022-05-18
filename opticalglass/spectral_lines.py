@@ -5,7 +5,9 @@
 
 .. codeauthor: Michael J. Hayford
 """
+from typing import Union
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 
 spectral_lines = [[2325.42, '', 'infrared mercury line', 'Hg'],
@@ -62,7 +64,7 @@ spectra = {'Nd': 1060.0,
 spectra_uc = {key.upper(): val for key, val in spectra.items()}
 
 
-def get_wavelength(wvl):
+def get_wavelength(wvl) -> Union[float, npt.NDArray]:
     """Return wvl in nm, where wvl can be a spectral line
 
     Example::
@@ -95,12 +97,12 @@ def get_wavelength(wvl):
     Raises:
         KeyError: if ``wvl`` is not in the spectra dictionary
     """
-    if isinstance(wvl, np.float):
+    if isinstance(wvl, float):
         return wvl
     elif isinstance(wvl, (int, np.integer)):
         return float(wvl)
     elif isinstance(wvl, pd.Index):
-        wvls = [(w if isinstance(w, np.float) else spectra[w]) for w in wvl]
+        wvls = [(w if isinstance(w, float) else spectra[w]) for w in wvl]
         return np.array(wvls)
     else:
         return spectra[wvl]

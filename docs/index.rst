@@ -15,6 +15,17 @@ opticalglass
 
    opticalglass
 
+.. _misc-items:
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Miscellaneous
+
+   Authors <authors>
+   License <license>
+   Changelog <changelog>
+
+
 Indices and tables
 ==================
 

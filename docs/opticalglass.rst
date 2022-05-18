@@ -12,6 +12,14 @@ Module contents
 Submodules
 ----------
 
+opticalmedium
++++++++++++++
+
+.. automodule:: opticalglass.opticalmedium
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 glass
 +++++
 
@@ -139,3 +147,10 @@ sumita
     :undoc-members:
     :show-inheritance:
 
+rindexinfo
+++++++++++
+
+.. automodule:: opticalglass.rindexinfo
+    :members:
+    :undoc-members:
+    :show-inheritance:
