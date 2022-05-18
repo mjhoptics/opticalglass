@@ -28,9 +28,13 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from typing import Union
+from numpy.typing import NDArray
+
 from . import buchdahl
 from . import util
 from . import glasserror as ge
+from .opticalmedium import OpticalMedium
 from .util import Singleton, Counter
 from .spectral_lines import get_wavelength
 
@@ -98,6 +102,8 @@ def glass_catalog_factory(cat_name, mod_name=None, cls_name=None):
 
     Arguments:
         catalog: name of supported catalog (CDGM, Hoya, Ohara, Schott)
+        mod_name: the module name of the glass catalog
+        cls_name: the class name of the glass catalog
 
     Raises:
         GlassCatalogNotFoundError: if catalog isn't found
@@ -117,7 +123,16 @@ def glass_catalog_factory(cat_name, mod_name=None, cls_name=None):
             cat_class = getattr(mod, cls_name)
         except AttributeError:
             logging.info(f'glass catalog class {cls_name} not found')
-            raise ge.GlassCatalogNotFoundError(cat_name)
+            # try forcing cat_name to be capitalized
+            cat_name_cap = cat_name.capitalize()
+            cls_name = cat_name_cap + 'Catalog'
+            try:
+                cat_class = getattr(mod, cls_name)
+            except AttributeError:
+                logging.info(f'glass catalog class {cls_name} not found')
+                raise ge.GlassCatalogNotFoundError(cat_name)
+            else:
+                catalog = cat_class()
         else:
             catalog = cat_class()
     return catalog
@@ -138,21 +153,21 @@ def xl2df(fname):
     """ Read Excel fname into a dataframe and apply Excel based column names. """
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=UserWarning)
-        worksheet_df = pd.read_excel(get_filepath(fname), header=None)
-    shape = worksheet_df.shape
-    worksheet_df.index = pd.RangeIndex(start=1, stop=shape[0]+1, step=1)
-    worksheet_df.columns = xl_cols()[:shape[1]]
-    return worksheet_df
+        xl_df = pd.read_excel(get_filepath(fname), header=None)
+    shape = xl_df.shape
+    xl_df.index = pd.RangeIndex(start=1, stop=shape[0]+1, step=1)
+    xl_df.columns = xl_cols()[:shape[1]]
+    return xl_df
 
 
-def build_glass_cat(worksheet_df, series_mappings, item_mappings, 
+def build_glass_cat(xl_df, series_mappings, item_mappings, 
                     *args, **kwargs):
-    """ Apply series and item mappings to worksheet_df, and return catalog df. """
+    """ Apply series and item mappings to xl_df, and return catalog df. """
     num_rows, category_row , header_row, data_col = args
     r0, rk, c0, ck = kwargs['data_extent']
 
     # generate data headers again; should be all unique
-    headers = worksheet_df.loc[1:num_rows].copy().astype('object')
+    headers = xl_df.loc[1:num_rows].copy().astype('object')
 
     for m in series_mappings:
         category, action, row, col1, colk = m
@@ -180,8 +195,8 @@ def build_glass_cat(worksheet_df, series_mappings, item_mappings,
                                       names=['category', 'data item'])
 
     # make a new df from the data area of the worksheet
-    glass_cat = worksheet_df.loc[r0:rk, c0:ck]
-    glass_cat.index = worksheet_df.loc[r0:rk, kwargs['name_col_offset']]
+    glass_cat = xl_df.loc[r0:rk, c0:ck]
+    glass_cat.index = xl_df.loc[r0:rk, kwargs['name_col_offset']]
     glass_cat.index.name = 'glass'
     glass_cat.columns = mindx
 
@@ -199,14 +214,74 @@ def build_glass_cat(worksheet_df, series_mappings, item_mappings,
 
 class GlassCatalogPandas():
     """ Pandas-based glass catalog
+    
+    Optical glass manufacturers have settled on Excel spreadsheets as a means 
+    of documenting the technical details of their glass products. The formats
+    are broadly similar but different in the details. This class and related
+    functions provide a means of mapping the Excel data into a pandas dataframe
+    that has some categories relabeled to take advantage of commonalities.
+    
+    The class is adapted to a specific catalog by defining the position and
+    size of the data areas in the original Excel spreadsheet. Pandas is used to 
+    read the spreadsheet into a dataframe, xl_df. xl_df has 
+    indices and columns that match the Excel worksheet border.
+    
+    - the index runs from 1 to xl_df.shape[0]
+    - the columns match the pattern 'A', 'B', 'C', ... 'Z', 'AA', 'AB', ...
+    
+    This facilitates transferring areas on the spreadsheet to areas in the 
+    catalog DataFrame.
+    
+    Manufacturers spreadsheets have a header area and a data area. First, a
+    set of parameters are defined for the header. Data that are spread over 
+    multiple columns form a category, often readily identified in the 
+    spreadsheet layout. 
+    ::
+
+        num_rows = 2  # number of header rows in the imported spreadsheet
+        category_row = 1  # row with categories
+        header_row = 2  # row with data item/header info
+        data_col = 'B'  # first column of data in the imported spreadsheet
+        args = num_rows, category_row , header_row, data_col
+
+    
+    The location of the different categories in the spreadsheet is defined in
+    the series_mapping list.
+    ::
+        
+        series_mappings = [
+            ('refractive indices', (lambda h: h.split('n')[-1]), 
+             category_row, 'C', 'P'),
+            ('dispersion coefficients', None, category_row, 'V', 'AA'),
+            ('internal transmission mm, 10', None, header_row, 'DC', 'EK'),
+            ('chemical properties', None, category_row, 'AW', 'BA'),
+            ('thermal properties', None, category_row, 'BB', 'BI'),
+            ('mechanical properties', None, category_row, 'BJ', 'BO'),
+            ]
+
+    There are common items of interest, that correspond to a single column.
+    These are defined in the item_mappings list.
+    ::
+
+        item_mappings = [
+            ('refractive indices', 'C', header_row, 'F'),
+            ('refractive indices', "C'", header_row, 'G'),
+            ('abbe number', 'vd', header_row, 'R'),
+            ('abbe number', 've', header_row, 'S'),
+            ('specific gravity', 'd', header_row, 'BP'),
+            ]
+        kwargs = dict(
+            data_extent = (3, 242, data_col, 'FZ'),
+            name_col_offset = 'A',
+            )
 
     Args:
         name: name of the glass catalog
         fname: excel filename, located in ``data`` directory
-        glass_str: the header string for the Glass column in fname
-        coef_str: the header string for the first refractive index coefficient
+        series_mappings: the header string for the Glass column in fname
+        item_mappings: the header string for the first refractive index coefficient
                   column in fname
-        rindex_str: the header string for the first refractive index value
+        args: the header string for the first refractive index value
                     column in fname
     """
 
@@ -214,8 +289,8 @@ class GlassCatalogPandas():
                  *args, **kwargs):
         self.name = name
         # Open the workbook
-        worksheet_df = xl2df(fname)
-        self.df = build_glass_cat(worksheet_df, series_mappings, item_mappings, 
+        xl_df = xl2df(fname)
+        self.df = build_glass_cat(xl_df, series_mappings, item_mappings, 
                                   *args, **kwargs)
 
         # build an alphabetical list of decoded glass names
@@ -313,9 +388,7 @@ class GlassCatalogPandas():
         """ returns an array of transmission data for the glass at *gindex*
 
         Args:
-            gindex: glass index into spreadsheet
-            transmission_offset: the starting column of the transmission data
-            num_wvls: number of wavelengths for the data
+            gname: glass name
 
         Returns:
             list of wavelength, transmittance pairs
@@ -336,7 +409,7 @@ class GlassCatalogPandas():
         return get_glass_map_arrays(self, wvl, 'F', 'C', **kwargs)
 
 
-class GlassPandas:
+class GlassPandas(OpticalMedium):
     """ base optical glass, for use with pandas
 
     Attributes:
@@ -402,7 +475,7 @@ class GlassPandas:
         rindx = self.glass_data()['refractive indices'][wvl]
         return rindx
 
-    def rindex(self, wvl):
+    def rindex(self, wvl) -> float:
         """ returns the interpolated refractive index at wvl
 
         Args:
@@ -417,7 +490,7 @@ class GlassPandas:
         """
         return self.calc_rindex(get_wavelength(wvl))
 
-    def calc_rindex(self, wv_nm):
+    def calc_rindex(self, wv_nm: Union[float, NDArray]) -> Union[float, NDArray]:
         """ returns the interpolated refractive index at wv_nm
 
         **Must be provided by the derived class**
@@ -433,10 +506,18 @@ class GlassPandas:
     def transmission_data(self):
         """ returns an array of transmission data for the glass
 
-        Returns: list of wavelength, transmittance pairs for 10mm sample
+        Returns: np.arrays of wavelength and transmission for 10mm sample
         """
         glas = self.glass_data()
-        return glas['internal transmission mm, 10'].to_numpy(dtype=float)
+        t10 = glas['internal transmission mm, 10']
+        t10_wvls = t10.index.to_numpy(dtype=float)
+        try:
+            t10_np = t10.to_numpy(dtype=float)
+        except ValueError:
+            # coerce non-numeric values to NaN, then convert NaN to 0.
+            t10_flt = pd.to_numeric(t10, errors='coerce').fillna(0)
+            t10_np = t10_flt.to_numpy(dtype=float)
+        return t10_wvls, t10_np
 
 
 def decode_glass_name(glass_name):

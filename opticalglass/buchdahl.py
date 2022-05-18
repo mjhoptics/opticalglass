@@ -11,6 +11,7 @@
 import numpy as np
 from scipy import linalg
 
+from .opticalmedium import OpticalMedium
 from .spectral_lines import get_wavelength
 
 
@@ -85,7 +86,7 @@ def fit_buchdahl_coords(indices, degree=2,
     return rind0, coefs
 
 
-class Buchdahl:
+class Buchdahl(OpticalMedium):
     """Quadratic Buchdahl refractive index model.
 
     .. math::
@@ -142,9 +143,15 @@ class Buchdahl:
         """Returns the refractive index from the quadratic model at wvl."""
         return self.calc_rindex(get_wavelength(wvl))
 
+    def meas_rindex(self, wvl: str) -> float:
+        return self.rindex(wvl)
+
     def calc_rindex(self, wv_nm):
         om = omega((wv_nm*1e-3) - self.wv0)
         return self.rind0 + self.coefs[0]*om + self.coefs[1]*om**2
+
+    def transmission_data(self, thi:float):
+        return [(400., 1.), (700., 1.)]
 
 
 class Buchdahl1(Buchdahl):
