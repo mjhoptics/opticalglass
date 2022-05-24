@@ -62,7 +62,8 @@ class SchottCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
         super().__init__('Schott', fname, series_mappings, item_mappings, 
                          *args, **kwargs)
 
-    def create_glass(self, gname, gcat):
+    def create_glass(self, gname: str, gcat: str) -> 'SchottGlass':
+        """ Create an instance of the glass `gname`. """
         return SchottGlass(gname)
 
 

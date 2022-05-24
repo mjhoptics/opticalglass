@@ -30,6 +30,7 @@ import pandas as pd
 
 from typing import Union
 from numpy.typing import NDArray
+from abc import abstractmethod
 
 from . import buchdahl
 from . import util
@@ -206,7 +207,8 @@ def build_glass_cat(xl_df, series_mappings, item_mappings,
         dups1 = [glass_cat.columns[i] for i, b in enumerate(dups) if b == True]
         glass_cat.drop(columns=dups1, inplace=True)
 
-    # infer dtypes so that downstream numpy routines don't complain about object data
+    # infer dtypes so that downstream numpy routines don't 
+    #  complain about object data
     glass_cat = glass_cat.convert_dtypes()
 
     return glass_cat
@@ -275,18 +277,26 @@ class GlassCatalogPandas():
             name_col_offset = 'A',
             )
 
-    Args:
-        name: name of the glass catalog
-        fname: excel filename, located in ``data`` directory
-        series_mappings: the header string for the Glass column in fname
-        item_mappings: the header string for the first refractive index coefficient
-                  column in fname
-        args: the header string for the first refractive index value
-                    column in fname
+    Attributes:
+        name: the glass catalog name
+        df: the |DataFrame| containing the catalog data
+        glass_list: 
+        glass_lookup:
     """
 
     def __init__(self, name, fname, series_mappings, item_mappings, 
                  *args, **kwargs):
+        """
+
+        Args:
+            name: name of the glass catalog
+            fname: excel filename, located in ``data`` directory
+            series_mappings: the header string for the Glass column in fname
+            item_mappings: the header string for the first refractive index coefficient
+                      column in fname
+            args: the header string for the first refractive index value
+                        column in fname
+        """
         self.name = name
         # Open the workbook
         xl_df = xl2df(fname)
@@ -304,6 +314,14 @@ class GlassCatalogPandas():
         # attach these 'static' lists to class variables
         self.__class__.glass_list = glass_list
         self.__class__.glass_lookup = glass_lookup
+
+    @abstractmethod
+    def create_glass(self, gname: str, gcat: str) -> OpticalMedium:
+        """ Create an instance of the glass `gname`. 
+        
+        Must be implemented by the subclasses.
+        """
+        pass
 
     def catalog_name(self):
         return self.name
@@ -510,13 +528,11 @@ class GlassPandas(OpticalMedium):
         """
         glas = self.glass_data()
         t10 = glas['internal transmission mm, 10']
+        # coerce non-numeric values to NaN, then convert NaN to 0.
+        t10_flt = pd.to_numeric(t10, errors='coerce').fillna(0)
+        t10_np = t10_flt.to_numpy(dtype=float)
+
         t10_wvls = t10.index.to_numpy(dtype=float)
-        try:
-            t10_np = t10.to_numpy(dtype=float)
-        except ValueError:
-            # coerce non-numeric values to NaN, then convert NaN to 0.
-            t10_flt = pd.to_numeric(t10, errors='coerce').fillna(0)
-            t10_np = t10_flt.to_numpy(dtype=float)
         return t10_wvls, t10_np
 
 
@@ -697,7 +713,7 @@ class Robb1983Catalog(metaclass=Singleton):
                 self._glass_data[rbk] = gnames, gdata
         return self._glass_data
 
-    def create_glass(self, gname, gcat):
+    def create_glass(self, gname: str, gcat: str) -> OpticalMedium:
         catalog = gcat if 'Robb1983.' in gcat else 'Robb1983.' + gcat
         try:
             gdata = self.glass_db[catalog][gname]

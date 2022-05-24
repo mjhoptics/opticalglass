@@ -51,7 +51,8 @@ class CDGMCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
                          *args, **kwargs)
 
 
-    def create_glass(self, gname, gcat):
+    def create_glass(self, gname: str, gcat: str) -> 'CDGMGlass':
+        """ Create an instance of the glass `gname`. """
         return CDGMGlass(gname)
 
 

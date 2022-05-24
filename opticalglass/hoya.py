@@ -40,6 +40,8 @@ class HoyaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
             ('abbe number', 've', header_row, 'I'),
             ('refractive indices', (lambda h: float(h)), header_row, 'K'),
             ('refractive indices', (lambda h: float(h)), header_row, 'L'),
+            ('refractive index', 'd', header_row, 'E'),
+            ('refractive index', 'e', header_row, 'H'),
             ('specific gravity', 'd', header_row, 'ND'),
             ]
         kwargs = dict(
@@ -54,7 +56,8 @@ class HoyaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
         coefs = [x*10**y for x, y in zip(c[::2], c[1::2])]
         return coefs
 
-    def create_glass(self, gname, gcat):
+    def create_glass(self, gname: str, gcat: str) -> 'HoyaGlass':
+        """ Create an instance of the glass `gname`. """
         return HoyaGlass(gname)
 
 

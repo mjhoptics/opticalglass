@@ -65,7 +65,8 @@ class HikariCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
         super().__init__('Hikari', fname, series_mappings, item_mappings, 
                          *args, **kwargs)
 
-    def create_glass(self, gname, gcat):
+    def create_glass(self, gname: str, gcat: str) -> 'HikariGlass':
+        """ Create an instance of the glass `gname`. """
         return HikariGlass(gname)
 
 
