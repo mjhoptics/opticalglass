@@ -41,7 +41,11 @@ class GlassMapDB():
         :mod:`~.glassfactory`, _catalog_list.
         """
         if len(args) == 0:
-            args = (gf._catalog_list,)
+            # get a full list of catalogs if needed
+            if len(gf._catalog_list) < len(gf._cat_names):
+                args = (gf._cat_names, )
+            else:
+                args = (gf._catalog_list,)
 
         self.catalogs = []
         for arg in args:

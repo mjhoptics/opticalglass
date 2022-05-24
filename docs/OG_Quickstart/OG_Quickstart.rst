@@ -137,7 +137,7 @@ You can get all of the refractive indices for a NumPy array of wavelengths using
 
 .. parsed-literal::
 
-    [<matplotlib.lines.Line2D at 0x7ff2a1b52400>]
+    [<matplotlib.lines.Line2D at 0x7fe050b41130>]
 
 
 
@@ -159,7 +159,7 @@ You can get all of the refractive indices for a NumPy array of wavelengths using
 
 .. parsed-literal::
 
-    [<matplotlib.lines.Line2D at 0x7ff280cd1df0>]
+    [<matplotlib.lines.Line2D at 0x7fe048eb3d60>]
 
 
 
@@ -254,7 +254,7 @@ Plot Transmission vs Wavelength
 
 .. parsed-literal::
 
-    [<matplotlib.lines.Line2D at 0x7ff2a1efe6a0>]
+    [<matplotlib.lines.Line2D at 0x7fe029d127f0>]
 
 
 
