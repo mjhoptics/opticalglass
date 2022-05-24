@@ -10,7 +10,7 @@ Replace Excel-based importing and reading of the glass manufacturers Excel data 
 
 An Abstract Base Class, :class:`~.opticalmedium.OpticalMedium` was defined to support access to the optical properties of a material. Two materials, :class:`~.opticalmedium.Air` and :class:`~.opticalmedium.InterpolatedMedium` were moved from the **ray-optics** package.
 
-Finally, an interface to the `RefractiveIndex.INFO <https://refractiveindex.info>`_ database was implemented, using :class:`~.opticalmedium.RIIMedium` and :class:`~.opticalmedium.InterpolatedMedium`
+Finally, an interface to the `RefractiveIndex.INFO <https://refractiveindex.info>`_ database was implemented, using :class:`~.rindexinfo.RIIMedium` and :class:`~.opticalmedium.InterpolatedMedium`
 
 Version 0.7.6
 =============

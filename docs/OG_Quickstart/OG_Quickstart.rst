@@ -10,6 +10,10 @@ Command Line Quick Start
 
 .. code:: ipython3
 
+    import pandas as pd
+
+.. code:: ipython3
+
     import matplotlib.pyplot as plt
 
 .. code:: ipython3
@@ -72,12 +76,12 @@ Use the :meth:`~.glass.Glass.rindex` method of the glass object to get the refra
 V-number and Partial Dispersion
 -------------------------------
 
-Use the :func:`~.glass.calc_glass_constants` function to calculate the optical constants given 3 refractive indices. The function accepts vector (NumPy) inputs as well, producing vector outputs. 
+Use the :func:`~.util.calc_glass_constants` function to calculate the optical constants given 3 refractive indices. The function accepts vector (NumPy) inputs as well, producing vector outputs. 
 
 .. code:: ipython3
 
-    vd, PFd = og.glass.calc_glass_constants(nd, nF, nC)
-    nd, vd, PFd
+    vd, PCd = og.util.calc_glass_constants(nd, nF, nC)
+    nd, vd, PCd
 
 
 
@@ -92,15 +96,15 @@ Use the :func:`~.glass.calc_glass_constants` function to calculate the optical c
 
     dFC = nF-nC
     vd = (nd - 1.0)/dFC
-    PFd = (nF-nd)/dFC
-    nd, vd, PFd
+    PCd = (nd-nC)/dFC
+    nd, vd, PCd
 
 
 
 
 .. parsed-literal::
 
-    (1.5168000345005885, 64.1673362374998, 0.6923634296510195)
+    (1.5168000345005885, 64.1673362374998, 0.30763657034898056)
 
 
 
@@ -131,7 +135,14 @@ You can get all of the refractive indices for a NumPy array of wavelengths using
 
 
 
-.. image:: output_15_1.png
+.. parsed-literal::
+
+    [<matplotlib.lines.Line2D at 0x7ff2a1b52400>]
+
+
+
+
+.. image:: output_16_1.png
 
 
 .. code:: ipython3
@@ -146,7 +157,14 @@ You can get all of the refractive indices for a NumPy array of wavelengths using
 
 
 
-.. image:: output_16_1.png
+.. parsed-literal::
+
+    [<matplotlib.lines.Line2D at 0x7ff280cd1df0>]
+
+
+
+
+.. image:: output_17_1.png
 
 
 Display a Glass Map
@@ -163,7 +181,7 @@ The data plotted is controlled by :class:`~.glassmap.GlassMapDB`,the glass_db li
 
 
 
-.. image:: output_18_0.png
+.. image:: output_19_0.png
 
 
 Drag and Drop to the Command Line
@@ -229,16 +247,18 @@ Plot Transmission vs Wavelength
 
 .. code:: ipython3
 
-    wl = []
-    trns = []
-    for w, t in t_data:
-         wl.append(w)
-         trns.append(t)
-    plt.plot(wl, trns)
+    plt.plot(*t_data)
 
 
 
 
-.. image:: output_27_1.png
+.. parsed-literal::
+
+    [<matplotlib.lines.Line2D at 0x7ff2a1efe6a0>]
+
+
+
+
+.. image:: output_28_1.png
 
 
