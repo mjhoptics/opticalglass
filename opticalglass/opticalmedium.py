@@ -27,7 +27,7 @@ def glass_decode(gc):
 
 # --- material definitions
 class OpticalMedium(Protocol):
-    """ Constant refractive index medium. """
+    """ Protocol for media with optical properties, e.g. refractive index. """
 
     @abstractmethod
     def name(self) -> str:

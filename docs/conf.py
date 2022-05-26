@@ -86,8 +86,8 @@ pygments_style = None
 rst_prolog = """
 .. |minimum_python_version| replace:: 3.8
 .. |minimum_numpy_version| replace:: 1.21.5
-.. |Series| replace:: :class:`pandas.Series`
-.. |DataFrame| replace:: :class:`pandas.DataFrame`
+.. |Series| replace:: :class:`~pandas.Series`
+.. |DataFrame| replace:: :class:`~pandas.DataFrame`
 """
 
 # -- Options for HTML output -------------------------------------------------
