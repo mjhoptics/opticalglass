@@ -58,10 +58,10 @@ The Buchdahl Dispersion Coefficient display can be used to find glass pairs that
 Python Data Model
 -----------------
 
-Two families of objects are provided to manage access to glass data. The :class:`~.glass.GlassCatalogSpreadsheet` base class manages the generic operations on the catalog. Subclasses of :class:`~.glass.GlassCatalogSpreadsheet` provide specific mapping information for the vendor spreadsheet format.
+Two families of objects are provided to manage access to glass data. The :class:`~.glass.GlassCatalogPandas` base class manages the generic operations on the catalog. The catalog data is maintained in a |DataFrame|, accessible via the attribute :attr:`~.glass.GlassCatalogPandas.df`. The catalog-specific subclasses of :class:`~.glass.GlassCatalogPandas` provide specific mapping information for the vendor spreadsheet format.
 
-The :class:`~.glass.Glass` base class manages the generic operations on the individual glass instances. These include refractive index interpolation using either the :meth:`~.glass.Glass.calc_rindex` or the :meth:`~.glass.Glass.rindex` methods. The :meth:`~.glass.Glass.meas_rindex` method, with a spectral line argument, e.g. 'd', 'F', 'C', will return the measured index data from the catalog. The :meth:`~.glass.Glass.transmission_data` method returns transmission data (10mm sample thickness) for the glass instance.
+The :class:`~.glass.GlassPandas` base class manages the generic operations on the individual glass instances. These include refractive index interpolation using either the :meth:`~.glass.GlassPandas.calc_rindex` or the :meth:`~.glass.GlassPandas.rindex` methods. The :meth:`~.glass.GlassPandas.meas_rindex` method, with a spectral line argument, e.g. 'd', 'F', 'C', will return the measured index data from the catalog. The :meth:`~.glass.GlassPandas.transmission_data` method returns transmission data (10mm sample thickness) for the glass instance.
 
-A factory interface to :class:`~.glass.Glass` creation is the function :func:`~.glassfactory.create_glass` that returns a :class:`~.glass.Glass` instance of the appropriate catalog type, given the glass and catalog names.
+A factory interface to :class:`~.glass.GlassPandas` creation is the function :func:`~.glassfactory.create_glass` that returns a :class:`~.glass.GlassPandas` instance of the appropriate catalog type, given the glass and catalog names.
 
 A Glass Map display can be created using the :mod:`~.glassmap` module. Lists of glasses as well as catalog names can be used to populate the map, using the :class:`~.glassmap.GlassMapDB` class. That is used as input to the :class:`~.glassmap.GlassMapFigure` class that creates the glass map plot.

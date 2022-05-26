@@ -55,7 +55,7 @@ The glass name and catalog name are the arguments.
 Getting refractive index data
 -----------------------------
 
-Use the :meth:`~.glass.Glass.rindex` method of the glass object to get the refractive index at the input wavelength. The wavelength input can either be a numeric value in nanometers or a spectral line character string.
+Use the :meth:`~.glass.GlassPandas.rindex` method of the glass object to get the refractive index at the input wavelength. The wavelength input can either be a numeric value in nanometers or a spectral line character string.
 
 .. code:: ipython3
 
@@ -124,7 +124,7 @@ Use the :func:`~.util.calc_glass_constants` function to calculate the optical co
 Plot Refractive Index vs Wavelength
 -----------------------------------
 
-You can get all of the refractive indices for a NumPy array of wavelengths using the :meth:`~.glass.Glass.calc_rindex` method of the glass object. This is (potentially) faster than using a loop over wavelengths and :meth:`~.glass.Glass.rindex`.
+You can get all of the refractive indices for a NumPy array of wavelengths using the :meth:`~.glass.GlassPandas.calc_rindex` method of the glass object. This is (potentially) faster than using a loop over wavelengths and :meth:`~.glass.GlassPandas.rindex`.
 
 .. code:: ipython3
 
@@ -137,7 +137,7 @@ You can get all of the refractive indices for a NumPy array of wavelengths using
 
 .. parsed-literal::
 
-    [<matplotlib.lines.Line2D at 0x7fe050b41130>]
+    [<matplotlib.lines.Line2D at 0x7fbf18ad80d0>]
 
 
 
@@ -159,7 +159,7 @@ You can get all of the refractive indices for a NumPy array of wavelengths using
 
 .. parsed-literal::
 
-    [<matplotlib.lines.Line2D at 0x7fe048eb3d60>]
+    [<matplotlib.lines.Line2D at 0x7fbf2860bd60>]
 
 
 
@@ -232,7 +232,7 @@ The create_glass function accepts a glass that has been "dragged" from the glass
 Glass Transmission Data
 -----------------------
 
-Get the raw transmission data from the catalog spreadsheet by using the :meth:`~.glass.Glass.transmission_data` method of the glass.
+Get the raw transmission data from the catalog spreadsheet by using the :meth:`~.glass.GlassPandas.transmission_data` method of the glass.
 
 This returns the transmission data for a 10mm sample thickness.
 
@@ -254,7 +254,7 @@ Plot Transmission vs Wavelength
 
 .. parsed-literal::
 
-    [<matplotlib.lines.Line2D at 0x7fe029d127f0>]
+    [<matplotlib.lines.Line2D at 0x7fbf18d08040>]
 
 
 
