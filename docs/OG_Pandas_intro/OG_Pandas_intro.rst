@@ -329,7 +329,7 @@ Transmission data for a list of glasses can be plotted as well.
 OpticalMedium subclasses
 ------------------------
 
-The glass data Series gives access to all of the vendor's glass data, but doesn't address the important case of using the dispersion coefficients to calculate the refractive index at an arbitrary wavelength. This is provided by catalog-specific subclasses of :class:`~.opticalmedium.OpticalMedium`. 
+The glass data |Series| gives access to all of the vendor's glass data, but doesn't address the important case of using the dispersion coefficients to calculate the refractive index at an arbitrary wavelength. This is provided by catalog-specific subclasses of :class:`~.opticalmedium.OpticalMedium`. 
 
 .. code:: ipython3
 
@@ -447,7 +447,7 @@ The :meth:`~.glass.GlassPandas.transmission_data` method returns the material tr
 
 .. parsed-literal::
 
-    [<matplotlib.lines.Line2D at 0x7fda709d3040>]
+    [<matplotlib.lines.Line2D at 0x7f9148fcfac0>]
 
 
 
