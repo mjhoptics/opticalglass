@@ -13,6 +13,7 @@ opticalglass
 
    OG_Quickstart/OG_Quickstart
    OG_Pandas_intro/OG_Pandas_intro
+   OG_RefractiveIndexInfo/OG_RefractiveIndexInfo
 
    opticalglass
 
