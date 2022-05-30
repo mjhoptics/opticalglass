@@ -14,7 +14,7 @@ from matplotlib.figure import Figure
 from matplotlib.patches import Polygon
 from matplotlib.transforms import Bbox
 
-from . import glass as cat_glass
+from . import buchdahl
 from . import glassfactory as gf
 from . import glasspolygons as gp
 from . import util
@@ -109,16 +109,16 @@ def calc_glass_map_arrays(glasses, d_str, F_str, C_str, **kwargs):
     nF = np.array([g.rindex(F_str) for g in glasses])
     nC = np.array([g.rindex(C_str) for g in glasses])
 
-    nd, coefs = cat_glass.calc_buchdahl_coords(
+    nd, coefs = buchdahl.calc_buchdahl_coords(
         nd, nF, nC, wlns=(d_str, F_str, C_str), **kwargs)
 
     if 'partials' in kwargs:
         wl4, wl5 = kwargs['partials']
         n4 = np.array([g.rindex(wl4) for g in glasses])
         n5 = np.array([g.rindex(wl5) for g in glasses])
-        nd, vd, PFd, Pab = cat_glass.calc_glass_constants(nd, nF, nC, n4, n5)
+        nd, vd, PFd, Pab = util.calc_glass_constants(nd, nF, nC, n4, n5)
     else:
-        vd, Pab = cat_glass.calc_glass_constants(nd, nF, nC)
+        vd, Pab = util.calc_glass_constants(nd, nF, nC)
 
     return nd, vd, Pab, coefs[0], coefs[1], names
 
