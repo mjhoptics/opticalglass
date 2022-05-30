@@ -29,6 +29,8 @@ setuptools.setup(
         "scipy>=1.7.3",
         "matplotlib>=3.5.1",
         "pandas>=1.3.5",
+        "requests>=2.27.1",
+        "pyyaml>=6.0",
         "pyqt5<5.13"
         ],
     package_data={
