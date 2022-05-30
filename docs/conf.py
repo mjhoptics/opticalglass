@@ -21,13 +21,13 @@ sys.path.insert(0, os.path.abspath('../'))
 # -- Project information -----------------------------------------------------
 
 project = 'opticalglass'
-copyright = '2017-2021, Michael J. Hayford'
+copyright = '2017-2022, Michael J. Hayford'
 author = 'Michael J. Hayford'
 
 # The short X.Y version
-version = '1.0.0'
+version = '1.0.1'
 # The full version, including alpha/beta/rc tags
-release = '1.0.0'
+release = '1.0.1'
 
 
 # -- General configuration ---------------------------------------------------
