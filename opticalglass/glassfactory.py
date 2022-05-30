@@ -50,7 +50,7 @@ def create_glass(*name_catalog):
                 raise gerr
         if catalog in _catalog_list:
             try:
-                # Lookup the decoded glass name., This avoids some problems
+                # Lookup the decoded glass name. This avoids some problems
                 # with how design programs not exactly matching the
                 # manufacturer's names.
                 gn, gc = _catalog_list[catalog].glass_lookup[gn_decode]
@@ -109,3 +109,12 @@ def get_glass_catalog(cat_name, mod_name=None, cls_name=None):
         else:
             _catalog_list[cat_name] = glass_cat
             return glass_cat
+
+
+def fill_catalog_list(cat_list=None):
+    """ Given a list of catalog names, populate the _catalog_list with them. """
+    if cat_list is None:
+        cat_list = _cat_names
+    for cat in cat_list:
+        get_glass_catalog(cat)
+    return _catalog_list

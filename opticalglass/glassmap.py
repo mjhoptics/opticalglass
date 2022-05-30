@@ -42,14 +42,13 @@ class GlassMapDB():
         """
         if len(args) == 0:
             # get a full list of catalogs if needed
-            if len(gf._catalog_list) < len(gf._cat_names):
-                args = (gf._cat_names, )
-            else:
-                args = (gf._catalog_list,)
+            args = (gf.fill_catalog_list(),)
 
         self.catalogs = []
         for arg in args:
             if isinstance(arg, dict):
+                if len(arg) == 0:
+                    arg = gf.fill_catalog_list()
                 for cat_name, catalog in arg.items():
                     self.catalogs.append((catalog, cat_name))
             if isinstance(arg, list):
