@@ -16,10 +16,5 @@ sphinx:
    builder: html
    configuration: docs/conf.py
 
-# Declare the Python requirements required to build your docs
-#python:
-#   install:
-#   - requirements: docs/requirements.txt
-
 conda:
    environment: environment.yml
