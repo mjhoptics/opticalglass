@@ -18,11 +18,9 @@ sphinx:
 
 python:
    install:
+     - requirements: docs/requirements.txt
      - method: pip
        path: .
-
-conda:
-   environment: environment.yml
 
 submodules:
   include: all
