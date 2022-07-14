@@ -4,6 +4,14 @@
 Changelog
 =========
 
+Version 1.0.2
+=============
+Bump version of pyqt5 to 5.15.
+
+Version 1.0.1
+=============
+Miscellaneous fixes and updates to the package dependencies.
+
 Version 1.0.0
 =============
 Replace Excel-based importing and reading of the glass manufacturers Excel data files with a pandas-based approach. Glass and Glass Catalog were completely replaced by pandas-based versions. Implementations for a particular catalog rely on specifying the spreadsheet areas for various categories of data.
