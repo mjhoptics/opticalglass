@@ -44,3 +44,12 @@
     Fitting and modeling glass data using the Buchdahl chromatic coordinate is
     supported in the :mod:`~.buchdahl` module.
 """
+from importlib.metadata import version
+
+try:
+    __version__ = version(__name__)
+except:
+    __version__ = 'unknown'
+finally:
+    del version
+
