@@ -4,6 +4,10 @@
 Changelog
 =========
 
+Version 1.0.3
+=============
+Remove :meth:`~.opticalmedium.OpticalMedium.transmission_data` from the required interfaces for :class:`~.opticalmedium.OpticalMedium`. Redo package layout using pyscaffold and use versioning from importlib.metadata.
+
 Version 1.0.2
 =============
 Bump version of pyqt5 to 5.15.

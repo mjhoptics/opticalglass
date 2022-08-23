@@ -79,7 +79,6 @@ class OpticalMedium(Protocol):
         """
         return self.calc_rindex(get_wavelength(wvl))
 
-    @abstractmethod
     def transmission_data(self, thi: float) -> Tuple[NDArray, NDArray]:
         """ returns an array of transmission data for the glass
 
