@@ -1,3 +1,13 @@
+
+.. image:: https://readthedocs.org/projects/opticalglass/badge/?version=latest
+    :alt: ReadTheDocs
+    :target: https://opticalglass.readthedocs.io/en/stable/
+.. image:: https://img.shields.io/pypi/v/opticalglass.svg
+    :alt: PyPI-Server
+    :target: https://pypi.org/project/opticalglass/
+.. image:: https://img.shields.io/conda/vn/conda-forge/opticalglass.svg
+    :alt: Conda-Forge
+
 opticalglass
 ============
 
@@ -23,3 +33,11 @@ Documentation
 -------------
 
 The documentation for **opticalglass** is hosted at `Read the Docs <https://opticalglass.readthedocs.io>`_
+
+.. _pyscaffold-notes:
+
+Note
+====
+
+This project has been set up using PyScaffold 4.3. For details and usage
+information on PyScaffold see https://pyscaffold.org/.

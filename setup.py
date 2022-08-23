@@ -1,46 +1,21 @@
-import setuptools
+"""
+    Setup file for opticalglass.
+    Use setup.cfg to configure your project.
 
-with open("README.rst", "r") as fh:
-    long_description = fh.read()
+    This file was generated with PyScaffold 4.3.
+    PyScaffold helps you to put up the scaffold of your new Python project.
+    Learn more under: https://pyscaffold.org/
+"""
+from setuptools import setup
 
-setuptools.setup(
-    name="opticalglass",
-    version="1.0.2",
-    author="Michael J Hayford",
-    author_email="mjhoptics@gmail.com",
-    description="Tools for reading commercial optical glass catalogs",
-    long_description=long_description,
-    long_description_content_type="text/x-rst",
-    license="BSD-3-Clause",
-    url="https://github.com/mjhoptics/opticalglass",
-    packages=setuptools.find_packages(),
-    classifiers=[
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
-        "License :: OSI Approved :: BSD License",
-        "Operating System :: OS Independent",
-        "Topic :: Scientific/Engineering :: Physics",
-    ],
-    keywords=['glass', 'optical glass', 'refractive index', 'optics',
-              'glass catalog'],
-    install_requires=[
-        "numpy>=1.21.5",
-        "scipy>=1.7.3",
-        "matplotlib>=3.5.1",
-        "pandas>=1.3.5",
-        "xlrd>=2.0.1",
-        "openpyxl>=3.0.9",
-        "requests>=2.27.1",
-        "pyyaml>=6.0",
-        "pyqt5<5.16"
-        ],
-    package_data={
-        '': ['data/*.xlsx', 'data/*.xls', 'data/*.txt']
-        },
-    entry_points={
-        'gui_scripts': [
-            'glassmap = opticalglass.glassmapviewer:main',
-        ],
-    },
-)
+if __name__ == "__main__":
+    try:
+        setup(use_scm_version={"version_scheme": "no-guess-dev"})
+    except:  # noqa
+        print(
+            "\n\nAn error occurred while building the project, "
+            "please ensure you have the most updated version of setuptools, "
+            "setuptools_scm and wheel with:\n"
+            "   pip install -U setuptools setuptools_scm wheel\n\n"
+        )
+        raise

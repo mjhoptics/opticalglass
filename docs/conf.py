@@ -14,8 +14,12 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath('../'))
+
+# -- Path setup --------------------------------------------------------------
+
+__location__ = os.path.dirname(__file__)
+
+sys.path.insert(0, os.path.join(__location__, "../src"))
 
 
 # -- Project information -----------------------------------------------------
@@ -24,11 +28,17 @@ project = 'opticalglass'
 copyright = '2017-2022, Michael J. Hayford'
 author = 'Michael J. Hayford'
 
-# The short X.Y version
-version = '1.0.2'
-# The full version, including alpha/beta/rc tags
-release = '1.0.2'
+# version: The short X.Y version.
+# release: The full version, including alpha/beta/rc tags.
+try:
+    from opticalglass import __version__ as version
+except ImportError:
+    version = ""
 
+if not version or version.lower() == "unknown":
+    version = os.getenv("READTHEDOCS_VERSION", "unknown")  # automatically set by RTD
+
+release = version
 
 # -- General configuration ---------------------------------------------------
 
@@ -118,7 +128,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'opticalglassdoc'
+htmlhelp_basename = 'opticalglass-doc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -195,10 +205,11 @@ epub_exclude_files = ['search.html']
 # -- Options for intersphinx extension ---------------------------------------
 
 # Example configuration for intersphinx: refer to the Python standard library.
+python_version = ".".join(map(str, sys.version_info[0:2]))
 intersphinx_mapping = {
-        'python': ('https://docs.python.org/3.9', None),
-        'matplotlib': ('https://matplotlib.org', None),
-        'numpy': ('https://numpy.org/doc/stable', None),
-        'pandas': ('https://pandas.pydata.org/pandas-docs/stable', None),
-        'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
-        }
+    "python": ("https://docs.python.org/" + python_version, None),
+    'matplotlib': ('https://matplotlib.org', None),
+    'numpy': ('https://numpy.org/doc/stable', None),
+    'pandas': ('https://pandas.pydata.org/pandas-docs/stable', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
+    }
