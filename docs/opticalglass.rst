@@ -36,6 +36,14 @@ glassfactory
     :undoc-members:
     :show-inheritance:
 
+modelglass
+++++++++++
+
+.. automodule:: opticalglass.modelglass
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 buchdahl
 ++++++++
 

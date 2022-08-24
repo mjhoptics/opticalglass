@@ -6,7 +6,7 @@ Changelog
 
 Version 1.0.3
 =============
-Remove :meth:`~.opticalmedium.OpticalMedium.transmission_data` from the required interfaces for :class:`~.opticalmedium.OpticalMedium`. Redo package layout using pyscaffold and use versioning from importlib.metadata.
+Remove :meth:`~.opticalmedium.OpticalMedium.transmission_data` from the required interfaces for :class:`~.opticalmedium.OpticalMedium`. Add :class:`~.opticalmedium.ConstantIndex` class for minimal material definition support. Add a new module, :mod:`~.modelglass`, with class :class:`~.modelglass.ModelGlass` to handle glasses specified by refractive index and v-number. Redo package layout using pyscaffold and use versioning from importlib.metadata.
 
 Version 1.0.2
 =============

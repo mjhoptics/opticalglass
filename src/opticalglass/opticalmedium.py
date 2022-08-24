@@ -9,7 +9,8 @@
 """
 
 import numpy as np
-from typing import Protocol, Dict, List, Tuple, Union
+from typing import (Protocol, runtime_checkable, 
+                    Dict, List, Tuple, Union)
 from numpy.typing import NDArray
 from abc import abstractmethod
 
@@ -26,6 +27,7 @@ def glass_decode(gc):
     return round(1.0 + (int(gc)/1000), 3), round(100.0*(gc - int(gc)), 3)
 
 # --- material definitions
+@runtime_checkable
 class OpticalMedium(Protocol):
     """ Protocol for media with optical properties, e.g. refractive index. """
 
@@ -96,14 +98,39 @@ class Air(OpticalMedium):
     def catalog_name(self) -> str:
         return ''
 
-    def calc_rindex(self, wv_nm) -> float:
+    def calc_rindex(self, wv_nm: Union[float, NDArray]) -> Union[float, NDArray]:
         return 1.0
 
-    def meas_rindex(self, wv_nm) -> float:
+    def meas_rindex(self, wvl: str) -> float:
         return 1.0
 
-    def rindex(self, wv_nm) -> float:
+    def rindex(self,  wvl: str) -> float:
         return 1.0
+
+
+class ConstantIndex(OpticalMedium):
+    """ Constant refractive index medium. """
+
+    def __init__(self, nd, lbl, cat=''):
+        self.label = lbl
+        self.n = nd
+        self._catalog_name = cat
+
+    def __repr__(self):
+        return ('Medium(' + str(self.n) + ', ' + f"'{self.label}'" +
+                ', cat=' + f"'{self._catalog_name}'" + ')')
+
+    def name(self):
+        return self.label
+
+    def catalog_name(self):
+        return self._catalog_name
+
+    def calc_rindex(self, wv_nm_):
+        return self.n
+
+    def meas_rindex(self, wvl):
+        return self.n
 
 
 class InterpolatedMedium(OpticalMedium):

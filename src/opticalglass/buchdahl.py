@@ -29,19 +29,6 @@ def omega2wvl(om):
     return om/(1 - 2.5*om)
 
 
-def model_from_glasses(gla1, gla2):
-    """Create a model from the slope between two glasses."""
-    bhdl_gla1 = Buchdahl1(gla1)
-    bhdl_gla2 = Buchdahl1(gla2)
-    # get the Buchdahl quadratic coefficients for the 2 input glasses
-    v1_gla1, v2_gla1 = bhdl_gla1.coefs[0], bhdl_gla1.coefs[1]
-    v1_gla2, v2_gla2 = bhdl_gla2.coefs[0], bhdl_gla2.coefs[1]
-    # calculate the slope and v1 intercept of the line between the 2 glasses
-    m = (v1_gla1 - v1_gla2)/(v2_gla1 - v2_gla2)
-    b = v1_gla1 - m*v2_gla1
-    return b, m
-
-
 def calc_buchdahl_coords(nd, nF, nC, wlns=('d', 'F', 'C'),
                          ctype=None, **kwargs):
     """Given central, blue and red refractive indices, calculate the Buchdahl
