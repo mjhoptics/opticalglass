@@ -419,7 +419,7 @@ class RIIMedium(OpticalMedium):
     def meas_rindex(self, wvl: str) -> float:
         """ returns the measured refractive index at wvl
 
-        For `InterpolatedGlass` the measured index isn't directly known. The
+        For `InterpolatedMedium` the measured index isn't directly known. The
         calculated index is used instead. Calling `rindex` handles the spectral 
         line conversion.
         """

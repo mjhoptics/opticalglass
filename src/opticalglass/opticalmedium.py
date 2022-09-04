@@ -117,7 +117,7 @@ class ConstantIndex(OpticalMedium):
         self._catalog_name = cat
 
     def __repr__(self):
-        return ('Medium(' + str(self.n) + ', ' + f"'{self.label}'" +
+        return ('ConstantIndex(' + str(self.n) + ', ' + f"'{self.label}'" +
                 ', cat=' + f"'{self._catalog_name}'" + ')')
 
     def name(self):
@@ -170,7 +170,7 @@ class InterpolatedMedium(OpticalMedium):
         self.update()
 
     def __repr__(self) -> str:
-        return ('InterpolatedGlass(' + f"'{self.label}'" +
+        return ('InterpolatedMedium(' + f"'{self.label}'" +
                 ', cat=' + f"'{self._catalog}'" +
                 ', wvls=' + repr(self.wvls) +
                 ', rndx=' + repr(self.rndx) +
@@ -228,7 +228,7 @@ class InterpolatedMedium(OpticalMedium):
     def meas_rindex(self, wvl: str) -> float:
         """ returns the measured refractive index at wvl
 
-        For `InterpolatedGlass` the measured index isn't directly known. The
+        For `InterpolatedMedium` the measured index isn't directly known. The
         calculated index is used instead. Calling `rindex` handles the spectral 
         line conversion.
         """
