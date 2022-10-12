@@ -4,6 +4,10 @@
 Changelog
 =========
 
+Version 1.0.4
+=============
+Allow extrapolation for :class:`~.opticalmedium.InterpolatedMedium` refractive index interpolation function. Cleanup help and other references to transported classes from **ray-optics**. Fix version export in build process.
+
 Version 1.0.3
 =============
 Remove :meth:`~.opticalmedium.OpticalMedium.transmission_data` from the required interfaces for :class:`~.opticalmedium.OpticalMedium`. Add :class:`~.opticalmedium.ConstantIndex` class for minimal material definition support. Add a new module, :mod:`~.modelglass`, with class :class:`~.modelglass.ModelGlass` to handle glasses specified by refractive index and v-number. Redo package layout using pyscaffold and use versioning from importlib.metadata.
