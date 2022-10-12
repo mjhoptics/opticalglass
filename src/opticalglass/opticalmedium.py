@@ -194,13 +194,18 @@ class InterpolatedMedium(OpticalMedium):
             self.rindex_interp = lambda wv: self.rndx[0]
         else:
             self.rindex_interp = interp1d(self.wvls, self.rndx, kind='cubic',
-                                      assume_sorted=False)
+                                          assume_sorted=False,
+                                          bounds_error=False, 
+                                          fill_value='extrapolate')
         if self.kvals is not None:
             if len(self.kvals_wvls) == 1:
                 self.kvals_interp = lambda wv: self.kvals[0]
             else:
                 self.kvals_interp = interp1d(self.kvals_wvls, self.kvals, 
-                                             kind='cubic', assume_sorted=False)
+                                             kind='cubic',
+                                             assume_sorted=False,
+                                             bounds_error=False, 
+                                             fill_value='extrapolate')
         else:
             self.kvals_interp = None
 
