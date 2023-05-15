@@ -29,6 +29,11 @@ The package currently supports the following manufacturers:
 
    All rights and ownership of the data is retained by the original owners, i.e the respective manufacturers.
 
+Interface to RefractiveIndex.INFO database
+------------------------------------------
+
+An interface to the RefractiveIndex.INFO database, using both the InterpolatedMedium and RIIMedium classes, is available.
+
 Documentation
 -------------
 

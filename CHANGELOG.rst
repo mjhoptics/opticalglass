@@ -4,6 +4,10 @@
 Changelog
 =========
 
+Version 1.0.5
+=============
+Enable :class:`~.rindexinfo.RIIMedium` to be saved and restored as JSON files.
+
 Version 1.0.4
 =============
 Allow extrapolation for :class:`~.opticalmedium.InterpolatedMedium` refractive index interpolation function. Cleanup help and other references to transported classes from **ray-optics**. Fix version export in build process.

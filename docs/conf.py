@@ -25,7 +25,7 @@ sys.path.insert(0, os.path.join(__location__, "../src"))
 # -- Project information -----------------------------------------------------
 
 project = 'opticalglass'
-copyright = '2017-2022, Michael J. Hayford'
+copyright = '2017-2023, Michael J. Hayford'
 author = 'Michael J. Hayford'
 
 # version: The short X.Y version.
