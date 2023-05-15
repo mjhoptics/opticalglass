@@ -14,6 +14,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 
 import yaml
+import importlib
 
 from typing import Union
 from numpy.typing import NDArray
@@ -385,9 +386,25 @@ class RIIMedium(OpticalMedium):
 
     def __json_encode__(self):
         attrs = dict(vars(self))
+        attrs['cat'] = self._catalog_name
+        del attrs['_catalog_name']
+        del attrs['wvls']
         if hasattr(self, 'yaml_data'):
             del attrs['yaml_data']
+        # Save model name and function name of rndx_fct, so that fct can
+        #  restored later (hopefully)
+        del attrs['rndx_fct']
+        attrs['rndx_fct_module'] = self.rndx_fct.__module__
+        attrs['rndx_fct_name'] = self.rndx_fct.__name__
         return attrs
+
+    def __json_decode__(self, **attrs):
+        module_name = attrs.pop('rndx_fct_module')
+        fct_name = attrs.pop('rndx_fct_name')
+        # try to import module and look up function - then assign to rndx_fct
+        mod = importlib.import_module(module_name)
+        rndx_fct = getattr(mod, fct_name)
+        self.__init__(rndx_fct=rndx_fct, **attrs)
 
     def name(self) -> str:
         return self.label
@@ -431,10 +448,11 @@ class RIIMedium(OpticalMedium):
         return self.kvals_wvls, t_vals
 
 
-def summary_plots(opt_medium, opt_medium_yaml):
+def summary_plots(opt_medium, opt_medium_yaml=None):
     """ plot refractive index and thruput data, when available. """
     import matplotlib.pyplot as plt
-    print(f"{[d['type'] for d in opt_medium_yaml['DATA']]}")
+    if opt_medium_yaml is not None:
+        print(f"{[d['type'] for d in opt_medium_yaml['DATA']]}")
 
     plt.plot(opt_medium.wvls, opt_medium.calc_rindex(opt_medium.wvls), label='ref index')
 
