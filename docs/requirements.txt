@@ -11,5 +11,5 @@ openpyxl>=3.1.2
 requests>=2.31.0
 pyyaml>=6.0
 pyqt5<5.16
-ipython>=8.14.0
+ipython>=8.13.0
 # sphinx_rtd_theme
