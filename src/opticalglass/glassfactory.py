@@ -68,6 +68,8 @@ def create_glass(*name_catalog):
         name, catalog = name_catalog
     else:
         name, catalog = name_catalog[0].split(',')
+    name = name.strip()
+    catalog = catalog.strip()
 
     if isinstance(catalog, str):
         return _create_glass(name, catalog)
