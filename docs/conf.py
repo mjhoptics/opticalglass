@@ -89,8 +89,8 @@ pygments_style = 'friendly'
 # pygments_style = 'solarize-light'
 
 rst_prolog = """
-.. |minimum_python_version| replace:: 3.8
-.. |minimum_numpy_version| replace:: 1.21.5
+.. |minimum_python_version| replace:: 3.10
+.. |minimum_numpy_version| replace:: 1.24.3
 .. |Series| replace:: :class:`~pandas.Series`
 .. |DataFrame| replace:: :class:`~pandas.DataFrame`
 """
@@ -208,8 +208,8 @@ epub_exclude_files = ['search.html']
 python_version = ".".join(map(str, sys.version_info[0:2]))
 intersphinx_mapping = {
     "python": ("https://docs.python.org/" + python_version, None),
-    'matplotlib': ('https://matplotlib.org', None),
+    'matplotlib': ('https://matplotlib.org/stable', None),
     'numpy': ('https://numpy.org/doc/stable', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable', None),
-    'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy', None),
     }

@@ -4,6 +4,10 @@
 Changelog
 =========
 
+Version 1.0.6
+=============
+Bullet-proof and add testcase for :func:`~.glassfactory.create_glass`.
+
 Version 1.0.5
 =============
 Enable :class:`~.rindexinfo.RIIMedium` to be saved and restored as JSON files.
