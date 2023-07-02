@@ -34,10 +34,21 @@ class CreateGlassTestCase(unittest.TestCase):
         nbk7 = create_glass('N-BK7','Schott')
         self.assertIsNotNone(nbk7)
 
-        nbk7 = create_glass('N-BK7','Schott')
+        nbk7 = create_glass('N-BK7','Schott ')
         self.assertIsNotNone(nbk7)
 
         nbk7 = create_glass(' N-BK7',' Schott')
+        self.assertIsNotNone(nbk7)
+
+    def test_create_glass_cat_list(self):
+        """ test 2 arg form vs whitespace """
+        nbk7 = create_glass('N-BK7',['Schott', 'Hoya', 'Ohara'])
+        self.assertIsNotNone(nbk7)
+
+        nbk7 = create_glass('N-BK7',[' Schott', ' Hoya', ' Ohara'])
+        self.assertIsNotNone(nbk7)
+
+        nbk7 = create_glass(' N-BK7',['Schott ', 'Hoya ', 'Ohara '])
         self.assertIsNotNone(nbk7)
 
     def test_create_glass_exceptions(self):

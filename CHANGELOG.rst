@@ -4,6 +4,10 @@
 Changelog
 =========
 
+Version 1.0.7
+=============
+Fix issue #7, previous version broke handling of catalog lists. Thanks to @dominikonysz for reporting and suggesting the fix.
+
 Version 1.0.6
 =============
 Bullet-proof and add testcase for :func:`~.glassfactory.create_glass`.

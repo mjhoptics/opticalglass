@@ -69,15 +69,14 @@ def create_glass(*name_catalog):
     else:
         name, catalog = name_catalog[0].split(',')
     name = name.strip()
-    catalog = catalog.strip()
 
     if isinstance(catalog, str):
-        return _create_glass(name, catalog)
+        return _create_glass(name, catalog.strip())
 
     else:  # treat catalog as a list
         for cat in catalog:
             try:
-                glass = _create_glass(name, cat)
+                glass = _create_glass(name, cat.strip())
             except ge.GlassError:
                 continue
             else:
