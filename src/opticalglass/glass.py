@@ -41,6 +41,8 @@ from .spectral_lines import get_wavelength
 
 from .caselessDictionary import CaselessDictionary
 
+logger = logging.getLogger(__name__)
+
 
 def get_filepath(fname):
     """ given a (spreadsheet) file name, return a complete Path to the file
@@ -115,7 +117,7 @@ def glass_catalog_factory(cat_name, mod_name=None, cls_name=None):
     try:
         mod = importlib.import_module(mod_name)
     except ModuleNotFoundError:
-        logging.info(f'glass catalog module {mod_name} not found')
+        logger.info(f'glass catalog module {mod_name} not found')
         raise ge.GlassCatalogNotFoundError(cat_name)
     else:
         if cls_name is None:
@@ -123,14 +125,14 @@ def glass_catalog_factory(cat_name, mod_name=None, cls_name=None):
         try:
             cat_class = getattr(mod, cls_name)
         except AttributeError:
-            logging.info(f'glass catalog class {cls_name} not found')
+            logger.info(f'glass catalog class {cls_name} not found')
             # try forcing cat_name to be capitalized
             cat_name_cap = cat_name.capitalize()
             cls_name = cat_name_cap + 'Catalog'
             try:
                 cat_class = getattr(mod, cls_name)
             except AttributeError:
-                logging.info(f'glass catalog class {cls_name} not found')
+                logger.info(f'glass catalog class {cls_name} not found')
                 raise ge.GlassCatalogNotFoundError(cat_name)
             else:
                 catalog = cat_class()

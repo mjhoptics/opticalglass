@@ -17,6 +17,8 @@ from . import glasserror as ge
 
 from .caselessDictionary import CaselessDictionary
 
+logger = logging.getLogger(__name__)
+
 _catalog_list = CaselessDictionary()
 
 CDGM, Hikari, Hoya, Ohara, Schott, Sumita = range(6)
@@ -61,7 +63,7 @@ def create_glass(*name_catalog):
         elif "Robb1983" in catalog:
             return cat_glass.Robb1983Catalog().create_glass(name, catalog)
         else:
-            logging.info('glass catalog %s not found', catalog)
+            logger.info('glass catalog %s not found', catalog)
             raise ge.GlassCatalogNotFoundError(catalog)
 
     if len(name_catalog) == 2:
@@ -81,7 +83,7 @@ def create_glass(*name_catalog):
                 continue
             else:
                 return glass
-        logging.info('glass %s not found in %s', name, catalog)
+        logger.info('glass %s not found in %s', name, catalog)
         raise ge.GlassNotFoundError(catalog, name)
 
 

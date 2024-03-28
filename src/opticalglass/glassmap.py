@@ -19,6 +19,8 @@ from . import glassfactory as gf
 from . import glasspolygons as gp
 from . import util
 
+logger = logging.getLogger(__name__)
+
 
 class GlassMapDB():
     """ Simple model to support Model/View architecture for Glass map views
@@ -375,7 +377,7 @@ class GlassMapFigure(Figure):
         One pick event for each catalog, extract selected glasses and add to
         pick_list
         """
-        logging.debug("on_pick: needsClear={}".format(self.needsClear))
+        logger.debug("on_pick: needsClear={}".format(self.needsClear))
         if self.needsClear:
             self.clear_pick_table()
         line = event.artist
@@ -404,7 +406,7 @@ class GlassMapFigure(Figure):
               clear_pick_table to empty pick_list and reset needsClear to False.
 
         """
-        logging.debug("on_press: needsClear={}".format(self.needsClear))
+        logger.debug("on_press: needsClear={}".format(self.needsClear))
         if self.needsClear:
             # If needsClear is still set, there have been no pick events so
             #  this is a click in an empty region of the plot.
