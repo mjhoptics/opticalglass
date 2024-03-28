@@ -23,6 +23,8 @@ from matplotlib.backends.backend_qt5agg \
 from opticalglass.glassmap import GlassMapFigure, GlassMapDB
 from opticalglass import glassfactory
 
+logger = logging.getLogger(__name__)
+
 
 def init_UI(gui_parent, fig):
     main_widget = QWidget()
@@ -318,7 +320,7 @@ class PlotCanvas(FigureCanvas):
     def __init__(self, gui_parent, fig):
         super().__init__(fig)
         self.setParent(gui_parent)
-        logging.debug("Canvas dpi: {}".format(fig.dpi))
+        logger.debug("Canvas dpi: {}".format(fig.dpi))
 
         FigureCanvas.setSizePolicy(self,
                                    QSizePolicy.Expanding,
@@ -331,7 +333,7 @@ def main():
                         filemode='w',
                         format='%(asctime)s: %(message)s',
                         level=logging.DEBUG)
-    logging.info("opticalglass started")
+    logger.info("opticalglass started")
     qtapp = QApplication(sys.argv)
     qtwnd = GlassMapViewer()
     qtwnd.show()
