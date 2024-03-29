@@ -12,4 +12,4 @@ requests==2.31.0
 pyyaml==6.0
 pyqt5<5.16
 ipython==8.13.0
-sphinx_rtd_theme==1.0.0
+sphinx_rtd_theme==2.0.0
