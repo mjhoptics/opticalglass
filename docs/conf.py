@@ -90,7 +90,7 @@ pygments_style = 'friendly'
 
 rst_prolog = """
 .. |minimum_python_version| replace:: 3.10
-.. |minimum_numpy_version| replace:: 1.24.3
+.. |minimum_numpy_version| replace:: 1.26.4
 .. |Series| replace:: :class:`~pandas.Series`
 .. |DataFrame| replace:: :class:`~pandas.DataFrame`
 """

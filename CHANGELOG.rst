@@ -4,6 +4,11 @@
 Changelog
 =========
 
+Version 1.0.8
+=============
+Fix issue #8, add local loggers for better control of python's logging 
+capability. Thanks to @dominikonysz for reporting and implementing the change.
+
 Version 1.0.7
 =============
 Fix issue #7, previous version broke handling of catalog lists. Thanks to @dominikonysz for reporting and suggesting the fix.
