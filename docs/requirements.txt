@@ -21,7 +21,7 @@ pyqt5==5.15.10
     # via opticalglass (setup.py)
 pyyaml==6.0.1
     # via opticalglass (setup.py)
-requests==2.31.0
+requests==2.32.0
     # via opticalglass (setup.py)
 scipy==1.12.0
     # via opticalglass (setup.py)
