@@ -4,6 +4,10 @@
 Changelog
 =========
 
+Version 1.0.9
+=============
+Fix broken compatability with `RefractiveIndex.INFO <https://refractiveindex.info>`_ database. Extend  :func:`~.glassfactory.create_glass` functionality to accept RefractiveIndex.Info URLs or filepaths.
+
 Version 1.0.8
 =============
 Fix issue #8, add local loggers for better control of python's logging 

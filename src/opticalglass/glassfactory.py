@@ -14,6 +14,7 @@ import logging
 
 from . import glass as cat_glass
 from . import glasserror as ge
+from . import rindexinfo
 
 from .caselessDictionary import CaselessDictionary
 
@@ -34,6 +35,9 @@ def create_glass(*name_catalog):
         - 1 string argument in the form 'glass_name,catalog_name'
         - 2 arguments. The first is a string glass name. The second is a
           string or list of strings of catalog names.
+    
+    If 2 arguments are used and the catalog is "rindexinfo", the "name" field 
+    is taken as a URL or filepath to a material in the `RefractiveIndex.INFO <https://refractiveindex.info>`_ database.
 
     Arguments:
         *name_catalog: tuple of 1 or 2 input items
@@ -44,33 +48,37 @@ def create_glass(*name_catalog):
 
     """
     def _create_glass(name, catalog):
-        gn_decode = cat_glass.decode_glass_name(name)
-        if catalog not in _catalog_list:
-            try:
-                cat = get_glass_catalog(catalog)
-            except ge.GlassError as gerr:
-                raise gerr
-        if catalog in _catalog_list:
-            try:
-                # Lookup the decoded glass name. This avoids some problems
-                # with how design programs not exactly matching the
-                # manufacturer's names.
-                gn, gc = _catalog_list[catalog].glass_lookup[gn_decode]
-            except KeyError:
-                raise ge.GlassNotFoundError(catalog, name)
-            else:
-                return _catalog_list[catalog].create_glass(gn, gc)
-        elif "Robb1983" in catalog:
-            return cat_glass.Robb1983Catalog().create_glass(name, catalog)
+        if catalog == "rindexinfo":
+            return rindexinfo.create_glass(name)
         else:
-            logger.info('glass catalog %s not found', catalog)
-            raise ge.GlassCatalogNotFoundError(catalog)
+            gn_decode = cat_glass.decode_glass_name(name)
+            if catalog not in _catalog_list:
+                try:
+                    cat = get_glass_catalog(catalog)
+                except ge.GlassError as gerr:
+                    raise gerr
+            if catalog in _catalog_list:
+                try:
+                    # Lookup the decoded glass name. This avoids some problems
+                    # with how design programs not exactly matching the
+                    # manufacturer's names.
+                    gn, gc = _catalog_list[catalog].glass_lookup[gn_decode]
+                except KeyError:
+                    raise ge.GlassNotFoundError(catalog, name)
+                else:
+                    return _catalog_list[catalog].create_glass(gn, gc)
+            elif "Robb1983" in catalog:
+                return cat_glass.Robb1983Catalog().create_glass(name, catalog)
+            else:
+                logger.info('glass catalog %s not found', catalog)
+                raise ge.GlassCatalogNotFoundError(catalog)
 
     if len(name_catalog) == 2:
         name, catalog = name_catalog
     else:
         name, catalog = name_catalog[0].split(',')
-    name = name.strip()
+    if isinstance(name, str):
+        name = name.strip()
 
     if isinstance(catalog, str):
         return _create_glass(name, catalog.strip())

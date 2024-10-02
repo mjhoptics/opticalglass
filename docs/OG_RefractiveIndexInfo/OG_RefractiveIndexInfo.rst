@@ -6,9 +6,11 @@ RefractiveIndex.Info interface
 
 Access to the `RefractiveIndex.INFO <https://refractiveindex.info>`_ database is provided by the :mod:`~.rindexinfo` module. A major function of this module is to create glass instances (:class:`~.rindexinfo.RIIMedium` or :class:`~.opticalmedium.InterpolatedMedium`) for use in optical models.
 
+
+
 .. code:: ipython3
 
-    from opticalglass import rindexinfo
+    from opticalglass.glassfactory import create_glass
     from opticalglass.rindexinfo import summary_plots
 
 Typical use scenario - Polycarbonate
@@ -47,25 +49,19 @@ We can now define a variable for the polycarbonate data url and paste the link w
 
 .. code:: ipython3
 
-    polycarb_url = 'https://refractiveindex.info/database/data/organic/(C16H14O3)n%20-%20polycarbonate/Zhang.yml'
+    polycarb_url = 'https://refractiveindex.info/database/data-nk/organic/(C16H14O3)n%20-%20polycarbonate/Zhang.yml'
 
-Use the :func:`~.rindexinfo.read_rii_url` to import the material data into a python structure that reflects the original yaml formatted file. A suggested material name and catalog designation, based on the material url, are returned as well.
-
-.. code:: ipython3
-
-    polycarb_yaml, name, catalog = rindexinfo.read_rii_url(polycarb_url)
-
-The function :func:`~.rindexinfo.create_material` takes the yaml definition of the material and the names and returns a glass instance.
+The function :func:`~.glassfactory.create_glass` takes the URL of the material in the and the names and returns a glass instance.
 
 .. code:: ipython3
 
-    polycarb = rindexinfo.create_material(polycarb_yaml, name, catalog)
+    polycarb = create_glass(polycarb_url, "rindexinfo")
 
 The :func:`~.rindexinfo.summary_plots` function can be used in a scripting environment to plot the (complex) refractive index data of a material.
 
 .. code:: ipython3
 
-    summary_plots(polycarb, polycarb_yaml)
+    summary_plots(polycarb)
 
 
 .. parsed-literal::
@@ -74,14 +70,14 @@ The :func:`~.rindexinfo.summary_plots` function can be used in a scripting envir
 
 
 
-.. image:: output_9_1.png
+.. image:: output_7_1.png
 
 
-There is additional information available for each database entry, beyond refractive index and absorption. It is easiest to work directly with the imported yaml data.
+There is additional information available for each database entry, beyond refractive index and absorption. It is easiest to work directly with the imported yaml data. The `rindexinfo` materials returned from create_glass() all have a `yaml_data` attribute, i.e. the complete database record.
 
 .. code:: ipython3
 
-    polycarb_yaml.keys()
+    polycarb.yaml_data.keys()
 
 
 
@@ -96,7 +92,7 @@ The 'DATA' key contains the raw index data. The 'REFERENCES' key is always prese
 
 .. code:: ipython3
 
-    polycarb_yaml['REFERENCES']
+    polycarb.yaml_data['REFERENCES']
 
 
 
@@ -111,7 +107,7 @@ The 'COMMENTS' key is often present with additional information. The 'SPECS' is 
 
 .. code:: ipython3
 
-    polycarb_yaml['COMMENTS']
+    polycarb.yaml_data['COMMENTS']
 
 
 
@@ -124,14 +120,14 @@ The 'COMMENTS' key is often present with additional information. The 'SPECS' is 
 
 .. code:: ipython3
 
-    polycarb_yaml['SPECS']
+    polycarb.yaml_data['SPECS']
 
 
 
 
 .. parsed-literal::
 
-    {'n_absolute': True, 'wavelength_vacuum': False}
+    {'n_is_absolute': True, 'wavelength_is_vacuum': False}
 
 
 
@@ -145,10 +141,9 @@ SiO2
 
 .. code:: ipython3
 
-    sio2_url = 'https://refractiveindex.info/database/data/main/SiO2/Malitson.yml'
-    sio2_yaml, name, catalog = rindexinfo.read_rii_url(sio2_url)
-    sio2 = rindexinfo.create_material(sio2_yaml, name, catalog)
-    summary_plots(sio2, sio2_yaml)
+    sio2_url = 'https://refractiveindex.info/database/data-nk/main/SiO2/Malitson.yml'
+    sio2 = create_glass(sio2_url, "rindexinfo")
+    summary_plots(sio2)
 
 
 .. parsed-literal::
@@ -157,7 +152,7 @@ SiO2
 
 
 
-.. image:: output_19_1.png
+.. image:: output_17_1.png
 
 
 CaF2
@@ -165,10 +160,9 @@ CaF2
 
 .. code:: ipython3
 
-    caf2_url = 'https://refractiveindex.info/database/data/main/CaF2/Daimon-20.yml'
-    caf2_yaml, name, catalog = rindexinfo.read_rii_url(caf2_url)
-    caf2 = rindexinfo.create_material(caf2_yaml, name, catalog)
-    summary_plots(caf2, caf2_yaml)
+    caf2_url = 'https://refractiveindex.info/database/data-nk/main/CaF2/Daimon-20.yml'
+    caf2 = create_glass(caf2_url, "rindexinfo")
+    summary_plots(caf2)
 
 
 .. parsed-literal::
@@ -177,7 +171,7 @@ CaF2
 
 
 
-.. image:: output_21_1.png
+.. image:: output_19_1.png
 
 
 Germanium
@@ -185,10 +179,9 @@ Germanium
 
 .. code:: ipython3
 
-    ge_url = 'https://refractiveindex.info/database/data/main/Ge/Amotchkina.yml'
-    ge_yaml, name, catalog = rindexinfo.read_rii_url(ge_url)
-    ge = rindexinfo.create_material(ge_yaml, name, catalog)
-    summary_plots(ge, ge_yaml)
+    ge_url = 'https://refractiveindex.info/database/data-nk/main/Ge/Amotchkina.yml'
+    ge = create_glass(ge_url, "rindexinfo")
+    summary_plots(ge)
 
 
 .. parsed-literal::
@@ -197,7 +190,7 @@ Germanium
 
 
 
-.. image:: output_23_1.png
+.. image:: output_21_1.png
 
 
 PEDOT
@@ -205,13 +198,9 @@ PEDOT
 
 .. code:: ipython3
 
-    pedot_url = 'https://refractiveindex.info/database/data/other/mixed%20organic/PEDOT-PSS/Chen.yml'
-
-.. code:: ipython3
-
-    pedot_yaml, name, catalog = rindexinfo.read_rii_url(pedot_url)
-    pedot = rindexinfo.create_material(pedot_yaml, name, catalog)
-    summary_plots(pedot, pedot_yaml)
+    pedot_url = 'https://refractiveindex.info/database/data-nk/other/mixed%20organic/PEDOT-PSS/Chen.yml'
+    pedot = create_glass(pedot_url, "rindexinfo")
+    summary_plots(pedot)
 
 
 .. parsed-literal::
@@ -220,7 +209,7 @@ PEDOT
 
 
 
-.. image:: output_26_1.png
+.. image:: output_23_1.png
 
 
 F1 LZOS
@@ -228,13 +217,9 @@ F1 LZOS
 
 .. code:: ipython3
 
-    url = 'https://refractiveindex.info/database/data/glass/lzos/F1.yml'
-
-.. code:: ipython3
-
-    F1_yaml, name, catalog = rindexinfo.read_rii_url(url)
-    F1 = rindexinfo.create_material(F1_yaml, name, catalog)
-    summary_plots(F1, F1_yaml)
+    url = 'https://refractiveindex.info/database/data-nk/glass/lzos/F1.yml'
+    F1 = create_glass(url, "rindexinfo")
+    summary_plots(F1)
 
 
 .. parsed-literal::
@@ -243,7 +228,7 @@ F1 LZOS
 
 
 
-.. image:: output_29_1.png
+.. image:: output_25_1.png
 
 
 MgF2
@@ -251,7 +236,7 @@ MgF2
 
 .. code:: ipython3
 
-    url_root = 'https://refractiveindex.info/database/data/'
+    url_root = 'https://refractiveindex.info/database/data-nk/'
 
 .. code:: ipython3
 
@@ -259,9 +244,8 @@ MgF2
 
 .. code:: ipython3
 
-    MgF2_yaml, name, catalog = rindexinfo.read_rii_url(url)
-    MgF2 = rindexinfo.create_material(MgF2_yaml, name, catalog)
-    summary_plots(MgF2, MgF2_yaml)
+    MgF2 = create_glass(url, "rindexinfo")
+    summary_plots(MgF2)
 
 
 .. parsed-literal::
@@ -270,7 +254,7 @@ MgF2
 
 
 
-.. image:: output_33_1.png
+.. image:: output_29_1.png
 
 
 KNbO3
@@ -282,9 +266,8 @@ KNbO3
 
 .. code:: ipython3
 
-    KNbO3_yaml, name, catalog = rindexinfo.read_rii_url(url)
-    KNbO3 = rindexinfo.create_material(KNbO3_yaml, name, catalog)
-    summary_plots(KNbO3, KNbO3_yaml)
+    KNbO3 = create_glass(url, "rindexinfo")
+    summary_plots(KNbO3)
 
 
 .. parsed-literal::
@@ -293,7 +276,7 @@ KNbO3
 
 
 
-.. image:: output_36_1.png
+.. image:: output_32_1.png
 
 
 .. code:: ipython3
@@ -311,7 +294,7 @@ KNbO3
 
 .. code:: ipython3
 
-    KNbO3_yaml
+    KNbO3.yaml_data
 
 
 

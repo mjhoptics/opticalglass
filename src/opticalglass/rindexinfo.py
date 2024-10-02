@@ -9,6 +9,7 @@
 
 import requests
 import urllib.parse
+from pathlib import Path
 
 import numpy as np
 from scipy.interpolate import interp1d
@@ -16,18 +17,43 @@ from scipy.interpolate import interp1d
 import yaml
 import importlib
 
-from typing import Union
+from typing import Union, Any
 from numpy.typing import NDArray
 
 from opticalglass.opticalmedium import OpticalMedium, InterpolatedMedium
+from opticalglass.glasserror import GlassDBNotSupported
 from .spectral_lines import get_wavelength
+
+import logging
+logger = logging.getLogger(__name__)
+
+
+def create_glass(file_url: Union[str, Path]) -> OpticalMedium:
+    """ Create a glass from the RefractiveIndex.Info (RII) database. 
+    
+    Args:
+
+        file_url: Union[str, Path]: a file path or a URL to the RII item
+
+    The URL must be rooted in the domain https://refractiveindex.info.
+
+    """
+    if (isinstance(file_url, str) and 
+        "https://refractiveindex.info" in file_url):
+        yaml_pkg = read_rii_url(file_url)
+    else:
+        yaml_pkg = read_rii_file(file_url)
+
+    return create_material(*yaml_pkg)
 
 
 def get_glassname_from_filestr(filestr: str):
     """ try to construct a name and catalog from the filename/url """
     # strip off `.yml` and take final partition
-    full_db_path = filestr[:-4].partition('database/data/')[-1]
-    name_catalog = full_db_path.split('/')
+    full_db_path = filestr[filestr.find('database/'):]
+    path_parts = full_db_path.split('/')
+    name_catalog = path_parts[2:]
+    db = path_parts[1]
     catalog = 'rii-'
     if name_catalog[0] == 'glass' or name_catalog[0] == 'other':
         catalog += name_catalog[1]
@@ -45,21 +71,23 @@ def get_glassname_from_filestr(filestr: str):
         for subname in name_catalog[1:]:
             name += '-' + subname
 
-    return name, catalog
+    logger.info(f"glassname_from_filestr: {db}, {name}, {catalog}")
+    return db, name, catalog
 
 
-def read_rii_file(filename):
+def read_rii_file(filename: Union[str, Path]):
     ''' given a filename of a RII file, return a yaml instance. '''
-    with filename.open() as file:
+    filepath = Path(filename)
+    with filepath.open() as file:
         inpt = file.read()
     yaml_data = yaml.safe_load(inpt)	
 
-    name, catalog = get_glassname_from_filestr(str(filename))
+    db, name, catalog = get_glassname_from_filestr(str(filename))
 
-    return yaml_data, name, catalog
+    return yaml_data, name, catalog, db
 
 
-def read_rii_url(url):
+def read_rii_url(url:str):
     ''' given a url to a RII file, return a yaml instance. '''
     r = requests.get(url, allow_redirects=True)
 
@@ -68,12 +96,16 @@ def read_rii_url(url):
 
     yaml_data = yaml.safe_load(inpt)
 
-    name, catalog = get_glassname_from_filestr(urllib.parse.unquote(url))
+    db, name, catalog = get_glassname_from_filestr(urllib.parse.unquote(url))
 
-    return yaml_data, name, catalog
+    return yaml_data, name, catalog, db
 
 
-def create_material(yaml_data, label, catalog):
+def create_material(yaml_data:Any, 
+                    label:str, catalog:str, db:str) -> OpticalMedium:
+    """ Create a material object given yaml data and identifiers. """
+    if db != 'data-nk':
+        raise GlassDBNotSupported(db)
     num_datasets = len(yaml_data["DATA"])
 
     material_data = yaml_data["DATA"][0]
@@ -97,9 +129,9 @@ def create_material(yaml_data, label, catalog):
             matl = InterpolatedMedium(label, wvls=wvls_nm, rndx=n, kvals=k, 
                                       cat=catalog)
             
-    # Handle second data set. This will always be a tabulated data set. In practice, if not by definition, this dataset
-    #  is always a `k` list. Any rindex data returned from read_data_arrays()
-    #  will be ignored.
+    # Handle second data set. This will always be a tabulated data set. In 
+    #  practice, if not by definition, this dataset is always a `k` list. Any 
+    #  rindex data returned from read_data_arrays() will be ignored.
     if num_datasets == 2:
         material_data = yaml_data["DATA"][1]
         material_type2 = material_data["type"].split()[1]
@@ -451,10 +483,14 @@ class RIIMedium(OpticalMedium):
 def summary_plots(opt_medium, opt_medium_yaml=None):
     """ plot refractive index and thruput data, when available. """
     import matplotlib.pyplot as plt
+    if opt_medium_yaml is None:
+        if hasattr(opt_medium, 'yaml_data'):
+            opt_medium_yaml = opt_medium.yaml_data
     if opt_medium_yaml is not None:
         print(f"{[d['type'] for d in opt_medium_yaml['DATA']]}")
 
-    plt.plot(opt_medium.wvls, opt_medium.calc_rindex(opt_medium.wvls), label='ref index')
+    plt.plot(opt_medium.wvls, opt_medium.calc_rindex(opt_medium.wvls), 
+             label='ref index')
 
     if getattr(opt_medium, 'kvals', None) is not None:
         plt.plot(opt_medium.kvals_wvls, opt_medium.kvals, label='k value')

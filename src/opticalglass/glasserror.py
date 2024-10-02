@@ -32,3 +32,10 @@ class GlassDataNotFoundError(GlassError):
     def __init__(self, catalog, data):
         self.catalog = catalog
         self.data = data
+
+
+class GlassDBNotSupported(GlassError):
+    """ Exception: data-n2 rindexinfo database is requested. """
+
+    def __init__(self, db):
+        self.catalog = db
