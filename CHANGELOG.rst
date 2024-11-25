@@ -4,6 +4,10 @@
 Changelog
 =========
 
+Version 1.1.0
+=============
+Port to PySide6 for Qt app support. This gains support for Mac silicon with conda-forge availability. Move to Numpy 2.1.3 and other dependency tweaks.
+
 Version 1.0.9
 =============
 Fix broken compatability with `RefractiveIndex.INFO <https://refractiveindex.info>`_ database. Extend  :func:`~.glassfactory.create_glass` functionality to accept RefractiveIndex.Info URLs or filepaths.

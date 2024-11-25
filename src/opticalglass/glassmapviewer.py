@@ -10,11 +10,12 @@
 import logging
 import sys
 
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QHBoxLayout,
+from PySide6.QtCore import Qt
+from PySide6 import QtCore
+from PySide6 import QtGui
+from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QHBoxLayout,
                              QVBoxLayout, QGridLayout, QSizePolicy, QGroupBox,
                              QCheckBox, QRadioButton, QTableView, QLabel)
-from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, QMimeData
-from PyQt5.QtGui import QDrag
 
 from matplotlib.backends.backend_qt5agg \
      import (FigureCanvasQTAgg as FigureCanvas,
@@ -33,7 +34,7 @@ def init_UI(gui_parent, fig):
     gm = PlotCanvas(gui_parent, fig)
     layout.addWidget(gm)
 
-    gui_parent.addToolBar(Qt.BottomToolBarArea,
+    gui_parent.addToolBar(Qt.ToolBarArea.BottomToolBarArea,
                           NavigationToolbar(gm, gui_parent))
 
     rightBar = QVBoxLayout()
@@ -195,7 +196,8 @@ def createCatalogGroupBox(gui_parent, fig):
 
 def create_handle_checkbox(fig, cb_number):
     def handle_checkbox(state):
-        checked = state == Qt.Checked
+        state = Qt.CheckState(state)
+        checked = state == Qt.CheckState.Checked
         fig.db_display[cb_number] = checked
         fig.updateVisibility(cb_number, checked)
     return handle_checkbox
@@ -250,10 +252,10 @@ class PickTable(QTableView):
         """Initiate glass drag and drop operation from here. """
         super().mousePressEvent(event)
         if (
-                event.button() == Qt.LeftButton and
+                event.button() == Qt.MouseButton.LeftButton and
                 self.model().rowCount(0) > 0):
-            drag = QDrag(self)
-            mimeData = QMimeData()
+            drag = QtGui.QDrag(self)
+            mimeData = QtCore.QMimeData()
             si = self.indexAt(event.pos())
             pick_row = si.row()
             pick = self.model().pick_table[pick_row]
@@ -261,10 +263,10 @@ class PickTable(QTableView):
             mimeData.setText(pick[1] + ',' + pick[0])
             drag.setMimeData(mimeData)
 
-            drag.exec_(Qt.CopyAction)
+            drag.exec_(Qt.DropAction.CopyAction)
 
 
-class PickModel(QAbstractTableModel):
+class PickModel(QtCore.QAbstractTableModel):
     def __init__(self, fig):
         super().__init__()
         self.fig = fig
@@ -279,18 +281,18 @@ class PickModel(QAbstractTableModel):
         return len(self.pt_header)
 
     def headerData(self, section, orientation, role):
-        if role == Qt.DisplayRole:
-            if orientation == Qt.Horizontal:
+        if role == Qt.ItemDataRole.DisplayRole:
+            if orientation == Qt.Orientation.Horizontal:
                 if section == 4:
                     self.pt_header[section] = "P %s-%s" % self.fig.partials
                 return self.pt_header[section]
-            elif orientation == Qt.Vertical:
+            elif orientation == Qt.Orientation.Vertical:
                 return None
         else:
             return None
 
     def data(self, index, role):
-        if role == Qt.DisplayRole or role == Qt.EditRole:
+        if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
             r = index.row()
             c = index.column()
             return self.pick_table[r][c]
@@ -305,13 +307,13 @@ class PickModel(QAbstractTableModel):
         self.pick_table = pick_table
 
         if self.num_rows > 0:
-            self.beginRemoveRows(QModelIndex(), 0, self.num_rows-1)
+            self.beginRemoveRows(QtCore.QModelIndex(), 0, self.num_rows-1)
             self.removeRows(0, self.num_rows)
             self.endRemoveRows()
 
         self.num_rows = len(pick_table)
         if self.num_rows > 0:
-            self.beginInsertRows(QModelIndex(), 0, self.num_rows-1)
+            self.beginInsertRows(QtCore.QModelIndex(), 0, self.num_rows-1)
             self.insertRows(0, self.num_rows)
             self.endInsertRows()
 
