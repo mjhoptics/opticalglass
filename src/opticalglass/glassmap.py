@@ -195,6 +195,7 @@ class GlassMapFigure(Figure):
         return event_dict
 
     def get_display_label(self):
+        """Return the type of plot being displayed. """
         return self.plot_display_type
 
     def refresh(self, **kwargs):
@@ -233,10 +234,12 @@ class GlassMapFigure(Figure):
         return self
 
     def update_axis_limits(self, bbox):
+        """Update the axis limits basde on the data bounding box. """
         self.ax.set_xlim(bbox[0][0], bbox[1][0])
         self.ax.set_ylim(bbox[0][1], bbox[1][1])
 
     def draw_axes(self):
+        """Draw and label the axes. """
         self.ax.grid(True)
         if hasattr(self, 'header'):
             self.ax.set_title(self.header, pad=10.0, fontsize=18)
@@ -246,6 +249,7 @@ class GlassMapFigure(Figure):
             self.ax.set_ylabel(self.y_label)
 
     def plot(self):
+        """Draw the glass map. """
         try:
             self.ax.cla()
         except AttributeError:
@@ -320,6 +324,7 @@ class GlassMapFigure(Figure):
         return self
 
     def draw_glass_polygons(self):
+        """Draw the glass polygons on the map. """
         for glass, poly in gp.polygons.items():
             rgb = gp.rgb[glass]
             p = Polygon(poly, closed=True, fc=util.rgb2mpl(rgb), ec='black',
@@ -327,6 +332,7 @@ class GlassMapFigure(Figure):
             self.ax.add_artist(p)
 
     def clear_pick_table(self):
+        """Reset the pick list. """
         self.pick_list = []
         self.needsClear = False
 
@@ -345,6 +351,7 @@ class GlassMapFigure(Figure):
                       reverse=True)
 
     def on_hover(self, event):
+        """ Display the glasses under the cursor. """
         vis = self.hover_list.get_visible()
         artists = self.find_artists_at_location(event)
         info_text = []
@@ -420,5 +427,6 @@ class GlassMapFigure(Figure):
             self.refresh_gui()
 
     def updateVisibility(self, indx, state):
+        """Update the visibility and redraw. """
         self.ax.lines[indx].set_visible(state)
         self.canvas.draw()
