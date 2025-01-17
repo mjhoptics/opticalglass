@@ -1,5 +1,4 @@
 *.log
-*.ipynb
 
 # Distribution / packaging
 .Python
