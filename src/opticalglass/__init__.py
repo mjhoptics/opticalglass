@@ -53,3 +53,4 @@ except:
 finally:
     del version
 
+from .glassfactory import register_glass

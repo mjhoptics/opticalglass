@@ -34,3 +34,9 @@ spectral lines.csv
 getData.py
 rindexinfo-traverse_library.py
 opticalglass-pyscaffold-4_3/*
+
+# vscode
+*.code-workspace
+
+# pytest
+__pycache__

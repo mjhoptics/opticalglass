@@ -15,6 +15,7 @@ import logging
 from . import glass as cat_glass
 from . import glasserror as ge
 from . import rindexinfo
+from .opticalmedium import OpticalMedium
 
 from .caselessDictionary import CaselessDictionary
 
@@ -25,6 +26,22 @@ _catalog_list = CaselessDictionary()
 CDGM, Hikari, Hoya, Ohara, Schott, Sumita = range(6)
 _cat_names = ["CDGM", "Hikari", "Hoya", "Ohara", "Schott", "Sumita"]
 _cat_names_uc = [cat.upper() for cat in _cat_names]
+
+
+# A place to hold user-registered glasses:
+_custom_glass_registry = {}  
+
+
+def register_glass(
+    medium: OpticalMedium
+):
+    """
+    Register a custom glass.
+    """
+    key = (medium.name(), medium.catalog_name())
+    if not isinstance(medium, OpticalMedium):
+        raise TypeError('medium must be an instance of OpticalMedium')
+    _custom_glass_registry[key] = medium
 
 
 def create_glass(*name_catalog):
@@ -50,6 +67,8 @@ def create_glass(*name_catalog):
     def _create_glass(name, catalog):
         if catalog == "rindexinfo":
             return rindexinfo.create_glass(name)
+        elif (name, catalog) in _custom_glass_registry:  # for custom glasses
+            return _custom_glass_registry[(name, catalog)]
         else:
             gn_decode = cat_glass.decode_glass_name(name)
             if catalog not in _catalog_list:

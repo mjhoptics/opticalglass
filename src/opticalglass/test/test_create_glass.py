@@ -8,6 +8,7 @@
 import unittest
 from opticalglass.glassfactory import create_glass
 from opticalglass import glasserror as ge
+from opticalglass import opticalmedium
 
 
 class CreateGlassTestCase(unittest.TestCase):
@@ -62,6 +63,18 @@ class CreateGlassTestCase(unittest.TestCase):
                           create_glass, 'N-BK7, xSchott')
         self.assertRaises(ge.GlassCatalogNotFoundError, 
                           create_glass, 'N-BK7','xSchott')
+
+    def test_register_glass(self):
+        """ test registering a glass """
+        from opticalglass.glassfactory import register_glass
+        from opticalglass import glasserror as ge
+
+        # register a glass
+        register_glass(opticalmedium.InterpolatedMedium(
+            'myglass', [(600, 1.5), (610, 1.6), (620, 1.61), (630, 1.62)], cat='mycatalog')
+        )
+        medium = create_glass('myglass', 'mycatalog')
+        self.assertIsInstance(medium, opticalmedium.OpticalMedium)
 
 
 if __name__ == '__main__':
