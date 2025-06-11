@@ -52,4 +52,3 @@ except:
     __version__ = 'unknown'
 finally:
     del version
-
