@@ -52,5 +52,3 @@ except:
     __version__ = 'unknown'
 finally:
     del version
-
-from .glassfactory import register_glass

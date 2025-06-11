@@ -8,7 +8,7 @@
 import unittest
 from opticalglass.glassfactory import create_glass
 from opticalglass import glasserror as ge
-from opticalglass import opticalmedium
+import opticalglass.opticalmedium as om
 
 
 class CreateGlassTestCase(unittest.TestCase):
@@ -67,14 +67,13 @@ class CreateGlassTestCase(unittest.TestCase):
     def test_register_glass(self):
         """ test registering a glass """
         from opticalglass.glassfactory import register_glass
-        from opticalglass import glasserror as ge
 
         # register a glass
-        register_glass(opticalmedium.InterpolatedMedium(
+        register_glass(om.InterpolatedMedium(
             'myglass', [(600, 1.5), (610, 1.6), (620, 1.61), (630, 1.62)], cat='mycatalog')
         )
         medium = create_glass('myglass', 'mycatalog')
-        self.assertIsInstance(medium, opticalmedium.OpticalMedium)
+        self.assertIsInstance(medium, om.OpticalMedium)
 
 
 if __name__ == '__main__':
