@@ -12,6 +12,8 @@
 """
 import logging
 
+import os
+import json_tricks
 from . import glass as cat_glass
 from . import glasserror as ge
 from . import rindexinfo
@@ -42,6 +44,38 @@ def register_glass(
     if not isinstance(medium, OpticalMedium):
         raise TypeError('medium must be an instance of OpticalMedium')
     _custom_glass_registry[key] = medium
+
+
+def save_custom_glasses(dirname):
+    '''
+    Save the custom glasses to the specified directory.
+    '''
+    if not os.path.exists(dirname):
+        os.makedirs(dirname)
+    for (name, catalog), medium in _custom_glass_registry.items():
+        catalog_dir = os.path.join(dirname, catalog.lower())
+        if not os.path.exists(catalog_dir):
+            os.makedirs(catalog_dir)
+
+        filename = os.path.join(catalog_dir, f'{name}.json')
+            
+        with open(filename, 'w') as f:
+            json_tricks.dump(medium, f, indent=4)
+
+
+def load_custom_glasses(dirname):
+    '''
+    Load custom glasses from the specified directory.
+    '''
+    if not os.path.exists(dirname):
+        raise FileNotFoundError(f'Directory {dirname} does not exist')
+
+    for root, _, files in os.walk(dirname):
+        for filename in files:
+            if filename.endswith('.json'):
+                with open(os.path.join(root, filename), 'r') as f:
+                    medium = json_tricks.load(f)
+                    register_glass(medium)
 
 
 def create_glass(*name_catalog):
