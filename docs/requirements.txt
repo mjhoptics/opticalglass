@@ -21,7 +21,7 @@ pyside6==6.7.3
     # via opticalglass (setup.py)
 pyyaml==6.0.1
     # via opticalglass (setup.py)
-requests==2.32.3
+requests==2.32.4
     # via opticalglass (setup.py)
 scipy==1.14.1
     # via opticalglass (setup.py)
