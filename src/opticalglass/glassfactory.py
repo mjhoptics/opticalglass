@@ -44,6 +44,21 @@ def register_glass(
     if not isinstance(medium, OpticalMedium):
         raise TypeError('medium must be an instance of OpticalMedium')
     _custom_glass_registry[key] = medium
+    if medium.catalog_name() not in _cat_names:
+        _cat_names.append(medium.catalog_name())
+        _cat_names_uc.append(medium.catalog_name().upper())
+
+
+class CustomGlassCatalog:
+    def __init__(self, cat):
+        self.catalog_name = cat
+        self.glass_list = [
+            # should return (gname_decode, gname, catalog) but gname_decode
+            # may not be defined for custom glasses. 
+            # gname_decode is supposed to be group_num, prefix, suffix. 
+            (('__NA__', '', ''), name, cat) for name, cat in _custom_glass_registry.keys()
+            if cat == cat
+        ]
 
 
 def save_custom_glasses(dirname):
@@ -159,6 +174,8 @@ def get_glass_catalog(cat_name, mod_name=None, cls_name=None):
     """
     if cat_name in _catalog_list:
         return _catalog_list[cat_name]
+    elif cat_name in [cat for _, cat in _custom_glass_registry.keys()]:
+        return CustomGlassCatalog(cat_name)
     else:
         try:
             if "Robb1983" in cat_name:

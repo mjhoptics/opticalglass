@@ -6,10 +6,15 @@
 """
 
 import unittest
-from opticalglass.glassfactory import create_glass, register_glass, save_custom_glasses, load_custom_glasses
+from opticalglass.glassfactory import (
+    create_glass, register_glass, save_custom_glasses, load_custom_glasses,
+    get_glass_catalog
+)
 from opticalglass import glasserror as ge
 import opticalglass.opticalmedium as om
 from opticalglass import modelglass
+from opticalglass import glass as cat_glass
+
 
 class CreateGlassTestCase(unittest.TestCase):
 
@@ -74,6 +79,20 @@ class CreateGlassTestCase(unittest.TestCase):
         )
         medium = create_glass('myglass', 'mycatalog')
         self.assertIsInstance(medium, om.OpticalMedium)
+
+        # make sure get_glass_catalog returns the catalog
+        cat = get_glass_catalog('mycatalog')
+        found = False
+        for g in cat.glass_list:
+            if g[1] == 'myglass':
+                found = True
+                # mimic zmxread by accessing glass[0][0] and glass[0][1]
+                gn_decode, gn, gc = g
+                # just make sure gn_decode has 3 elements
+                self.assertTrue(len(gn_decode) == 3) 
+                    
+        self.assertTrue(found)
+
 
     def test_save_load_custom_glass(self):
         """ test registering a glass """
