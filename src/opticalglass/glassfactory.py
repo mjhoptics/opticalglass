@@ -13,6 +13,7 @@
 import logging
 
 import os
+from pathlib import Path
 import json_tricks
 from . import glass as cat_glass
 from . import glasserror as ge
@@ -68,11 +69,7 @@ def save_custom_glasses(dirname):
     if not os.path.exists(dirname):
         os.makedirs(dirname)
     for (name, catalog), medium in _custom_glass_registry.items():
-        catalog_dir = os.path.join(dirname, catalog.lower())
-        if not os.path.exists(catalog_dir):
-            os.makedirs(catalog_dir)
-
-        filename = os.path.join(catalog_dir, f'{name}.json')
+        filename = Path(dirname) / f'{catalog}_{name}.json'
             
         with open(filename, 'w') as f:
             json_tricks.dump(medium, f, indent=4)

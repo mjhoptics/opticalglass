@@ -93,7 +93,6 @@ class CreateGlassTestCase(unittest.TestCase):
                     
         self.assertTrue(found)
 
-
     def test_save_load_custom_glass(self):
         """ test registering a glass """
         import opticalglass.glassfactory
@@ -114,7 +113,7 @@ class CreateGlassTestCase(unittest.TestCase):
             save_custom_glasses(dirname)
 
             # check that the glass is saved
-            self.assertTrue(os.path.exists(os.path.join(dirname, 'mycatalog/myglass.json')))
+            self.assertTrue(os.path.exists(os.path.join(dirname, 'mycatalog_myglass.json')))
 
             # Force to forget the registered glass
             opticalglass.glassfactory._custom_glass_registry = {}
