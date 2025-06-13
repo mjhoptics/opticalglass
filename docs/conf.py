@@ -25,7 +25,7 @@ sys.path.insert(0, os.path.join(__location__, "../src"))
 # -- Project information -----------------------------------------------------
 
 project = 'opticalglass'
-copyright = '2017-2024, Michael J. Hayford'
+copyright = '2017-2025, Michael J. Hayford'
 author = 'Michael J. Hayford'
 
 # version: The short X.Y version.
@@ -90,8 +90,8 @@ pygments_style = 'friendly'
 # pygments_style = 'solarize-light'
 
 rst_prolog = """
-.. |minimum_python_version| replace:: 3.10
-.. |minimum_numpy_version| replace:: 1.26.4
+.. |minimum_python_version| replace:: 3.11
+.. |minimum_numpy_version| replace:: 2.1.3
 .. |Series| replace:: :class:`~pandas.Series`
 .. |DataFrame| replace:: :class:`~pandas.DataFrame`
 """
