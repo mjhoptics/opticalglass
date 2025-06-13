@@ -39,7 +39,28 @@ def register_glass(
     medium: OpticalMedium
 ):
     """
-    Register a custom glass.
+    Registers a custom optical glass medium in the internal registry.
+
+    This function adds a user-defined `OpticalMedium` instance to the custom glass registry,
+    allowing it to be referenced and used elsewhere in the application. The medium is
+    indexed by a tuple of its name and catalog name. If the catalog name is new, it is
+    also added to the list of known catalog names (both in original and uppercase forms).
+
+    Parameters:
+        medium (OpticalMedium): The optical medium instance to register. Must be an instance
+            of the `OpticalMedium` class, and have a valid `name` and `catalog_name`.
+
+    Raises:
+        TypeError: If `medium` is not an instance of `OpticalMedium`.
+
+    Side Effects:
+        - Updates the `_custom_glass_registry` dictionary with the new medium.
+
+    Example:
+        >>> custom_medium = OpticalMedium(name="MyGlass", catalog_name="CustomCat", ...)
+        >>> register_glass(custom_medium)
+        >>> # Now `custom_medium` can be accessed via name and catalog
+        >>> glass = create_glass("MyGlass,CustomCat")
     """
     key = (medium.name(), medium.catalog_name())
     if not isinstance(medium, OpticalMedium):
