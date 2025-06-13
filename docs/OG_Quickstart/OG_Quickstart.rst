@@ -22,6 +22,7 @@ Command Line Quick Start
     import opticalglass.glassmap as gm
     from opticalglass.glassfactory import create_glass
 
+
 Creating a Glass Object
 -----------------------
 
@@ -70,6 +71,54 @@ Use the :meth:`~.glass.GlassPandas.rindex` method of the glass object to get the
 .. parsed-literal::
 
     (1.5143223472613747, 1.5168000345005885, 1.5223762897312285)
+
+
+Defining a user-defined Glass object
+------------------------------------
+
+It is also possible to work with a user-defined Glass object. There are several types of Glass objects available. 
+One particularly useful class is :class:`~.opticalmedium.InterpolatedMedium`, which creates a glass object by interpolating between a finite number of (wavelength, refractive index) data points.
+
+For example, 'BD-2' is an infrared glass material whose refractive index is [tabulated](https://refractiveindex.info/download/data/2013/BD-2.pdf) by the manufacturer.
+To create a Glass object,
+
+
+.. code:: ipython3
+
+  from opticalglass import opticalmedium as om
+
+  # A list of ([wavelength in nm], [refractive index]) pairs
+  pairs = [
+    (3000, 2.6266), (4000, 2.6210), (5000, 2.6173), (6000, 2.6142), (7000, 2.6117),
+    (8000, 2.6088), (9000, 2.6055), (10000, 2.6023), (11000, 2.5983), (12000, 2.5942),
+    (13000, 2.5892), (14000, 2.5843)
+  ]
+  # user-defined glass object
+  glass = om.InterpolatedMedium('BD2', pairs=pairs, cat='LIGHTPATH')
+
+  # Then, this can be used as the same way to the predefined glass object
+  glass.rindex(2500)
+
+.. parsed-literal::
+  array(2.6306544)
+
+
+We can also *register* this user-defined glass by :func:`~.glassfactory.register_glass`
+
+.. code:: ipython3
+
+  from opticalglass.glassfactory import register_glass
+  register_glass(glass)
+
+Now, we can access to the glass from the name (`BD2`) and catalog (`LIGHTPATH`)
+
+.. code:: ipython3
+
+  create_glass('BD2', 'LIGHTPATH')
+
+.. parsed-literal::
+
+  InterpolatedMedium('BD2', cat='LIGHTPATH', wvls=[3000, 4000, ..., 14000], rndx=[2.6266, 2.621, ..., 2.5843], kvals_wvls=None, kvals=None)
 
 
 

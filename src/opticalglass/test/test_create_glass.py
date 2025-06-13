@@ -6,9 +6,14 @@
 """
 
 import unittest
-from opticalglass.glassfactory import create_glass
+from opticalglass.glassfactory import (
+    create_glass, register_glass, save_custom_glasses, load_custom_glasses,
+    get_glass_catalog
+)
 from opticalglass import glasserror as ge
 import opticalglass.opticalmedium as om
+from opticalglass import modelglass
+from opticalglass import glass as cat_glass
 
 
 class CreateGlassTestCase(unittest.TestCase):
@@ -74,6 +79,49 @@ class CreateGlassTestCase(unittest.TestCase):
         )
         medium = create_glass('myglass', 'mycatalog')
         self.assertIsInstance(medium, om.OpticalMedium)
+
+        # make sure get_glass_catalog returns the catalog
+        cat = get_glass_catalog('mycatalog')
+        found = False
+        for g in cat.glass_list:
+            if g[1] == 'myglass':
+                found = True
+                # mimic zmxread by accessing glass[0][0] and glass[0][1]
+                gn_decode, gn, gc = g
+                # just make sure gn_decode has 3 elements
+                self.assertTrue(len(gn_decode) == 3) 
+                    
+        self.assertTrue(found)
+
+    def test_save_load_custom_glass(self):
+        """ test registering a glass """
+        import opticalglass.glassfactory
+
+        # register a glass
+        register_glass(om.InterpolatedMedium(
+            'myglass', [(600, 1.5), (610, 1.6), (620, 1.61), (630, 1.62)], cat='mycatalog')
+        )
+        # test modelglass as well
+        register_glass(modelglass.ModelGlass(
+            nd=1.61, vd=50, mat='anotherglass', cat='mycatalog')
+        )
+        # temporarily save the glass to a file
+        import os
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as dirname:
+            save_custom_glasses(dirname)
+
+            # check that the glass is saved
+            self.assertTrue(os.path.exists(os.path.join(dirname, 'mycatalog_myglass.json')))
+
+            # Force to forget the registered glass
+            opticalglass.glassfactory._custom_glass_registry = {}
+            load_custom_glasses(dirname)
+            medium = create_glass('myglass', 'mycatalog')
+            self.assertIsInstance(medium, om.OpticalMedium)
+            medium = create_glass('anotherglass', 'mycatalog')
+            self.assertIsInstance(medium, om.OpticalMedium)
 
 
 if __name__ == '__main__':

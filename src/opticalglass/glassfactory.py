@@ -12,6 +12,9 @@
 """
 import logging
 
+import os
+from pathlib import Path
+import json_tricks
 from . import glass as cat_glass
 from . import glasserror as ge
 from . import rindexinfo
@@ -36,12 +39,76 @@ def register_glass(
     medium: OpticalMedium
 ):
     """
-    Register a custom glass.
+    Registers a custom optical glass medium in the internal registry.
+
+    This function adds a user-defined `OpticalMedium` instance to the custom glass registry,
+    allowing it to be referenced and used elsewhere in the application. The medium is
+    indexed by a tuple of its name and catalog name. If the catalog name is new, it is
+    also added to the list of known catalog names (both in original and uppercase forms).
+
+    Parameters:
+        medium (OpticalMedium): The optical medium instance to register. Must be an instance
+            of the `OpticalMedium` class, and have a valid `name` and `catalog_name`.
+
+    Raises:
+        TypeError: If `medium` is not an instance of `OpticalMedium`.
+
+    Side Effects:
+        - Updates the `_custom_glass_registry` dictionary with the new medium.
+
+    Example:
+        >>> custom_medium = OpticalMedium(name="MyGlass", catalog_name="CustomCat", ...)
+        >>> register_glass(custom_medium)
+        >>> # Now `custom_medium` can be accessed via name and catalog
+        >>> glass = create_glass("MyGlass,CustomCat")
     """
     key = (medium.name(), medium.catalog_name())
     if not isinstance(medium, OpticalMedium):
         raise TypeError('medium must be an instance of OpticalMedium')
     _custom_glass_registry[key] = medium
+    if medium.catalog_name() not in _cat_names:
+        _cat_names.append(medium.catalog_name())
+        _cat_names_uc.append(medium.catalog_name().upper())
+
+
+class CustomGlassCatalog:
+    def __init__(self, cat):
+        self.catalog_name = cat
+        self.glass_list = [
+            # should return (gname_decode, gname, catalog) but gname_decode
+            # may not be defined for custom glasses. 
+            # gname_decode is supposed to be group_num, prefix, suffix. 
+            (('__NA__', '', ''), name, cat) for name, cat in _custom_glass_registry.keys()
+            if cat == cat
+        ]
+
+
+def save_custom_glasses(dirname):
+    '''
+    Save the custom glasses to the specified directory.
+    '''
+    if not os.path.exists(dirname):
+        os.makedirs(dirname)
+    for (name, catalog), medium in _custom_glass_registry.items():
+        filename = Path(dirname) / f'{catalog}_{name}.json'
+            
+        with open(filename, 'w') as f:
+            json_tricks.dump(medium, f, indent=4)
+
+
+def load_custom_glasses(dirname):
+    '''
+    Load custom glasses from the specified directory.
+    '''
+    if not os.path.exists(dirname):
+        raise FileNotFoundError(f'Directory {dirname} does not exist')
+
+    for root, _, files in os.walk(dirname):
+        for filename in files:
+            if filename.endswith('.json'):
+                with open(os.path.join(root, filename), 'r') as f:
+                    medium = json_tricks.load(f)
+                    register_glass(medium)
 
 
 def create_glass(*name_catalog):
@@ -125,6 +192,8 @@ def get_glass_catalog(cat_name, mod_name=None, cls_name=None):
     """
     if cat_name in _catalog_list:
         return _catalog_list[cat_name]
+    elif cat_name in [cat for _, cat in _custom_glass_registry.keys()]:
+        return CustomGlassCatalog(cat_name)
     else:
         try:
             if "Robb1983" in cat_name:
