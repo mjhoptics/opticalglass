@@ -185,6 +185,13 @@ class InterpolatedMedium(OpticalMedium):
             del attrs['yaml_data']
         return attrs
 
+    def __json_decode__(self, **attrs) -> None:
+        """ Rebuild the interpolating functions from the stored data """
+        for key, value in attrs.items():
+            setattr(self, key, value) 
+        # create the interpolation instances, which is not saved in json file
+        self.update()
+
     def sync_to_restore(self) -> None:
         """ rebuild interpolating function """
         self.update()
