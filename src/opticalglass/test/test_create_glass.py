@@ -118,11 +118,12 @@ class CreateGlassTestCase(unittest.TestCase):
             # Force to forget the registered glass
             opticalglass.glassfactory._custom_glass_registry = {}
             load_custom_glasses(dirname)
-            medium = create_glass('myglass', 'mycatalog')
-            self.assertIsInstance(medium, om.OpticalMedium)
             medium = create_glass('anotherglass', 'mycatalog')
             self.assertIsInstance(medium, om.OpticalMedium)
-
+            medium = create_glass('myglass', 'mycatalog')
+            self.assertIsInstance(medium, om.OpticalMedium)
+            # make sure medium can give refractive index
+            self.assertAlmostEqual(medium.rindex(610), 1.6, places=2)
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
