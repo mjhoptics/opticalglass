@@ -79,7 +79,7 @@ Defining a user-defined Glass object
 It is also possible to work with a user-defined Glass object. There are several types of Glass objects available. 
 One particularly useful class is :class:`~.opticalmedium.InterpolatedMedium`, which creates a glass object by interpolating between a finite number of (wavelength, refractive index) data points.
 
-For example, 'BD-2' is an infrared glass material whose refractive index is [tabulated](https://refractiveindex.info/download/data/2013/BD-2.pdf) by the manufacturer.
+For example, 'BD-2' is an infrared glass material whose refractive index is `tabulated <https://refractiveindex.info/download/data/2013/BD-2.pdf>`__ by the manufacturer.
 To create a Glass object,
 
 
