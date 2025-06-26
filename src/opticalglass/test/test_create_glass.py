@@ -11,10 +11,9 @@ from opticalglass.glassfactory import (
     get_glass_catalog
 )
 from opticalglass import glasserror as ge
-import opticalglass.opticalmedium as om
-from opticalglass import modelglass
+from opticalglass import opticalmedium as om
+from opticalglass import modelglass as mg
 from opticalglass import glass as cat_glass
-
 
 class CreateGlassTestCase(unittest.TestCase):
 
@@ -71,7 +70,6 @@ class CreateGlassTestCase(unittest.TestCase):
 
     def test_register_glass(self):
         """ test registering a glass """
-        from opticalglass.glassfactory import register_glass
 
         # register a glass
         register_glass(om.InterpolatedMedium(
@@ -95,35 +93,37 @@ class CreateGlassTestCase(unittest.TestCase):
 
     def test_save_load_custom_glass(self):
         """ test registering a glass """
-        import opticalglass.glassfactory
+        import opticalglass.glassfactory as gfact
 
         # register a glass
         register_glass(om.InterpolatedMedium(
             'myglass', [(600, 1.5), (610, 1.6), (620, 1.61), (630, 1.62)], cat='mycatalog')
         )
         # test modelglass as well
-        register_glass(modelglass.ModelGlass(
+        register_glass(mg.ModelGlass(
             nd=1.61, vd=50, mat='anotherglass', cat='mycatalog')
         )
         # temporarily save the glass to a file
-        import os
         import tempfile
+        from pathlib import Path
 
         with tempfile.TemporaryDirectory() as dirname:
-            save_custom_glasses(dirname)
+            dirpath = Path(dirname)
+            save_custom_glasses(dirpath)
 
+            filename = dirpath / 'custom_glasses.json'
             # check that the glass is saved
-            self.assertTrue(os.path.exists(os.path.join(dirname, 'mycatalog_myglass.json')))
+            self.assertTrue(filename.exists())
 
             # Force to forget the registered glass
-            opticalglass.glassfactory._custom_glass_registry = {}
-            load_custom_glasses(dirname)
-            medium = create_glass('anotherglass', 'mycatalog')
-            self.assertIsInstance(medium, om.OpticalMedium)
-            medium = create_glass('myglass', 'mycatalog')
-            self.assertIsInstance(medium, om.OpticalMedium)
+            gfact._custom_glass_registry = {}
+            load_custom_glasses(dirpath)
+            anotherglass = create_glass('anotherglass', 'mycatalog')
+            self.assertIsInstance(anotherglass, om.OpticalMedium)
+            myglass = create_glass('myglass', 'mycatalog')
+            self.assertIsInstance(myglass, om.OpticalMedium)
             # make sure medium can give refractive index
-            self.assertAlmostEqual(medium.rindex(610), 1.6, places=2)
+            self.assertAlmostEqual(myglass.rindex(610), 1.6, places=2)
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

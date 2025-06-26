@@ -83,32 +83,55 @@ class CustomGlassCatalog:
         ]
 
 
-def save_custom_glasses(dirname):
+def save_custom_glasses(dirname: str|Path, test_legacy:bool = False):
     '''
     Save the custom glasses to the specified directory.
     '''
-    if not os.path.exists(dirname):
-        os.makedirs(dirname)
-    for (name, catalog), medium in _custom_glass_registry.items():
-        filename = Path(dirname) / f'{catalog}_{name}.json'
-            
+    dirpath = Path(dirname)
+    if not dirpath.exists():
+        dirpath.mkdir()
+        # os.makedirs(dirname)
+
+    filename = dirpath / 'custom_glasses.json'
+
+    if test_legacy:
+        for (name, catalog), medium in _custom_glass_registry.items():
+            filename = dirpath / f'{catalog}_{name}.json'
+
+            with open(filename, 'w') as f:
+                json_tricks.dump(medium, f, indent=4)
+
+    else:
+        # json only supports dicts with str keys, not tuples.
+        # Save glasses in a list.
+        export_glasses = [val for val in _custom_glass_registry.values()]
         with open(filename, 'w') as f:
-            json_tricks.dump(medium, f, indent=4)
+            json_tricks.dump(export_glasses, f, indent=4)
 
 
-def load_custom_glasses(dirname):
+def load_custom_glasses(dirname: str|Path, test_legacy:bool = False):
     '''
     Load custom glasses from the specified directory.
     '''
-    if not os.path.exists(dirname):
+    dirpath = Path(dirname)
+    if not dirpath.exists():
         raise FileNotFoundError(f'Directory {dirname} does not exist')
+    
+    filename = dirpath / 'custom_glasses.json'
 
-    for root, _, files in os.walk(dirname):
-        for filename in files:
-            if filename.endswith('.json'):
-                with open(os.path.join(root, filename), 'r') as f:
-                    medium = json_tricks.load(f)
-                    register_glass(medium)
+    if filename.exists() and test_legacy == False:
+        imported_glasses = []
+        with open(filename, 'r') as f:
+            imported_glasses = json_tricks.load(f)
+        for medium in imported_glasses:
+            register_glass(medium)
+    else:
+        for root, _, files in os.walk(dirname):
+            for filename in files:
+                if filename.endswith('.json'):
+                    with open(os.path.join(root, filename), 'r') as f:
+                        medium = json_tricks.load(f)
+                        register_glass(medium)
 
 
 def create_glass(*name_catalog):
