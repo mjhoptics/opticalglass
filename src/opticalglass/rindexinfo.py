@@ -140,7 +140,7 @@ def create_material(yaml_data:Any,
         matl.kvals = k
         matl.kvals_wvls = np.array([w*1000. for w in wvls])
 
-    matl.yaml_data = yaml_data
+    matl.yaml_data = yaml_data # type: ignore
 
     return matl
 

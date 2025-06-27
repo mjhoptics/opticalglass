@@ -8,13 +8,18 @@
     function for this purpose. The public function :func:`get_glass_catalog`
     returns the glass catalog instance corresponding to the input string.
 
+    Users may utilize the custom glass collection by using the 
+    :func:`register_glass` function. Glasses, specified by name and catalog 
+    name, can be used in the create_glass function. The collection may be saved 
+    and restored via a json file.
+
 .. codeauthor: Michael J. Hayford
 """
 import logging
 
-import os
 from pathlib import Path
 import json_tricks
+
 from . import glass as cat_glass
 from . import glasserror as ge
 from . import rindexinfo
@@ -30,21 +35,33 @@ CDGM, Hikari, Hoya, Ohara, Schott, Sumita = range(6)
 _cat_names = ["CDGM", "Hikari", "Hoya", "Ohara", "Schott", "Sumita"]
 _cat_names_uc = [cat.upper() for cat in _cat_names]
 
+__all__ = ['create_glass', 'get_glass_catalog', 'register_glass', 
+           'list_custom_glasses', 'save_custom_glasses', 'load_custom_glasses']
 
 # A place to hold user-registered glasses:
 _custom_glass_registry = {}  
 
 
-def register_glass(
-    medium: OpticalMedium
-):
+def list_custom_glasses():
+    """Lists the glasses registered in the custom glasses dict. """
+    if len(_custom_glass_registry) > 0:
+        print("Medium         Catalog")
+    else:
+        print("None")
+
+    for name, cat in _custom_glass_registry.keys():
+        print(f"{name:12s}   {cat:10s}")
+
+
+def register_glass(medium: OpticalMedium):
     """
     Registers a custom optical glass medium in the internal registry.
 
-    This function adds a user-defined `OpticalMedium` instance to the custom glass registry,
-    allowing it to be referenced and used elsewhere in the application. The medium is
-    indexed by a tuple of its name and catalog name. If the catalog name is new, it is
-    also added to the list of known catalog names (both in original and uppercase forms).
+    This function adds a user-defined `OpticalMedium` instance to the custom 
+    glass registry, allowing it to be referenced and used elsewhere in the 
+    application. The medium is indexed by a tuple of its name and catalog name. 
+    If the catalog name is new, it is also added to the list of known catalog 
+    names (both in original and uppercase forms).
 
     Parameters:
         medium (OpticalMedium): The optical medium instance to register. Must be an instance
@@ -83,33 +100,24 @@ class CustomGlassCatalog:
         ]
 
 
-def save_custom_glasses(dirname: str|Path, test_legacy:bool = False):
+def save_custom_glasses(dirname: str|Path):
     '''
     Save the custom glasses to the specified directory.
     '''
     dirpath = Path(dirname)
     if not dirpath.exists():
         dirpath.mkdir()
-        # os.makedirs(dirname)
 
     filename = dirpath / 'custom_glasses.json'
 
-    if test_legacy:
-        for (name, catalog), medium in _custom_glass_registry.items():
-            filename = dirpath / f'{catalog}_{name}.json'
-
-            with open(filename, 'w') as f:
-                json_tricks.dump(medium, f, indent=4)
-
-    else:
-        # json only supports dicts with str keys, not tuples.
-        # Save glasses in a list.
-        export_glasses = [val for val in _custom_glass_registry.values()]
-        with open(filename, 'w') as f:
-            json_tricks.dump(export_glasses, f, indent=4)
+    # json only supports dicts with str keys, not tuples.
+    # Save glasses in a list.
+    export_glasses = [val for val in _custom_glass_registry.values()]
+    with open(filename, 'w') as f:
+        json_tricks.dump(export_glasses, f, indent=4)
 
 
-def load_custom_glasses(dirname: str|Path, test_legacy:bool = False):
+def load_custom_glasses(dirname: str|Path):
     '''
     Load custom glasses from the specified directory.
     '''
@@ -119,13 +127,14 @@ def load_custom_glasses(dirname: str|Path, test_legacy:bool = False):
     
     filename = dirpath / 'custom_glasses.json'
 
-    if filename.exists() and test_legacy == False:
+    if filename.exists():
         imported_glasses = []
         with open(filename, 'r') as f:
             imported_glasses = json_tricks.load(f)
         for medium in imported_glasses:
             register_glass(medium)
     else:
+        import os
         for root, _, files in os.walk(dirname):
             for filename in files:
                 if filename.endswith('.json'):
