@@ -4,6 +4,11 @@
 Changelog
 =========
 
+Version 1.1.1
+=============
+Add custom_glass_registry and functions to :func:`~.glassfactory.register_glass`, :func:`~.glassfactory.list_custom_glasses`, :func:`~.glassfactory.save_custom_glasses` and :func:`~.glassfactory.load_custom_glasses`. Thanks to @fujiisoup for the suggestion and implementation.
+Complete the fix to RefractiveIndexInfo data hierarchy rearrangement.
+
 Version 1.1.0
 =============
 Port to PySide6 for Qt app support. This gains support for Mac silicon with conda-forge availability. Move to Numpy 2.1.3 and other dependency tweaks.
