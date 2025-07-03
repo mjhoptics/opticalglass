@@ -47,31 +47,58 @@ def create_glass(file_url: Union[str, Path]) -> OpticalMedium:
     return create_material(*yaml_pkg)
 
 
-def get_glassname_from_filestr(filestr: str):
-    """ try to construct a name and catalog from the filename/url """
+def summary_plots(opt_medium, opt_medium_yaml=None):
+    """ plot refractive index and thruput data, when available. """
+    import matplotlib.pyplot as plt
+    if opt_medium_yaml is None:
+        if hasattr(opt_medium, 'yaml_data'):
+            opt_medium_yaml = opt_medium.yaml_data
+    if opt_medium_yaml is not None:
+        print(f"{[d['type'] for d in opt_medium_yaml['DATA']]}")
+
+    plt.plot(opt_medium.wvls, opt_medium.calc_rindex(opt_medium.wvls), 
+             label='ref index')
+
+    if getattr(opt_medium, 'kvals', None) is not None:
+        plt.plot(opt_medium.kvals_wvls, opt_medium.kvals, label='k value')
+        plt.plot(*opt_medium.transmission_data(), label='T @ 10mm')
+
+    plt.title(f"{opt_medium.catalog_name()}: {opt_medium.name()}")
+    plt.xlabel('wavelength (nm)')
+
+    plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    plt.show()
+
+
+def get_glassname_from_filestr(filestr: str, include_rii_page=False):
+    """ try to construct a name and catalog from the filename/url 
+    
+    If `include_rii_page` is True, the "Page" or lowest level in the RII 
+    hierarchy, typically the lead author of the published results, is appended 
+    in brackets to the medium name.
+    """
     # strip off `.yml` and take final partition
-    full_db_path = filestr[filestr.find('database/'):]
-    path_parts = full_db_path.split('/')
-    name_catalog = path_parts[2:]
-    db = path_parts[1]
+    full_db_path = filestr[filestr.find('database/data/'):]
+    path_parts = full_db_path.split('/')[2:]
+
+    path_parts[-1] = path_parts[-1].removesuffix('.yml')
+    db = path_parts[0]
+
     catalog = 'rii-'
-    if name_catalog[0] == 'glass' or name_catalog[0] == 'other':
-        catalog += name_catalog[1]
-        name_catalog = name_catalog[2:]
+    name_catalog = path_parts[-3], path_parts[-1]
+    if db == 'specs':
+        catalog += path_parts[1]
+        name = path_parts[-1]
     else:
-        catalog += name_catalog[0]
-        name_catalog = name_catalog[1:]
+        if not path_parts[-2] == 'nk':
+            raise GlassDBNotSupported(path_parts[-2])
+        catalog += path_parts[-4]
+        if include_rii_page:
+            name = f"{name_catalog[0]} [{name_catalog[1]}]"
+        else:
+            name = f"{name_catalog[0]}"
 
-    if len(name_catalog) == 1:
-        name = name_catalog[0]
-    elif len(name_catalog) == 2:
-        name = f"{name_catalog[0]} [{name_catalog[1]}]"
-    else:
-        name = name_catalog[0]
-        for subname in name_catalog[1:]:
-            name += '-' + subname
-
-    logger.info(f"glassname_from_filestr: {db}, {name}, {catalog}")
+    logger.info(f"glassname_from_filestr: {db:7s}:   {catalog:25s}  {name}")
     return db, name, catalog
 
 
@@ -104,8 +131,6 @@ def read_rii_url(url:str):
 def create_material(yaml_data:Any, 
                     label:str, catalog:str, db:str) -> OpticalMedium:
     """ Create a material object given yaml data and identifiers. """
-    if db != 'data-nk':
-        raise GlassDBNotSupported(db)
     num_datasets = len(yaml_data["DATA"])
 
     material_data = yaml_data["DATA"][0]
@@ -389,7 +414,8 @@ formulas = {
 
 
 class RIIMedium(OpticalMedium):
-    def __init__(self, label, coefs, rndx_fct, data_range=None, 
+    """ RefractiveIndexInfo wrapper class supporting formula specs """
+    def __init__(self, label, coefs, rndx_fct, data_range, 
                  kvals_wvls=None, kvals=None, 
                  mat='', cat=''):
         """
@@ -478,25 +504,3 @@ class RIIMedium(OpticalMedium):
         t = thi*1.0e3
         t_vals = np.exp(-4.0*np.pi*t*self.kvals/self.kvals_wvls)
         return self.kvals_wvls, t_vals
-
-
-def summary_plots(opt_medium, opt_medium_yaml=None):
-    """ plot refractive index and thruput data, when available. """
-    import matplotlib.pyplot as plt
-    if opt_medium_yaml is None:
-        if hasattr(opt_medium, 'yaml_data'):
-            opt_medium_yaml = opt_medium.yaml_data
-    if opt_medium_yaml is not None:
-        print(f"{[d['type'] for d in opt_medium_yaml['DATA']]}")
-
-    plt.plot(opt_medium.wvls, opt_medium.calc_rindex(opt_medium.wvls), 
-             label='ref index')
-
-    if getattr(opt_medium, 'kvals', None) is not None:
-        plt.plot(opt_medium.kvals_wvls, opt_medium.kvals, label='k value')
-        plt.plot(*opt_medium.transmission_data(), label='T @ 10mm')
-
-    plt.title(f"{opt_medium.catalog_name()}: {opt_medium.name()}")
-    plt.xlabel('wavelength (nm)')
-
-    plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
