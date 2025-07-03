@@ -4,6 +4,8 @@
 #
 #    pip-compile --output-file=requirements_311.txt setup.py
 #
+json-tricks==3.17.3
+    # via opticalglass (setup.py)
 matplotlib==3.10.3
     # via opticalglass (setup.py)
 numpy==2.3.1
