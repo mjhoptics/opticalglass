@@ -523,13 +523,13 @@ class GlassPandas(OpticalMedium):
         """
         pass
 
-    def transmission_data(self):
+    def transmission_data(self, meas_thi: str='internal transmission mm, 10'):
         """ returns an array of transmission data for the glass
 
         Returns: np.arrays of wavelength and transmission for 10mm sample
         """
         glas = self.glass_data()
-        t10 = glas['internal transmission mm, 10']
+        t10 = glas[meas_thi]
         # coerce non-numeric values to NaN, then convert NaN to 0.
         t10_flt = pd.to_numeric(t10, errors='coerce').fillna(0)
         t10_np = t10_flt.to_numpy(dtype=float)
