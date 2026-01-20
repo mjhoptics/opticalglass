@@ -53,7 +53,7 @@ class GlassMapDB():
                     arg = gf.fill_catalog_list()
                 for cat_name, catalog in arg.items():
                     self.catalogs.append((catalog, cat_name))
-            if isinstance(arg, list):
+            if isinstance(arg, list) and len(arg)>0:
                 if isinstance(arg[0], str):
                     # treat as a list of catalog names
                     for cat_name in arg:

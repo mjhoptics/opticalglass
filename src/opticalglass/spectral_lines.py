@@ -5,7 +5,6 @@
 
 .. codeauthor: Michael J. Hayford
 """
-from typing import Union
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
@@ -64,7 +63,7 @@ spectra = {'Nd': 1060.0,
 spectra_uc = {key.upper(): val for key, val in spectra.items()}
 
 
-def get_wavelength(wvl) -> Union[float, npt.NDArray]:
+def get_wavelength(wvl) -> float | npt.NDArray:
     """Return wvl in nm, where wvl can be a spectral line
 
     Example::
@@ -104,5 +103,5 @@ def get_wavelength(wvl) -> Union[float, npt.NDArray]:
     elif isinstance(wvl, pd.Index):
         wvls = [(w if isinstance(w, float) else spectra[w]) for w in wvl]
         return np.array(wvls)
-    else:
+    else:  # use wvl as a key into spectra
         return spectra[wvl]

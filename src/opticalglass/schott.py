@@ -46,6 +46,8 @@ class SchottCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
             ('dispersion coefficients', None, header_row, 'G', 'L'),
             ('internal transmission mm, 10', 
              SchottCatalog.get_transmission_wvl, header_row, 'BP', 'CS'),
+            ('internal transmission mm, 25', 
+             SchottCatalog.get_transmission_wvl, header_row, 'AL', 'BO'),
             ('chemical properties', None, header_row, 'CU', 'CY'),
             ('thermal properties', None, header_row, 'DA', 'DG'),
             ('mechanical properties', None, header_row, 'DH', 'DK'),
