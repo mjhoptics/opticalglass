@@ -9,8 +9,7 @@
 """
 
 import numpy as np
-from typing import (Protocol, runtime_checkable, 
-                    Dict, List, Tuple, Union)
+from typing import (Protocol, runtime_checkable, Tuple)
 from numpy.typing import NDArray
 from abc import abstractmethod
 
@@ -40,7 +39,7 @@ class OpticalMedium(Protocol):
         pass
 
     @abstractmethod
-    def calc_rindex(self, wv_nm: Union[float, NDArray]) -> Union[float, NDArray]:
+    def calc_rindex(self, wv_nm: float | NDArray) -> float | NDArray:
         """ returns the interpolated refractive index at wv_nm
 
         Args:
@@ -66,7 +65,7 @@ class OpticalMedium(Protocol):
         """
         pass
 
-    def rindex(self, wvl: Union[float, str]) -> float:
+    def rindex(self, wvl: float | str) -> float:
         """ returns the interpolated refractive index at wvl
 
         Args:
@@ -98,7 +97,7 @@ class Air(OpticalMedium):
     def catalog_name(self) -> str:
         return ''
 
-    def calc_rindex(self, wv_nm: Union[float, NDArray]) -> Union[float, NDArray]:
+    def calc_rindex(self, wv_nm: float | NDArray) -> float | NDArray:
         return 1.0
 
     def meas_rindex(self, wvl: str) -> float:
@@ -177,7 +176,7 @@ class InterpolatedMedium(OpticalMedium):
                 ', kvals_wvls=' + repr(self.kvals_wvls) +
                 ', kvals=' + repr(self.kvals) + ')')
 
-    def __json_encode__(self) -> Dict:
+    def __json_encode__(self) -> dict:
         attrs = dict(vars(self))
         del attrs['rindex_interp']
         del attrs['kvals_interp']
@@ -233,7 +232,7 @@ class InterpolatedMedium(OpticalMedium):
         """ returns the glass catalog name """
         return self._catalog
 
-    def calc_rindex(self, wv_nm: Union[float, NDArray]) -> Union[float, NDArray]:
+    def calc_rindex(self, wv_nm: float | NDArray) -> float | NDArray:
         """ returns the interpolated refractive index at wv_nm """
         return self.rindex_interp(wv_nm)
 
