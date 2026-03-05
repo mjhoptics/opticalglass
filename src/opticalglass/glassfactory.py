@@ -16,18 +16,24 @@
 .. codeauthor: Michael J. Hayford
 """
 import logging
+from typing import Optional, Any
 
 from pathlib import Path
 import json_tricks
 
 from . import glass as cat_glass
+from . import agf_glass as agf
 from . import glasserror as ge
 from . import rindexinfo
 from .opticalmedium import OpticalMedium
+from .glasslibs import (GlassLibrary, GlassCatalog, GlassCatalogProto, 
+                        calc_glass_map_arrays)
 
 from .caselessDictionary import CaselessDictionary
 
 logger = logging.getLogger(__name__)
+
+libraries = ['user', 'agf', 'xls', 'rii', 'robb']
 
 _catalog_list = CaselessDictionary()
 
@@ -44,13 +50,17 @@ _custom_glass_registry = {}
 
 def list_custom_glasses():
     """Lists the glasses registered in the custom glasses dict. """
-    if len(_custom_glass_registry) > 0:
+    num_glasses = 0
+    for lib in og_glass_libs['user']:
+        num_glasses += len(lib.catalog)
+    if num_glasses > 0:
         print("Medium         Catalog")
     else:
         print("None")
 
-    for name, cat in _custom_glass_registry.keys():
-        print(f"{name:12s}   {cat:10s}")
+    for lib in og_glass_libs['user']:
+        for g in lib.catalog.values():
+            print(f"{g.name():12s}   {g.catalog_name():10s}")
 
 
 def register_glass(medium: OpticalMedium):
@@ -79,25 +89,50 @@ def register_glass(medium: OpticalMedium):
         >>> # Now `custom_medium` can be accessed via name and catalog
         >>> glass = create_glass("MyGlass,CustomCat")
     """
-    key = (medium.name(), medium.catalog_name())
     if not isinstance(medium, OpticalMedium):
         raise TypeError('medium must be an instance of OpticalMedium')
-    _custom_glass_registry[key] = medium
-    if medium.catalog_name() not in _cat_names:
-        _cat_names.append(medium.catalog_name())
-        _cat_names_uc.append(medium.catalog_name().upper())
+    
+    user_lib = og_glass_libs['user']
+    cat_name = medium.catalog_name()
+    if cat_name in user_lib:
+        user_lib[cat_name].catalog.update({medium.name(): medium})
+    else:
+        # user_lib[cat_name] = CustomGlassCatalog(cat_name, 
+        user_lib[cat_name] = GlassCatalog(cat_name, 
+                                                {medium.name(): medium})
 
 
-class CustomGlassCatalog:
-    def __init__(self, cat):
-        self.catalog_name = cat
-        self.glass_list = [
-            # should return (gname_decode, gname, catalog) but gname_decode
-            # may not be defined for custom glasses. 
-            # gname_decode is supposed to be group_num, prefix, suffix. 
-            (('__NA__', '', ''), name, cat) for name, cat in _custom_glass_registry.keys()
-            if cat == cat
-        ]
+class CustomGlassCatalog(GlassCatalogProto):
+
+    def __init__(self, catalog_name: str, catalog: dict[str, Any]):
+        self.name: str = catalog_name
+        self.catalog: dict[str, Any] = catalog
+
+    def catalog_name(self):
+        return self.name
+
+    def __contains__(self, gname: str) -> bool:
+        return gname in self.catalog
+    
+    def __getitem__(self, key: str) -> Any:
+        return self.catalog[key]
+
+    def create_glass(self, gname: str, gcat: str) -> OpticalMedium|None:
+        """ Create an instance of the glass `gname`. """
+        return self.catalog[gname]
+    
+    def glass_map_data(self, wvl='d', **kwargs):
+        """ return index and dispersion data for all glasses in the catalog
+
+        Args:
+            wvl (str): the central wavelength for the data, either 'd' or 'e'
+
+        Returns:
+            index, V-number, partial dispersion, Buchdahl coefficients, and
+            glass names
+        """
+        glasses = list(self.catalog.values())
+        return calc_glass_map_arrays(glasses, wvl, 'F', 'C', **kwargs)
 
 
 def save_custom_glasses(dirname: str|Path):
@@ -108,13 +143,9 @@ def save_custom_glasses(dirname: str|Path):
     if not dirpath.exists():
         dirpath.mkdir()
 
-    filename = dirpath / 'custom_glasses.json'
-
-    # json only supports dicts with str keys, not tuples.
-    # Save glasses in a list.
-    export_glasses = [val for val in _custom_glass_registry.values()]
+    filename = dirpath / 'user_glass_lib.json'
     with open(filename, 'w') as f:
-        json_tricks.dump(export_glasses, f, indent=4)
+        json_tricks.dump(og_glass_libs['user'], f, indent=4)
 
 
 def load_custom_glasses(dirname: str|Path):
@@ -125,11 +156,16 @@ def load_custom_glasses(dirname: str|Path):
     if not dirpath.exists():
         raise FileNotFoundError(f'Directory {dirname} does not exist')
     
-    filename = dirpath / 'custom_glasses.json'
+    user_lib_path = dirpath / 'user_glass_lib.json'
+    custom_lib_path = dirpath / 'custom_glasses.json'
 
-    if filename.exists():
+    if user_lib_path.exists():
+        with open(user_lib_path, 'r') as f:
+            user_lib = json_tricks.load(f)
+            og_glass_libs['user'] = user_lib
+    elif custom_lib_path.exists():
         imported_glasses = []
-        with open(filename, 'r') as f:
+        with open(custom_lib_path, 'r') as f:
             imported_glasses = json_tricks.load(f)
         for medium in imported_glasses:
             register_glass(medium)
@@ -163,33 +199,20 @@ def create_glass(*name_catalog):
         GlassNotFoundError: if name isn't in the specified catalog
 
     """
-    def _create_glass(name, catalog):
+    def _create_glass(gname: str, catalog: str):
         if catalog == "rindexinfo":
-            return rindexinfo.create_glass(name)
-        elif (name, catalog) in _custom_glass_registry:  # for custom glasses
-            return _custom_glass_registry[(name, catalog)]
+            material = rindexinfo.create_glass(gname)
+            og_glass_libs['rii']['rindexinfo'][gname] = material
+            return material
         else:
-            gn_decode = cat_glass.decode_glass_name(name)
-            if catalog not in _catalog_list:
-                try:
-                    cat = get_glass_catalog(catalog)
-                except ge.GlassError as gerr:
-                    raise gerr
-            if catalog in _catalog_list:
-                try:
-                    # Lookup the decoded glass name. This avoids some problems
-                    # with how design programs not exactly matching the
-                    # manufacturer's names.
-                    gn, gc = _catalog_list[catalog].glass_lookup[gn_decode]
-                except KeyError:
-                    raise ge.GlassNotFoundError(catalog, name)
-                else:
-                    return _catalog_list[catalog].create_glass(gn, gc)
-            elif "Robb1983" in catalog:
-                return cat_glass.Robb1983Catalog().create_glass(name, catalog)
-            else:
-                logger.info('glass catalog %s not found', catalog)
+            cat_list = og_glass_libs.find_catalog(catalog)
+            if len(cat_list) == 0:
                 raise ge.GlassCatalogNotFoundError(catalog)
+            for glass_cat in cat_list:
+                if gname in glass_cat:
+                    medium = glass_cat.create_glass(gname, catalog)
+                    return medium
+        raise ge.GlassNotFoundError(catalog, gname)
 
     if len(name_catalog) == 2:
         name, catalog = name_catalog
@@ -225,7 +248,7 @@ def get_glass_catalog(cat_name, mod_name=None, cls_name=None):
     if cat_name in _catalog_list:
         return _catalog_list[cat_name]
     elif cat_name in [cat for _, cat in _custom_glass_registry.keys()]:
-        return CustomGlassCatalog(cat_name)
+        return GlassCatalog(cat_name)
     else:
         try:
             if "Robb1983" in cat_name:
@@ -249,3 +272,50 @@ def fill_catalog_list(cat_list=None):
     for cat in cat_list:
         get_glass_catalog(cat)
     return _catalog_list
+
+libraries = ['user', 'xls', 'agf', 
+             'rii', 
+            #  'rii-main', 'rii-specs', 'rii-other', 'rii-organic', 'rii-glass', 
+             'robb']
+
+class CentralGlassLibrary(GlassLibrary):
+    def __init__(self, search_order: Optional[list[str]] = None):
+        if search_order is None:
+            search_order = list(libraries)
+        glass_libs = {}
+        for lib in libraries:
+            match lib:
+                case 'user':
+                    # custom_cat = CustomGlassCatalog('custom', 
+                    custom_cat = GlassCatalog('custom', 
+                                                    _custom_glass_registry)
+                    user_lib = GlassLibrary('user', 
+                                            {'custom': custom_cat}, 
+                                            ['custom'])
+                    glass_libs.update({lib: user_lib})
+                case 'xls':
+                    glass_cats = fill_catalog_list()
+                    _lib = GlassLibrary(lib, glass_cats, _cat_names)
+                    glass_libs.update({lib: _lib})
+                case 'agf':
+                    agf_lib = agf.get_agf_lib()
+                    glass_libs.update({lib: agf_lib})
+                case 'rii':
+                    rii_cat = GlassCatalog('rindexinfo', {})
+                    rii_lib = GlassLibrary('rii', 
+                                           {'rindexinfo': rii_cat}, 
+                                           ['rindexinfo'])
+                    glass_libs.update({lib: rii_lib})
+                    rii_libs = rindexinfo.get_rii_libs()
+                    glass_libs.update(rii_libs)
+                    search_order.extend(rii_libs.keys())
+                case 'robb':
+                    robb_lib = cat_glass.get_robb_lib()
+                    glass_libs.update({lib: robb_lib})
+                case _:
+                    _lib = GlassLibrary(lib, {}, [])
+                    glass_libs.update({lib: _lib})
+
+        super().__init__('glass library', glass_libs, search_order)
+
+og_glass_libs: CentralGlassLibrary = CentralGlassLibrary()

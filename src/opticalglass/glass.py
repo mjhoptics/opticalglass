@@ -28,7 +28,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from typing import Union
+from typing import Any
 from numpy.typing import NDArray
 from abc import abstractmethod
 
@@ -38,7 +38,7 @@ from . import glasserror as ge
 from .opticalmedium import OpticalMedium
 from .util import Singleton, Counter
 from .spectral_lines import get_wavelength
-
+from .glasslibs import GlassCatalogProto, GlassLibrary
 from .caselessDictionary import CaselessDictionary
 
 logger = logging.getLogger(__name__)
@@ -216,7 +216,7 @@ def build_glass_cat(xl_df, series_mappings, item_mappings,
     return glass_cat
 
 
-class GlassCatalogPandas():
+class GlassCatalogPandas(GlassCatalogProto):
     """ Pandas-based glass catalog
     
     Optical glass manufacturers have settled on Excel spreadsheets as a means 
@@ -294,10 +294,10 @@ class GlassCatalogPandas():
             name: name of the glass catalog
             fname: excel filename, located in ``data`` directory
             series_mappings: the header string for the Glass column in fname
-            item_mappings: the header string for the first refractive index coefficient
-                      column in fname
-            args: the header string for the first refractive index value
-                        column in fname
+            item_mappings: the header string for the first refractive index 
+                            coefficient column in fname
+            args: the header string for the first refractive index value column 
+                    in fname
         """
         self.name = name
         # Open the workbook
@@ -327,6 +327,12 @@ class GlassCatalogPandas():
 
     def catalog_name(self):
         return self.name
+
+    def __contains__(self, gname: str) -> bool:
+        return gname in self.df.index.array
+
+    def __getitem__(self, gname: str) -> Any:
+        return self.df.loc[gname]
 
     def get_glass_names(self):
         """ returns a list of glass names """
@@ -510,7 +516,7 @@ class GlassPandas(OpticalMedium):
         """
         return self.calc_rindex(get_wavelength(wvl))
 
-    def calc_rindex(self, wv_nm: Union[float, NDArray]) -> Union[float, NDArray]:
+    def calc_rindex(self, wv_nm: float | NDArray) -> float | NDArray:
         """ returns the interpolated refractive index at wv_nm
 
         **Must be provided by the derived class**
@@ -538,7 +544,7 @@ class GlassPandas(OpticalMedium):
         return t10_wvls, t10_np
 
 
-def decode_glass_name(glass_name):
+def decode_glass_name(glass_name: str) -> tuple[tuple[str, str], str, str]:
     """Split glass_name into prefix, group, num, suffix.
 
     Manufacturers glass names follow a common pattern. At the simplest, it is
@@ -646,7 +652,40 @@ def glass_catalog_stats(glass_list, do_print=False):
     return groups, group_nums, prefixes, suffixes
 
 
-class Robb1983Catalog(metaclass=Singleton):
+def get_robb_lib(fname='robb1983_data_final.txt') -> GlassLibrary:
+    
+    # Open the workbook
+    glass_lib = CaselessDictionary()
+    with get_filepath(fname).open() as f_input:
+        for line in f_input:
+            if line[0] == '#':
+                if 'GLASS CATALOGUE' in line:
+                    tokens = line[1:].split()
+                    catalog = tokens[0]
+                    glass_lib[catalog] = {}
+            else:
+                tokens = line.split()
+                gname = tokens[0]
+                try:
+                    gname_decode = decode_glass_name(gname)
+                except UnboundLocalError:
+                    print(catalog, gname)
+                else:
+                    rndx = float(tokens[1])
+                    nu1 = float(tokens[2])
+                    nu2 = float(tokens[3])
+                    glass_lib[catalog][gname] = (
+                        gname_decode, rndx, nu1, nu2)
+
+    robb_lib = GlassLibrary('robb', {}, [])
+    for cat_name, cat_data in glass_lib.items():
+        robb_cat = RobbCatalog(cat_name, cat_data)
+        robb_lib[cat_name] = robb_cat
+
+    return robb_lib
+
+
+class RobbCatalog(GlassCatalogProto):
     """ glass catalog based on data in Robb, et als 1983 paper on Buchdahl's
     chromatic coordinate
 
@@ -655,70 +694,28 @@ class Robb1983Catalog(metaclass=Singleton):
     chromatic coordinate <https://doi.org/10.1364/AO.22.001198>`_ . The
     copyright date for all 5 catalogs cited was 1980.
 
-    Args:
-        fname: filename, located in ``data`` directory
-
     Attributes:
-        glass_db: dict lookup by catalog and glass name, value is decoded
-                  glassname and Buchdahl coefficients
-        glass_list: list of decoded_glassname, glassname, and catalog per glass
-
+        name: the catalog name
+        catalog: dict lookup by glass name, value is decoded glassname and Buchdahl coefficients
     """
 
-    _cat_names = ["SCHOTT", "OHARA", "HOYA", "CORNING-FRANCE", "CHANCE"]
 
-    def __init__(self, fname='robb1983_data_final.txt'):
-        # Open the workbook
-        glass_db = CaselessDictionary()
-        glass_list = []
-        rndx_list = []
-        nu1_list = []
-        nu2_list = []
-        with get_filepath(fname).open() as f_input:
-            for line in f_input:
-                if line[0] == '#':
-                    if 'GLASS CATALOGUE' in line:
-                        tokens = line[1:].split()
-                        catalog = 'Robb1983.' + tokens[0]
-                        glass_db[catalog] = {}
-                else:
-                    tokens = line.split()
-                    gname = tokens[0]
-                    try:
-                        gname_decode = decode_glass_name(gname)
-                    except UnboundLocalError:
-                        print(catalog, gname)
-                    else:
-                        rndx = float(tokens[1])
-                        nu1 = float(tokens[2])
-                        nu2 = float(tokens[3])
-                        glass_db[catalog][gname] = (
-                            gname_decode, rndx, nu1, nu2)
-                        glass_list.append((gname_decode, gname, catalog))
-                        rndx_list.append(rndx)
-                        nu1_list.append(nu1)
-                        nu2_list.append(nu2)
+    def __init__(self, catalog_name: str, catalog: dict[str, Any]):
+        self.name: str = catalog_name
+        self.catalog: dict[str, Any] = catalog
 
-        glass_lookup = {gn_decode: (gn, gc)
-                        for gn_decode, gn, gc in glass_list}
-        self.glass_db = glass_db
-        self.glass_list = glass_list
-        self.glass_lookup = glass_lookup
-        self._glass_data = CaselessDictionary()
+    def catalog_name(self):
+        return self.name
 
-    @property
-    def glass_data(self):
-        if len(self._glass_data) == 0:
-            for rbk, rbv in self.glass_db.items():
-                gnames = list(rbv.keys())
-                gdata = np.array([[d[1], d[2], d[3]] for d in rbv.values()])
-                self._glass_data[rbk] = gnames, gdata
-        return self._glass_data
+    def __contains__(self, gname: str) -> bool:
+        return gname in self.catalog
+    
+    def __getitem__(self, key: str) -> Any:
+        return self.catalog[key]
 
-    def create_glass(self, gname: str, gcat: str) -> OpticalMedium:
-        catalog = gcat if 'Robb1983.' in gcat else 'Robb1983.' + gcat
+    def create_glass(self, gname: str, gcat: str) -> OpticalMedium|None:
         try:
-            gdata = self.glass_db[catalog][gname]
+            gdata = self.catalog[gname]
         except KeyError:
             return None
         else:
@@ -726,17 +723,6 @@ class Robb1983Catalog(metaclass=Singleton):
             gname_decode, rndx, nu1, nu2 = gdata
             g = buchdahl.Buchdahl(wv0, rndx, (nu1, nu2), mat=gname, cat=gcat)
             return g
-
-    def catalog_name(self):
-        return 'Robb1983'
-
-    def get_glass_names(self, gcat=None):
-        """ returns a list of glass names """
-        if gcat is not None:
-            return self.glass_data[gcat][0]
-        else:  # return all of the catalogs' names
-            gnames = [gn[0] for gn in self.glass_data.values()]
-            return list(itertools.chain.from_iterable(gnames))
 
     def glass_map_data(self, wvl='d', **kwargs):
         """ return index and dispersion data for all glasses in the catalog

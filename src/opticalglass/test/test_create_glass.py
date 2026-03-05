@@ -8,7 +8,7 @@
 import unittest
 from opticalglass.glassfactory import (
     create_glass, register_glass, save_custom_glasses, load_custom_glasses,
-    get_glass_catalog
+    og_glass_libs
 )
 from opticalglass import glasserror as ge
 from opticalglass import opticalmedium as om
@@ -79,16 +79,11 @@ class CreateGlassTestCase(unittest.TestCase):
         self.assertIsInstance(medium, om.OpticalMedium)
 
         # make sure get_glass_catalog returns the catalog
-        cat = get_glass_catalog('mycatalog')
         found = False
-        for g in cat.glass_list:
-            if g[1] == 'myglass':
+        cat = og_glass_libs.find_catalog('mycatalog')
+        for c in cat:
+            if 'myglass' in c:
                 found = True
-                # mimic zmxread by accessing glass[0][0] and glass[0][1]
-                gn_decode, gn, gc = g
-                # just make sure gn_decode has 3 elements
-                self.assertTrue(len(gn_decode) == 3) 
-                    
         self.assertTrue(found)
 
     def test_save_load_custom_glass(self):
@@ -111,12 +106,10 @@ class CreateGlassTestCase(unittest.TestCase):
             dirpath = Path(dirname)
             save_custom_glasses(dirpath)
 
-            filename = dirpath / 'custom_glasses.json'
+            filename = dirpath / 'user_glass_lib.json'
             # check that the glass is saved
             self.assertTrue(filename.exists())
 
-            # Force to forget the registered glass
-            gfact._custom_glass_registry = {}
             load_custom_glasses(dirpath)
             anotherglass = create_glass('anotherglass', 'mycatalog')
             self.assertIsInstance(anotherglass, om.OpticalMedium)

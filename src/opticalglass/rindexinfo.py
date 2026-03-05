@@ -6,7 +6,7 @@
 
 .. codeauthor: Michael J. Hayford
 """
-
+import os
 import requests
 import urllib.parse
 from pathlib import Path
@@ -17,9 +17,13 @@ from scipy.interpolate import interp1d
 import yaml
 import importlib
 
-from typing import Union, Any
+from typing import Union, Any, Optional
 from numpy.typing import NDArray
 
+from opticalglass.agf_glass import AGFMedium
+from opticalglass.caselessDictionary import CaselessDictionary
+from opticalglass.glasslibs import GlassCatalogProto, GlassLibrary
+import opticalglass.glasslibs as glibs
 from opticalglass.opticalmedium import OpticalMedium, InterpolatedMedium
 from opticalglass.glasserror import GlassDBNotSupported
 from .spectral_lines import get_wavelength
@@ -102,7 +106,7 @@ def get_glassname_from_filestr(filestr: str, include_rii_page=False):
     return db, name, catalog
 
 
-def read_rii_file(filename: Union[str, Path]):
+def read_rii_file(filename: str | Path):
     ''' given a filename of a RII file, return a yaml instance. '''
     filepath = Path(filename)
     with filepath.open() as file:
@@ -413,6 +417,66 @@ formulas = {
     }
 
 
+class RIICatalog(GlassCatalogProto):
+    def __init__(self, catalog_name: str, rii_book: dict, rii_data_path: Path):
+        self.name = rii_book['BOOK']
+        self.descript = rii_book['name']
+        self.contents: list = rii_book['content']
+        self.catalog = CaselessDictionary()
+        for page in self.contents:
+            if 'PAGE' in page:
+                gname = page['PAGE']
+                page['data'] = rii_data_path / page['data']
+                self.catalog[gname] = page
+                self.catalog[gname]['matl'] = None
+
+    def __contains__(self, gname: str) -> bool:
+        return gname in self.catalog
+
+    def __getitem__(self, gname: str) -> Any:
+        if gname in self.catalog:
+            glass_rec = self.catalog[gname]
+            if glass_rec['matl'] is not None:
+                return glass_rec['matl']
+            else:
+                yaml_pkg = read_rii_file(glass_rec['data'])
+                yaml_data, name, catalog, db = yaml_pkg
+                matl = create_material(yaml_data, gname, self.name, db)
+                glass_rec['matl'] = matl
+                return matl
+        else:
+            raise KeyError(f"Glass {gname} not found in RII catalog {self.name}")
+
+    def gen_all_glasses(self):
+        """ Generate all glasses in the catalog and store in self.catalog. """
+        for gname in self.catalog.keys():
+            glass_rec = self.catalog[gname]
+            if glass_rec['matl'] is None:
+                yaml_data, name, catalog, db = read_rii_file(glass_rec['data'])
+                matl = create_material(yaml_data, gname, self.name, db)
+                glass_rec['matl'] = matl
+
+    def create_glass(self, gname: str, gcat: str) -> 'OpticalMedium':
+        """ Create an instance of the glass `gname`. """
+        yaml_data, name, catalog, db = read_rii_file(self.catalog[gname]['data'])
+        matl = create_material(yaml_data, gname, self.name, db)
+        return matl
+    
+    def glass_map_data(self, wvl='d', **kwargs):
+        """ return index and dispersion data for all glasses in the catalog
+
+        Args:
+            wvl (str): the central wavelength for the data, either 'd' or 'e'
+
+        Returns:
+            index, V-number, partial dispersion, Buchdahl coefficients, and
+            glass names
+        """
+        glasses = [glass_rec['matl'] for glass_rec in self.catalog.values() 
+                   if 'PAGE' in glass_rec]
+        return glibs.calc_glass_map_arrays(glasses, wvl, 'F', 'C', **kwargs)
+
+
 class RIIMedium(OpticalMedium):
     """ RefractiveIndexInfo wrapper class supporting formula specs """
     def __init__(self, label, coefs, rndx_fct, data_range, 
@@ -504,3 +568,31 @@ class RIIMedium(OpticalMedium):
         t = thi*1.0e3
         t_vals = np.exp(-4.0*np.pi*t*self.kvals/self.kvals_wvls)
         return self.kvals_wvls, t_vals
+
+
+def get_rii_libs(rii_base_path: Optional[str|Path]=None) -> dict[str, 
+                                                                 GlassLibrary]:
+    
+    if rii_base_path is None:
+        rii_base_path = Path(os.environ.get('optics')) / "refractiveindexinfo/database"
+        # rii_base_path = Path(os.environ.get('refractiveindexinfodb')) 
+    rii_path = rii_base_path / "catalog-nk.yml"
+    rii_data_path = rii_base_path / "data"
+
+    with open(rii_path) as rii_file:
+        rii_data = yaml.safe_load(rii_file)
+
+    rii_libs = {}
+    for shelf in rii_data:
+        if 'SHELF' in shelf and not (shelf['SHELF']=='popular_glass'):
+            rii_catalog = {}
+            lib_name = shelf['SHELF']
+            for book in shelf['content']:
+                if 'BOOK' in book:
+                    rii_catalog[book['BOOK']] = RIICatalog(book['BOOK'], book, 
+                                                           rii_data_path)
+            rii_lib_name = 'rii-'+lib_name
+            rii_libs[rii_lib_name] = GlassLibrary(rii_lib_name, rii_catalog, 
+                                                  list(rii_catalog.keys()))
+
+    return rii_libs
