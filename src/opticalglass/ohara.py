@@ -56,7 +56,7 @@ class OharaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
         super().__init__('Ohara', fname, series_mappings, item_mappings, 
                          *args, **kwargs)
 
-    def create_glass(self, gname: str, gcat: str) -> 'OharaGlass':
+    def create_glass(self, gname: str) -> 'OharaGlass':
         """ Create an instance of the glass `gname`. """
         return OharaGlass(gname)
 

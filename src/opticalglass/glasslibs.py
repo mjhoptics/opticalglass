@@ -72,13 +72,13 @@ class GlassLibrary():
             return False
 
     def items(self):
-        return list(self._lib.items())
+        return self._lib.items()
 
     def keys(self):
-        return list(self._lib.keys())
+        return self._lib.keys()
 
     def values(self):
-        return list(self._lib.values())
+        return self._lib.values()
         
     def __iter__(self):
         def gen() -> Any:
@@ -169,7 +169,7 @@ class GlassCatalogProto():
         pass
 
     @abstractmethod
-    def create_glass(self, gname: str, gcat: str) -> 'OpticalMedium':
+    def create_glass(self, gname: str) -> 'OpticalMedium':
         """ Create an instance of the glass `gname`. """
         pass
 
@@ -199,7 +199,7 @@ class GlassCatalog(GlassCatalogProto):
     def __getitem__(self, key: str) -> Any:
         return self.catalog[key]
     
-    def create_glass(self, gname: str, gcat: str) -> 'OpticalMedium':
+    def create_glass(self, gname: str) -> 'OpticalMedium':
         """ Create an instance of the glass `gname`. """
         return self.catalog[gname]
 

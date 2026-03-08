@@ -117,7 +117,7 @@ class CustomGlassCatalog(GlassCatalogProto):
     def __getitem__(self, key: str) -> Any:
         return self.catalog[key]
 
-    def create_glass(self, gname: str, gcat: str) -> OpticalMedium|None:
+    def create_glass(self, gname: str) -> OpticalMedium|None:
         """ Create an instance of the glass `gname`. """
         return self.catalog[gname]
     
@@ -210,7 +210,7 @@ def create_glass(*name_catalog):
                 raise ge.GlassCatalogNotFoundError(catalog)
             for glass_cat in cat_list:
                 if gname in glass_cat:
-                    medium = glass_cat.create_glass(gname, catalog)
+                    medium = glass_cat.create_glass(gname)
                     return medium
         raise ge.GlassNotFoundError(catalog, gname)
 

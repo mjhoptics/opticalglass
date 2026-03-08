@@ -71,7 +71,7 @@ class CDGMCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
         coefs, interp_formula = decode_dispersion_coefs(glas)
         return coefs
     
-    def create_glass(self, gname: str, gcat: str) -> 'CDGMGlass':
+    def create_glass(self, gname: str) -> 'CDGMGlass':
         """ Create an instance of the glass `gname`. """
         return CDGMGlass(gname)
 

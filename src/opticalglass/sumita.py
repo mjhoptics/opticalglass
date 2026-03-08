@@ -64,7 +64,7 @@ class SumitaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
         super().__init__('Sumita', fname, series_mappings, item_mappings, 
                          *args, **kwargs)
 
-    def create_glass(self, gname: str, gcat: str) -> 'SumitaGlass':
+    def create_glass(self, gname: str) -> 'SumitaGlass':
         """ Create an instance of the glass `gname`. """
         return SumitaGlass(gname)
 

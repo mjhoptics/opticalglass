@@ -456,7 +456,7 @@ class RIICatalog(GlassCatalogProto):
                 matl = create_material(yaml_data, gname, self.name, db)
                 glass_rec['matl'] = matl
 
-    def create_glass(self, gname: str, gcat: str) -> 'OpticalMedium':
+    def create_glass(self, gname: str) -> 'OpticalMedium':
         """ Create an instance of the glass `gname`. """
         yaml_data, name, catalog, db = read_rii_file(self.catalog[gname]['data'])
         matl = create_material(yaml_data, gname, self.name, db)

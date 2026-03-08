@@ -318,7 +318,7 @@ class GlassCatalogPandas(GlassCatalogProto):
         self.__class__.glass_lookup = glass_lookup
 
     @abstractmethod
-    def create_glass(self, gname: str, gcat: str) -> OpticalMedium:
+    def create_glass(self, gname: str) -> OpticalMedium:
         """ Create an instance of the glass `gname`. 
         
         Must be implemented by the subclasses.
@@ -713,7 +713,7 @@ class RobbCatalog(GlassCatalogProto):
     def __getitem__(self, key: str) -> Any:
         return self.catalog[key]
 
-    def create_glass(self, gname: str, gcat: str) -> OpticalMedium|None:
+    def create_glass(self, gname: str) -> OpticalMedium|None:
         try:
             gdata = self.catalog[gname]
         except KeyError:
@@ -721,7 +721,8 @@ class RobbCatalog(GlassCatalogProto):
         else:
             wv0 = buchdahl.get_wv('d')
             gname_decode, rndx, nu1, nu2 = gdata
-            g = buchdahl.Buchdahl(wv0, rndx, (nu1, nu2), mat=gname, cat=gcat)
+            g = buchdahl.Buchdahl(wv0, rndx, (nu1, nu2), 
+                                  mat=gname, cat=self.name)
             return g
 
     def glass_map_data(self, wvl='d', **kwargs):

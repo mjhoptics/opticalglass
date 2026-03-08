@@ -56,7 +56,7 @@ class HoyaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
         coefs = [x*10**y for x, y in zip(c[::2], c[1::2])]
         return coefs
 
-    def create_glass(self, gname: str, gcat: str) -> 'HoyaGlass':
+    def create_glass(self, gname: str) -> 'HoyaGlass':
         """ Create an instance of the glass `gname`. """
         return HoyaGlass(gname)
 

@@ -108,10 +108,10 @@ class AGFCatalog(GlassCatalogProto):
     def __getitem__(self, gname: str) -> Any:
         return self.catalog[gname]
         
-    def create_glass(self, gname: str, gcat: str) -> 'AGFMedium':
+    def create_glass(self, gname: str) -> 'AGFMedium':
         """ Create an instance of the glass `gname`. """
-        return AGFMedium(gname, gcat, self.catalog[gname])
-    
+        return AGFMedium(gname, self.name, self.catalog[gname])
+
     def glass_map_data(self, wvl='d', **kwargs):
         """ return index and dispersion data for all glasses in the catalog
 
