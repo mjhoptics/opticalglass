@@ -47,31 +47,45 @@ def get_glass_map_arrays(cat: 'AGFCatalog', d_str, F_str, C_str, **kwargs):
     wl_d = get_wavelength(d_str)
     wl_F = get_wavelength(F_str)
     wl_C = get_wavelength(C_str)
-    wvls = [wl_d, wl_F, wl_C]
+    eval_wvls = [wl_d, wl_F, wl_C]
     if 'partials' in kwargs:
         wl_a, wl_b = kwargs['partials']
-        wvls = [*wvls, wl_a, wl_b]
-    wv_um = np.array(wvls)/1000.    
+        wl_a = get_wavelength(wl_a)
+        wl_b = get_wavelength(wl_b)
+        eval_wvls = [*eval_wvls, wl_a, wl_b]
+    eval_wvls = np.array(eval_wvls)
+    eval_wvls_um = eval_wvls / 1000.
     ref_indices = []
+    gnames_used = []
     for gname, glass_rec in catalog.items():
-        ref_indices.append(zg.get_dispersion(gname, cat.name, glass_rec, wv_um))
+        wvls = 1000.0 * np.array(glass_rec['ld'])
+        if (np.min(eval_wvls) >= np.min(wvls) and 
+            np.max(eval_wvls) <= np.max(wvls)):
+            rindex_pkg = zg.get_dispersion(gname, cat.name, glass_rec, 
+                                           eval_wvls_um)
+            if rindex_pkg is not None:
+                ref_indices.append(rindex_pkg)
+                gnames_used.append(gname)
 
-    rindex_vs_glass = np.array(ref_indices).T
-    nd = rindex_vs_glass[0]
-    nF = rindex_vs_glass[1]
-    nC = rindex_vs_glass[2]
-    nd, coefs = buchdahl.calc_buchdahl_coords(
-        nd, nF, nC, wlns=(d_str, F_str, C_str), **kwargs)
-
-    if 'partials' in kwargs:
-        wl_a, wl_b = kwargs['partials']
-        na = rindex_vs_glass[3]
-        nb = rindex_vs_glass[4]
-        nd, vd, PFd, Pab = util.calc_glass_constants(nd, nF, nC, na, nb)
+    if len(ref_indices) == 0:
+        return np.array([]), np.array([]), np.array([]), np.array([]), np.array([]), []
     else:
-        vd, Pab = util.calc_glass_constants(nd, nF, nC)
+        rindex_vs_glass = np.array(ref_indices).T
+        nd = rindex_vs_glass[0]
+        nF = rindex_vs_glass[1]
+        nC = rindex_vs_glass[2]
+        nd, coefs = buchdahl.calc_buchdahl_coords(
+            nd, nF, nC, wlns=(d_str, F_str, C_str), **kwargs)
 
-    return nd, vd, Pab, coefs[0], coefs[1], names
+        if 'partials' in kwargs:
+            wl_a, wl_b = kwargs['partials']
+            na = rindex_vs_glass[3]
+            nb = rindex_vs_glass[4]
+            nd, vd, PFd, Pab = util.calc_glass_constants(nd, nF, nC, na, nb)
+        else:
+            vd, Pab = util.calc_glass_constants(nd, nF, nC)
+
+        return nd, vd, Pab, coefs[0], coefs[1], gnames_used
 
 
 def summary_plots(opt_medium, opt_medium_yaml=None):

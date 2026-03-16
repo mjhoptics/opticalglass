@@ -475,8 +475,14 @@ class RIICatalog(GlassCatalogProto):
             index, V-number, partial dispersion, Buchdahl coefficients, and
             glass names
         """
-        glasses = [glass_rec['matl'] for glass_rec in self.catalog.values() 
-                   if 'PAGE' in glass_rec]
+        glasses = []
+        for gname, glass_rec in self.catalog.items():
+            if glass_rec['matl'] is None:
+                yaml_data, name, catalog, db = read_rii_file(glass_rec['data'])
+                matl = create_material(yaml_data, gname, self.name, db)
+                glass_rec['matl'] = matl
+            glasses.append(glass_rec['matl'])
+
         return glibs.calc_glass_map_arrays(glasses, wvl, 'F', 'C', **kwargs)
 
 

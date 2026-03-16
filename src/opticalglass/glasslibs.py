@@ -235,21 +235,43 @@ def calc_glass_map_arrays(glasses: list['OpticalMedium'],
         index, V-number, partial dispersion, Buchdahl coefficients, and
         glass names
     """
-    names = [g.name()+'/'+g.catalog_name() for g in glasses]
-
-    nd = np.array([g.rindex(d_str) for g in glasses])
-    nF = np.array([g.rindex(F_str) for g in glasses])
-    nC = np.array([g.rindex(C_str) for g in glasses])
-
-    nd, coefs = buchdahl.calc_buchdahl_coords(
-        nd, nF, nC, wlns=(d_str, F_str, C_str), **kwargs)
-
+    wl_d = get_wavelength(d_str)
+    wl_F = get_wavelength(F_str)
+    wl_C = get_wavelength(C_str)
+    eval_wvls = [wl_d, wl_F, wl_C]
     if 'partials' in kwargs:
-        wl4, wl5 = kwargs['partials']
-        n4 = np.array([g.rindex(wl4) for g in glasses])
-        n5 = np.array([g.rindex(wl5) for g in glasses])
-        nd, vd, PFd, Pab = util.calc_glass_constants(nd, nF, nC, n4, n5)
-    else:
-        vd, Pab = util.calc_glass_constants(nd, nF, nC)
+        wl_a, wl_b = kwargs['partials']
+        wl_a = get_wavelength(wl_a)
+        wl_b = get_wavelength(wl_b)
+        eval_wvls = [*eval_wvls, wl_a, wl_b]
+    eval_wvls = np.array(eval_wvls)
 
-    return nd, vd, Pab, coefs[0], coefs[1], names
+    ref_indices = []
+    gnames_used = []
+    for glass in glasses:
+        wvls = np.array(glass.get_wl_range())
+        if (np.min(eval_wvls) >= np.min(wvls) and 
+            np.max(eval_wvls) <= np.max(wvls)):
+            rindex_results = glass.calc_rindex(eval_wvls)
+            ref_indices.append(rindex_results)
+            gnames_used.append(glass.name())
+
+    if len(ref_indices) == 0:
+        return np.array([]), np.array([]), np.array([]), np.array([]), np.array([]), []
+    else:
+        ref_indices = np.array(ref_indices).T
+        nd = ref_indices[0]
+        nF = ref_indices[1]
+        nC = ref_indices[2]
+
+        nd, coefs = buchdahl.calc_buchdahl_coords(
+            nd, nF, nC, wlns=eval_wvls, **kwargs)
+
+        if 'partials' in kwargs:
+            n4 = ref_indices[3]
+            n5 = ref_indices[4]
+            nd, vd, PFd, Pab = util.calc_glass_constants(nd, nF, nC, n4, n5)
+        else:
+            vd, Pab = util.calc_glass_constants(nd, nF, nC)
+
+        return nd, vd, Pab, coefs[0], coefs[1], gnames_used
