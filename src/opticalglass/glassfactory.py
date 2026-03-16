@@ -37,19 +37,11 @@ from .opticalmedium import OpticalMedium
 from .glasslibs import (GlassLibrary, GlassCatalog, GlassCatalogProto, 
                         calc_glass_map_arrays)
 
-from .caselessDictionary import CaselessDictionary
 
 logger = logging.getLogger(__name__)
 
-libraries = ['user', 'agf', 'xls', 'rii', 'robb']
 
-_catalog_list = CaselessDictionary()
-
-CDGM, Hikari, Hoya, Ohara, Schott, Sumita = range(6)
-_cat_names = ["CDGM", "Hikari", "Hoya", "Ohara", "Schott", "Sumita"]
-_cat_names_uc = [cat.upper() for cat in _cat_names]
-
-__all__ = ['create_glass', 'get_glass_catalog', 'register_glass', 
+__all__ = ['create_glass', 'register_glass', 
            'list_custom_glasses', 'save_custom_glasses', 'load_custom_glasses']
 
 # A place to hold user-registered glasses:
@@ -187,99 +179,92 @@ def load_custom_glasses(dirname: str|Path):
                         register_glass(medium)
 
 
-def create_glass(*name_catalog):
+def create_glass(*name_catalog) -> OpticalMedium:
     """ Factory function returning a catalog glass instance.
+    
+    The create_glass function searches the libraries and catalogs for the specified glass name and catalog, and returns an instance of the glass if found. If the glass is not found, a GlassNotFoundError is raised. If the catalog is not found, a GlassCatalogNotFoundError is raised.
 
     The input argument list can take several forms:
 
-        - 1 string argument in the form 'glass_name,catalog_name'
-        - 2 arguments. The first is a string glass name. The second is a
-          string or list of strings of catalog names.
+        - a single string argument will be split based on ',' to separate the glass name, catalog and library. For example, "N-BK7,Schott,xls" would specify the glass "N-BK7" in the "Schott" catalog in the vendor 'xls' library.
     
+    The output of the split will be processed as follows:
+        - 1 string argument: glass_name
+        - 2 string arguments: glass_name, catalog_name
+        - 3 string arguments: glass_name, catalog_name, library.
+
     If 2 arguments are used and the catalog is "rindexinfo", the "name" field 
     is taken as a URL or filepath to a material in the `RefractiveIndex.INFO <https://refractiveindex.info>`_ database.
 
+    
     Arguments:
-        *name_catalog: tuple of 1 or 2 input items
+        *name_catalog: tuple of 1, 2 or 3 input items
 
     Raises:
         GlassCatalogNotFoundError: if catalog isn't found
         GlassNotFoundError: if name isn't in the specified catalog
 
     """
-    def _create_glass(gname: str, catalog: str):
+    def _create_glass(gname: str, catalog: Optional[str] = None, 
+                      library: Optional[str] = None) -> OpticalMedium:
         if catalog == "rindexinfo":
             material = rindexinfo.create_glass(gname)
             og_glass_libs['rii']['rindexinfo'][gname] = material
             return material
         else:
-            cat_list = og_glass_libs.find_catalog(catalog)
-            if len(cat_list) == 0:
-                raise ge.GlassCatalogNotFoundError(catalog)
-            for glass_cat in cat_list:
-                if gname in glass_cat:
-                    medium = glass_cat.create_glass(gname)
-                    return medium
-        raise ge.GlassNotFoundError(catalog, gname)
+            if library is not None:
+                lib = og_glass_libs[library]
+                if catalog in lib:
+                    return lib[catalog].create_glass(gname)
+                else:
+                    raise ge.GlassCatalogNotFoundError(catalog)
+            else:
+                gla_paths = og_glass_libs.find_path_to_glass(gname)
+                if len(gla_paths) == 0:
+                    raise ge.GlassNotFoundError(catalog, gname)
+                else:
+                    for path in gla_paths:
+                        gla, cat, lib = path
+                        if catalog is None:
+                            glass_cat = og_glass_libs[lib][cat]
+                            return glass_cat.create_glass(gname)
+                        elif catalog.casefold() == cat.casefold():
+                            glass_cat = og_glass_libs[lib][catalog]
+                            return glass_cat.create_glass(gname)
+                    raise ge.GlassCatalogNotFoundError(catalog)
 
-    if len(name_catalog) == 2:
+    num_args = len(name_catalog)
+    if num_args == 1:
+        name_catalog = name_catalog[0].split(',')
+        num_args = len(name_catalog)
+
+    catalog = library = None
+    if num_args == 3:
+        name, catalog, library = name_catalog
+    elif num_args == 2:
         name, catalog = name_catalog
     else:
-        name, catalog = name_catalog[0].split(',')
+        name = name_catalog[0]
+
     if isinstance(name, str):
         name = name.strip()
 
     if isinstance(catalog, str):
-        return _create_glass(name, catalog.strip())
+        return _create_glass(name, catalog.strip(), library)
 
-    else:  # treat catalog as a list
+    elif isinstance(catalog, list):
         for cat in catalog:
             try:
-                glass = _create_glass(name, cat.strip())
+                glass = _create_glass(name, cat.strip(), library)
             except ge.GlassError:
                 continue
             else:
                 return glass
-        logger.info('glass %s not found in %s', name, catalog)
+        logger.info(f'glass {name} not found in {catalog}')
         raise ge.GlassNotFoundError(catalog, name)
-
-
-def get_glass_catalog(cat_name, mod_name=None, cls_name=None):
-    """ Function returning a glass catalog instance.
-
-    Arguments:
-        catalog: name of supported catalog (CDGM, Hoya, Ohara, Schott)
-
-    Raises:
-        GlassCatalogNotFoundError: if catalog isn't found
-    """
-    if cat_name in _catalog_list:
-        return _catalog_list[cat_name]
-    elif cat_name in [cat for _, cat in _custom_glass_registry.keys()]:
-        return GlassCatalog(cat_name)
     else:
-        try:
-            if "Robb1983" in cat_name:
-                glass_cat = cat_glass.glass_catalog_factory(
-                    cat_name,
-                    mod_name='opticalglass.glass',
-                    cls_name='Robb1983Catalog')
-            else:
-                glass_cat = cat_glass.glass_catalog_factory(cat_name)
-        except ge.GlassError as gerr:
-            raise gerr
-        else:
-            _catalog_list[cat_name] = glass_cat
-            return glass_cat
+        raise ge.GlassCatalogNotFoundError(catalog) 
 
-
-def fill_catalog_list(cat_list=None):
-    """ Given a list of catalog names, populate the _catalog_list with them. """
-    if cat_list is None:
-        cat_list = _cat_names
-    for cat in cat_list:
-        get_glass_catalog(cat)
-    return _catalog_list
 
 libraries = ['user', 'xls', 'agf', 
              'rii', 
@@ -302,9 +287,8 @@ class CentralGlassLibrary(GlassLibrary):
                                             ['custom'])
                     glass_libs.update({lib: user_lib})
                 case 'xls':
-                    glass_cats = fill_catalog_list()
-                    _lib = GlassLibrary(lib, glass_cats, _cat_names)
-                    glass_libs.update({lib: _lib})
+                    xls_lib = cat_glass.get_xls_lib()
+                    glass_libs.update({lib: xls_lib})
                 case 'agf':
                     agf_lib = agf.get_agf_lib()
                     glass_libs.update({lib: agf_lib})
@@ -316,7 +300,8 @@ class CentralGlassLibrary(GlassLibrary):
                     glass_libs.update({lib: rii_lib})
                     rii_libs = rindexinfo.get_rii_libs()
                     glass_libs.update(rii_libs)
-                    search_order.extend(rii_libs.keys())
+                    rii_idx = search_order.index('rii') + 1
+                    search_order[rii_idx:rii_idx] = list(rii_libs.keys())
                 case 'robb':
                     robb_lib = cat_glass.get_robb_lib()
                     glass_libs.update({lib: robb_lib})

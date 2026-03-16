@@ -28,7 +28,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from typing import Any
+from typing import Any, Optional
 from numpy.typing import NDArray
 from abc import abstractmethod
 
@@ -43,6 +43,7 @@ from .caselessDictionary import CaselessDictionary
 
 logger = logging.getLogger(__name__)
 
+_catalog_names = ["CDGM", "Hikari", "Hoya", "Ohara", "Schott", "Sumita"]
 
 def get_filepath(fname):
     """ given a (spreadsheet) file name, return a complete Path to the file
@@ -98,6 +99,27 @@ def get_glass_map_arrays(cat, d_str, F_str, C_str, **kwargs):
         vd, Pab = util.calc_glass_constants(nd, nF, nC)
 
     return nd, vd, Pab, coefs[0], coefs[1], names
+
+
+def get_xls_lib(cat_list: list[str]|None = None) -> GlassLibrary:
+    """ return a GlassLibrary of the catalogs in cat_list.
+    
+    Args:
+        cat_list: list of catalog names to include in the library. If None, 
+        all catalogs in _cat_namesare included.
+    Returns:
+        GlassLibrary of the catalogs in cat_list.
+    """
+    xls_cats = {}
+    xls_srch = []
+    if cat_list is None:
+        cat_list = _catalog_names
+    for cat_name in cat_list:
+        glass_cat = glass_catalog_factory(cat_name)
+        xls_cats[cat_name] = glass_cat
+        xls_srch.append(cat_name)
+    xls_lib = GlassLibrary('xls', xls_cats, xls_srch)
+    return xls_lib
 
 
 def glass_catalog_factory(cat_name, mod_name=None, cls_name=None):
