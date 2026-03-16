@@ -9,7 +9,7 @@
 """
 
 import numpy as np
-from typing import (Protocol, runtime_checkable, Tuple)
+from typing import (Protocol, runtime_checkable)
 from numpy.typing import NDArray
 from abc import abstractmethod
 
@@ -51,6 +51,20 @@ class OpticalMedium(Protocol):
         pass
 
     @abstractmethod
+    def get_wl_range(self) -> tuple[float, float]:
+        """ returns the wavelength range in nm for the medium definition
+
+        Returns:
+            tuple: (min_wavelength_nm, max_wavelength_nm)
+        """
+        pass
+
+    def within_wl_range(self, wvl: float|str) -> bool:
+        """ returns True if wvl is within the wavelength range for the medium definition """
+        wvl_min, wvl_max = self.get_wl_range()
+        return bool(wvl_min <= get_wavelength(wvl) <= wvl_max)
+    
+    @abstractmethod
     def meas_rindex(self, wvl: str) -> float:
         """ returns the measured refractive index at wvl
 
@@ -80,7 +94,7 @@ class OpticalMedium(Protocol):
         """
         return self.calc_rindex(get_wavelength(wvl))
 
-    def transmission_data(self, thi: float) -> Tuple[NDArray, NDArray]:
+    def transmission_data(self, thi: float) -> tuple[NDArray, NDArray]:
         """ returns an array of transmission data for the glass
 
         Returns: np.arrays of wavelength and transmission for `thi` mm sample
@@ -106,6 +120,9 @@ class Air(OpticalMedium):
     def rindex(self,  wvl: str) -> float:
         return 1.0
 
+    def get_wl_range(self) -> tuple[float, float]:
+        """ returns the wavelength range in nm for the medium definition """
+        return 0., 10.**12
 
 class ConstantIndex(OpticalMedium):
     """ Constant refractive index medium. """
@@ -131,6 +148,10 @@ class ConstantIndex(OpticalMedium):
     def meas_rindex(self, wvl):
         return self.n
 
+    def get_wl_range(self) -> tuple[float, float]:
+        """ returns the wavelength range in nm for the medium definition """
+        return 0., 10.**12
+
 
 class InterpolatedMedium(OpticalMedium):
     """ Optical medium defined by a list of wavelength/index pairs
@@ -151,16 +172,16 @@ class InterpolatedMedium(OpticalMedium):
         self.label = label
         self._catalog = cat
         if pairs is not None:
-            self.wvls = []
-            self.rndx = []
+            self.wvls: list[float] = []
+            self.rndx: list[float] = []
             for w, n in pairs:
                 self.wvls.append(w)
                 self.rndx.append(n)
         else:
-            self.wvls = wvls
-            self.rndx = rndx
+            self.wvls: list[float] = wvls if wvls is not None else []
+            self.rndx: list[float] = rndx if rndx is not None else []
 
-        self.kvals = kvals
+        self.kvals: list[float]|None = kvals
         if kvals is not None:
             self.kvals_wvls = self.wvls if kvals_wvls is None else kvals_wvls
         else:
@@ -236,6 +257,10 @@ class InterpolatedMedium(OpticalMedium):
         """ returns the interpolated refractive index at wv_nm """
         return self.rindex_interp(wv_nm)
 
+    def get_wl_range(self) -> tuple[float, float]:
+        """ returns the wavelength range in nm for the medium definition """
+        return min(self.wvls), max(self.wvls)
+    
     def meas_rindex(self, wvl: str) -> float:
         """ returns the measured refractive index at wvl
 

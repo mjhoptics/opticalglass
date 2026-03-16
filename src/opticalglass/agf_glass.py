@@ -183,6 +183,11 @@ class AGFMedium(OpticalMedium):
         indices = zg.get_dispersion(self.name(), self.catalog_name(), 
                                     self.glass_rec, wv_um)
         return indices
+    
+    def get_wl_range(self):
+        """ returns the wavelength range in nm for the medium definition """
+        wvls = 1000.0 * np.array(self.glass_rec['ld'])
+        return np.min(wvls), np.max(wvls)
 
     def meas_rindex(self, wvl: str) -> float:
         """ returns the measured refractive index at wvl

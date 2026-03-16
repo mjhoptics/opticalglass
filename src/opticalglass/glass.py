@@ -485,6 +485,13 @@ class GlassPandas(OpticalMedium):
     def catalog_name(self):
         """ returns the glass name, :attr:`gname` """
         return self.catalog.catalog_name()
+    
+    def get_wl_range(self):
+        """ returns the wavelength range in nm for the medium definition """
+        wvls = self.glass_data()['refractive indices'].index
+        wv0 = get_wavelength(wvls[0])
+        wvk = get_wavelength(wvls[-1])
+        return min(wv0, wvk), max(wv0, wvk)
 
     def meas_rindex(self, wvl):
         """ returns the measured refractive index at wvl

@@ -555,6 +555,10 @@ class RIIMedium(OpticalMedium):
     def calc_rindex(self, wv_nm: Union[float, NDArray]) -> Union[float, NDArray]:
         return self.rndx_fct(wv_nm, self.coefs, data_range=self.data_range)
 
+    def get_wl_range(self) -> tuple[float, float]:
+        """ returns the wavelength range in nm for the medium definition """
+        return min(self.wvls), max(self.wvls)
+    
     def meas_rindex(self, wvl: str) -> float:
         """ returns the measured refractive index at wvl
 

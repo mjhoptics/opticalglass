@@ -63,6 +63,10 @@ class ModelGlass(OpticalMedium):
     def calc_rindex(self, wv_nm):
         return self.bdhl_model.calc_rindex(wv_nm)
 
+    def get_wl_range(self) -> tuple[float, float]:
+        """ returns the wavelength range in nm for the medium definition """
+        return 365., 2500.
+
     def meas_rindex(self, wvl):
         return self.rindex(wvl)
 

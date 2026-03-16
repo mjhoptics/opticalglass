@@ -112,6 +112,7 @@ class Buchdahl(OpticalMedium):
         self.coefs = coefs
         self.label = mat
         self._catalog_name = cat
+        self.wl_range = (400., 700.)
 
     def name(self):
         return self.label
@@ -129,6 +130,10 @@ class Buchdahl(OpticalMedium):
     def rindex(self, wvl):
         """Returns the refractive index from the quadratic model at wvl."""
         return self.calc_rindex(get_wavelength(wvl))
+    
+    def get_wl_range(self):
+        """ returns the wavelength range in nm for the medium definition """
+        return self.wl_range
 
     def meas_rindex(self, wvl: str) -> float:
         return self.rindex(wvl)
