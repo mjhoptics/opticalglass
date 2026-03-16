@@ -30,17 +30,18 @@ class CaselessDictionary(dict):
                 self.__setitem__(key, value)
 
     def __contains__(self, key):
-        return dict.__contains__(self, key.lower())
+        return dict.__contains__(self, key.casefold())
 
     def __getitem__(self, key):
-        return dict.__getitem__(self, key.lower())['val']
+        return dict.__getitem__(self, key.casefold())['val']
 
     def __setitem__(self, key, value):
-        return dict.__setitem__(self, key.lower(), {'key': key, 'val': value})
+        return dict.__setitem__(self, key.casefold(), 
+                                {'key': key, 'val': value})
 
     def get(self, key, default=None):
         try:
-            v = dict.__getitem__(self, key.lower())
+            v = dict.__getitem__(self, key.casefold())
         except KeyError:
             return default
         else:

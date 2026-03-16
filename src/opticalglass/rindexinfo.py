@@ -447,6 +447,9 @@ class RIICatalog(GlassCatalogProto):
         else:
             raise KeyError(f"Glass {gname} not found in RII catalog {self.name}")
 
+    def __len__(self) -> int:
+        return len(self.catalog)
+    
     def gen_all_glasses(self):
         """ Generate all glasses in the catalog and store in self.catalog. """
         for gname in self.catalog.keys():

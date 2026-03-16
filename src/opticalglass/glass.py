@@ -334,6 +334,9 @@ class GlassCatalogPandas(GlassCatalogProto):
     def __getitem__(self, gname: str) -> Any:
         return self.df.loc[gname]
 
+    def __len__(self) -> int:
+        return len(self.df.index.array) 
+
     def get_glass_names(self):
         """ returns a list of glass names """
         return self.df.index.array
@@ -720,6 +723,9 @@ class RobbCatalog(GlassCatalogProto):
     def __getitem__(self, key: str) -> Any:
         return self.catalog[key]
 
+    def __len__(self) -> int:
+        return len(self.catalog)
+
     def create_glass(self, gname: str) -> OpticalMedium|None:
         try:
             gdata = self.catalog[gname]
@@ -765,7 +771,13 @@ class RobbCatalog(GlassCatalogProto):
         om_F = buchdahl.omega(wv_F - wv_0)
         om_C = buchdahl.omega(wv_C - wv_0)
 
-        gnames, gdata = self.glass_data[kwargs['cat_name']]
+        gnames = []
+        gdata = []
+
+        for rbk, rbv in self.catalog.items():
+            gnames.append(rbk)
+            gdata.append(np.array([rbv[1], rbv[2], rbv[3]]))
+        gdata = np.array(gdata)
 
         omm_d = np.array([om_d, om_d**2])
         nd = np.matmul(gdata[:, 1:], omm_d) + gdata[:, 0]

@@ -107,7 +107,10 @@ class AGFCatalog(GlassCatalogProto):
 
     def __getitem__(self, gname: str) -> Any:
         return self.catalog[gname]
-        
+
+    def __len__(self) -> int:
+        return len(self.catalog)
+
     def create_glass(self, gname: str) -> 'AGFMedium':
         """ Create an instance of the glass `gname`. """
         return AGFMedium(gname, self.name, self.catalog[gname])
@@ -217,8 +220,8 @@ class AGFMedium(OpticalMedium):
         """ plot refractive index and thruput data, when available. """
         import matplotlib.pyplot as plt
 
-        wvl_min, wvl_max = self.glass_rec['ld'][0], self.glass_rec['ld'][1]
-        wvls = 1000. * np.linspace(wvl_min, wvl_max, 100)
+        wvl_min, wvl_max = self.get_wl_range()
+        wvls = np.linspace(wvl_min, wvl_max, 100)
 
         plt.plot(wvls, self.calc_rindex(wvls), 
                 label='ref index')

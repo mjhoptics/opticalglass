@@ -5,9 +5,17 @@
 
     The glassfactory module is intended to be the primary method by which glass
     instances are created. The :func:`create_glass` is the public factory
-    function for this purpose. The public function :func:`get_glass_catalog`
-    returns the glass catalog instance corresponding to the input string.
+    function for this purpose.
 
+    opticalglass provides a common API to a number of different optical material data sources. These include
+    - interfaces to vendor supplied Excel spreadsheets with glass data.
+    - ability to import material files in the Zemax .agf data format.
+    - ability to import material data from the RefractiveIndex.INFO database.
+
+    These and other sources of data are organized into libraries. Each library contains one or more catalogs, and each catalog contains one or more glasses. The glass catalog of particular vendors (e.g. Hoya, Ohara, Schott) will be found in multiple libraries. The user can control the order in which the libraries are searched, as well as the order of the catalogs available from each library.
+
+    The global variable og_glass_libs is an instance of the CentralGlassLibrary class that contains the various libraries and catalogs. 
+    
     Users may utilize the custom glass collection by using the 
     :func:`register_glass` function. Glasses, specified by name and catalog 
     name, can be used in the create_glass function. The collection may be saved 
