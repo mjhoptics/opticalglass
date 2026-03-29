@@ -25,16 +25,37 @@ logger = logging.getLogger(__name__)
 class GlassLibrary():
     """ A collection of libs or catalogs. 
     
-    This class acts like a dictionary of libraries or catalogs. Each library or catalog is accessed by its name as the key. The library also maintains a search order for the mapped items that is used when looking for a catalog or glass. A GlassLibrary supports iteration and uses the search order when iterating over its contents. Libraries or catalogs can be excluded from the search order to limit the search to specific items. The library can contain any number of nested libraries and catalogs, and the search will be performed recursively through the nested structure.
+    This class acts like a dictionary of libraries or catalogs. Each library or catalog is accessed by its name as the key. The library maintains a search order for the mapped items that is used when looking for a catalog or glass. A GlassLibrary supports iteration and uses the search order when iterating over its contents. Libraries or catalogs can be excluded from the search by changing their active_state to False. The library can contain any number of nested libraries and catalogs, and the search will be performed recursively through the nested structure.
     
     The find_path_to_glass method can be used to find all paths to a specific glass in the library, and the find_catalog method can be used to find all occurrences of a specific catalog in the library.
     """
     def __init__(self, name: str, lib: dict[str, Any], 
-                 search_order: list[str]):
+                 search_order: list[str],
+                 *active_cltns: list[str],
+                 ):
         self.name: str = name
         self._lib: dict[str, Any] = CaselessDictionary(lib)
+
+        if len(active_cltns) > 0:
+            self.active_cltns = active_cltns[0]
+        else:
+            self.active_state: dict[str, bool] = CaselessDictionary({key: True 
+                                                  for key in self._lib.keys()})
+
         self.search_order: list[str] = search_order
         self._g: Any
+
+    @property
+    def active_cltns(self) -> list[str]:
+        return [key for key, value in self.active_state.items() if value]
+
+    @active_cltns.setter
+    def active_cltns(self, new_active_cltns: list[str]):
+        active_state = CaselessDictionary({key: False 
+                                           for key in self._lib.keys()})
+        for key in new_active_cltns:
+            active_state[key] = True
+        self.active_state = active_state
 
     def __json_encode__(self):
         attrs = dict(vars(self))
@@ -81,7 +102,8 @@ class GlassLibrary():
         def gen() -> Any:
             """ generator for the library items in search order """
             for key in self.search_order:
-                yield self._lib[key]
+                if self.active_state[key]:
+                    yield self._lib[key]
 
         self._g = gen()
         return self
@@ -118,7 +140,7 @@ class GlassLibrary():
         path_list = []
         glasscat_path = []
         return find_paths(self, gname, path_list)
-    
+
     def find_catalog(self, cat_name: str) -> list[tuple['GlassCatalogProto', list[str]]]:
         """ find all occurences of `cat_name` in the library
 
