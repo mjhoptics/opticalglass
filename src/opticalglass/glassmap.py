@@ -21,79 +21,20 @@ from . import util
 logger = logging.getLogger(__name__)
 
 
-class GlassMapDB():
-    """ Simple model to support Model/View architecture for Glass map views
-
-    Attributes:
-        catalogs: list of objects that respond to :meth:`glass_map_data`
-    """
-
-    def __init__(self, *args):
-        """Initialize a GlassMapDb from a list of args
-
-        Args:
-            args: list of items to be included in the GlassMapDB:
-
-                - a dict of catalog names and their catalog instance
-                - a list of catalog names
-                - a list of :class:`~.glass.Glass` instances
-
-        If no arguments, use the default set of catalogs in
-        :mod:`~.glassfactory`, _catalog_list.
-        """
-        if len(args) == 0:
-            # get a full list of catalogs if needed
-            args = (gf.fill_catalog_list(),)
-
-        self.catalogs = []
-        for arg in args:
-            if isinstance(arg, dict):
-                if len(arg) == 0:
-                    arg = gf.fill_catalog_list()
-                for cat_name, catalog in arg.items():
-                    self.catalogs.append((catalog, cat_name))
-            if isinstance(arg, list) and len(arg)>0:
-                if isinstance(arg[0], str):
-                    # treat as a list of catalog names
-                    for cat_name in arg:
-                        catalog = gf.get_glass_catalog(cat_name)
-                        self.catalogs.append((catalog, cat_name))
-                else:
-                    # treat as glass instances, wrap them in a GlassMapSet
-                    cat_name = 'System'
-                    catalog = GlassMapSet(arg, cat_name)
-                    self.catalogs.append((catalog, cat_name))
-
-    def get_data_at(self, i, **kwargs):
-        catalog, cat_name = self.catalogs[i]
-        return catalog.glass_map_data(cat_name=cat_name, **kwargs)
-
-    def get_data_set_label_at(self, i):
-        return self.catalogs[i][1]
-
-
-class GlassMapSet():
-    """Set of glass instances to be displayed in a GlassMapFigure. """
-
-    def __init__(self, glasses, cat_name):
-        """The main requirement is the glass instance must respond to
-        rindex() api
-        """
-        self.glasses = glasses
-        self.cat_name = cat_name
-
-    def catalog_name(self):
-        return self.cat_name
-
-    def glass_map_data(self, wvl='d', **kwargs):
-        return gf.calc_glass_map_arrays(self.glasses, wvl, 'F', 'C', **kwargs)
+def md_sub_to_mathtex(md_str: str) -> str:
+    """Convert markdown subscript to mathtex format. """
+    if '<sub>' in md_str:
+        temp1 = md_str.replace('<sub>', '_{')
+        temp2 = temp1.replace('</sub>', '}')
+        return '$' + temp2 + '$'
+    return md_str
 
 
 class GlassMapFigure(Figure):
     """Matplotlib implementation of an optical glass map.
 
     Attributes:
-        glass_db: an instance of :class:`~.GlassMapDB`
+        glass_libs: an instance of :class:`~.GlassLibrary`
         db_display: list of boolean flags to control catalog display
         hover_glass_names: if True display glass name list under cursor
         plot_display_type: controls the type of data display. Supported types are:
@@ -119,22 +60,23 @@ class GlassMapFigure(Figure):
            ]
     mkr = ['^', 'x', '2', 's', 'v', '+', '*', 'D', 'o']
     home_bbox = Bbox(np.array([[95., 1.45], [20., 2.05]]))
+    home_bbox_lrg = Bbox(np.array([[105., 1.30], [15., 2.15]]))
 
-    def __init__(self, glass_db, db_display=None, hover_glass_names=True,
+    def __init__(self, glass_libs, db_display, hover_glass_names=True,
                  plot_display_type="Refractive Index",
                  refresh_gui=None, **kwargs):
         """GlassMap figure initialization. """
         super().__init__(**kwargs)
         self.refresh_gui = refresh_gui
-        self.glass_db = glass_db
-        num_catalogs = len(glass_db.catalogs)
-        self.db_display = db_display if db_display else [True]*num_catalogs
+        self.glass_libs = glass_libs
+        self.db_display = db_display
         self.plot_display_type = plot_display_type
         self.partials = ('F', 'd')
         self.hover_glass_names = hover_glass_names
         self.needsClear = True
         self.pick_list = []
         self.event_dict = {}
+        self._delay_refresh = False
 
         self.update_data()
 
@@ -172,6 +114,8 @@ class GlassMapFigure(Figure):
         Returns:
             self (class Figure) so scripting envs will auto display results
         """
+        if self._delay_refresh:
+            return self
         self.update_data(**kwargs)
         self.plot()
         return self
@@ -189,13 +133,14 @@ class GlassMapFigure(Figure):
         ctyp = ("disp_coefs"
                 if self.plot_display_type == "Buchdahl Dispersion Coefficients"
                 else None)
-        for i, display in enumerate(self.db_display):
-            gmap_data = self.glass_db.get_data_at(i, ctype=ctyp,
-                                                  partials=self.partials)
-            n, v, p, coefs0, coefs1, glass_names = gmap_data
-            catalog_name = self.glass_db.get_data_set_label_at(i)
-            self.rawData.append([catalog_name,
-                                 (n, v, p, coefs0, coefs1, glass_names)])
+        for lib in self.glass_libs:
+            for cat in lib:
+                if len(cat) > 0:
+                    gmap_data = cat.glass_map_data(ctype=ctyp,
+                                                partials=self.partials)
+                    n, v, p, coefs0, coefs1, glass_names = gmap_data
+                    self.rawData.append([(lib.name, cat.name),
+                                        (n, v, p, coefs0, coefs1, glass_names)])
         return self
 
     def update_axis_limits(self, bbox):
@@ -242,22 +187,28 @@ class GlassMapFigure(Figure):
             xi = 4
             yi = 3
         self.ax.set_title(self.get_display_label())
-        for i, display in enumerate(self.db_display):
-            line = self.ax.plot(self.rawData[i][1][xi], self.rawData[i][1][yi],
+        for i, raw_data_pkg in enumerate(self.rawData):
+            lib_name, cat_name = lib_cat = raw_data_pkg[0]
+            raw_data_label = f"{cat_name} ({lib_name})"
+            display = self.glass_libs[lib_name].active_state[cat_name]
+            i_mod = i%7
+            line = self.ax.plot(raw_data_pkg[1][xi], raw_data_pkg[1][yi],
                                 linestyle='None', marker='o', markersize=5,
                                 # linestyle='None', markersize=7,
                                 alpha=0.75, gid=i,
                                 picker=True, pickradius=5,
-                                color=self.dsc[i],
+                                color=self.dsc[i_mod], 
+                                fillstyle='none',
                                 # marker=self.mkr[i], fillstyle='none',
-                                label=self.rawData[i][0], visible=display)
+                                label=raw_data_label, visible=display)
             # set pickradius here because of a bug. Fixed in 3.3
             line[0].set_pickradius(5.)
 
         if self.plot_display_type == "Refractive Index":
             # provide a default minimum area, and update view limits
             # accordingly
-            viewLim = Bbox.union([self.home_bbox, self.ax.viewLim])
+            # viewLim = Bbox.union([self.home_bbox, self.ax.viewLim])
+            viewLim = Bbox.union([self.home_bbox, self.home_bbox_lrg])
             self.update_axis_limits(viewLim.get_points())
 
         # set up interactive event handling
@@ -277,7 +228,8 @@ class GlassMapFigure(Figure):
                 "", xy=(0, 0), xytext=(20, 20),
                 textcoords="offset points",
                 bbox=dict(boxstyle="round", fc="w"),
-                arrowprops=dict(arrowstyle="->"))
+                arrowprops=dict(arrowstyle="->"),
+                )
             self.hover_list.set_visible(False)
 
         # draw remaining stuff, axes, legend...
@@ -322,13 +274,15 @@ class GlassMapFigure(Figure):
         info_text = []
         if len(artists) > 0:
             for a in artists:
-                artist, info, cat = a
-                if self.db_display[cat]:
+                artist, info, catalog_idx = a
+                raw_data_pkg = self.rawData[catalog_idx]
+                lib_name, cat_name = raw_data_pkg[0]
+                if self.glass_libs[lib_name].active_state[cat_name]:
                     ind = info['ind']
-                    cat_name = self.rawData[cat][0]
-                    n, v, p, coef0, coef1, glass_name = self.rawData[cat][1]
+                    n, v, p, coef0, coef1, glass_name = raw_data_pkg[1]
                     for k in ind:
-                        text = glass_name[k] + ', ' + cat_name
+                        gname = md_sub_to_mathtex(glass_name[k])
+                        text = f"{gname}, {cat_name} ({lib_name})"
                         info_text.append(text)
             # Update annotation with glass list
             info_text = '\n'.join(info_text)
@@ -353,13 +307,14 @@ class GlassMapFigure(Figure):
         if self.needsClear:
             self.clear_pick_table()
         line = event.artist
-        cat = line.get_gid()
-        if self.db_display[cat]:
+        catalog_idx = line.get_gid()
+        raw_data_pkg = self.rawData[catalog_idx]
+        lib_name, cat_name = raw_data_pkg[0]
+        if self.glass_libs[lib_name].active_state[cat_name]:
             ind = event.ind
-            cat_name = self.rawData[cat][0]
-            n, v, p, coef0, coef1, glass_name = self.rawData[cat][1]
+            n, v, p, coef0, coef1, glass_name = raw_data_pkg[1]
             for k in ind:
-                glass = (cat_name, glass_name[k], n[k], v[k], p[k])
+                glass = (lib_name, cat_name, glass_name[k], n[k], v[k], p[k])
                 self.pick_list.append(glass)
 
     def on_press(self, event):
@@ -393,5 +348,8 @@ class GlassMapFigure(Figure):
 
     def updateVisibility(self, indx, state):
         """Update the visibility and redraw. """
-        self.ax.lines[indx].set_visible(state)
+        try:
+            self.ax.lines[indx].set_visible(state)
+        except IndexError:
+            pass
         self.canvas.draw()

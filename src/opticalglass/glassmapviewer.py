@@ -11,25 +11,71 @@ import logging
 import sys
 
 from PySide6.QtCore import Qt
-from PySide6 import QtCore
-from PySide6 import QtGui
+from PySide6.QtCore import QAbstractTableModel, QModelIndex, QMimeData, Slot
+from PySide6.QtGui import QDrag, QPixmap
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QHBoxLayout,
                              QVBoxLayout, QGridLayout, QSizePolicy, QGroupBox,
-                             QCheckBox, QRadioButton, QTableView, QLabel)
+                             QCheckBox, QRadioButton, QTableView, QTabWidget, 
+                             QLabel, QTextEdit, QItemDelegate)
 
-from matplotlib.backends.backend_qt5agg \
-     import (FigureCanvasQTAgg as FigureCanvas,
-             NavigationToolbar2QT as NavigationToolbar)
+from matplotlib.backends.backend_qtagg \
+     import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt \
+     import NavigationToolbar2QT as NavigationToolbar
 
-from opticalglass.glassmap import GlassMapFigure, GlassMapDB
-from opticalglass import glassfactory
+from opticalglass.glassmap import GlassMapFigure
+from opticalglass import glassfactory as gfact
 
 logger = logging.getLogger(__name__)
+
+def init_glass_libs(og_glass_libs):
+    og_priority_order = [
+        'xls',
+        # 'agf',
+        # 'rii-specs',
+        'rii-organic',
+        # 'rii-other',
+        'rii-3d',
+        ]
+    og_glass_libs.search_order = og_priority_order
+
+    xls_priority_order = ['Hoya', 'Ohara', 'Schott', 'CDGM', 'Hikari', 'Sumita']
+    og_glass_libs['xls'].search_order = xls_priority_order
+
+    agf_priority_order = [
+    'hoya',
+    'ohara',
+    'schott glasses preferred and special June-2025-B',
+    # 'schott',
+    'misc',
+    'cdgm',
+    'hikari',
+    'nikon',
+    'sumita',
+    'lzos',
+    'lightpath',
+    'corning',
+    ]
+    og_glass_libs['agf'].search_order = agf_priority_order
+
+    rii_specs_priority_order = [
+    'SCHOTT-optical',
+    'OHARA-optical',
+    'HIKARI-optical',
+    'CDGM-optical',
+    'HOYA-optical',
+    'SUMITA-optical',
+    'LZOS-optical',
+    ]
+    og_glass_libs['rii-specs'].search_order = rii_specs_priority_order
 
 
 def init_UI(gui_parent, fig):
     main_widget = QWidget()
     layout = QHBoxLayout(main_widget)
+
+    # leftBar = QVBoxLayout()
+    # layout.addLayout(leftBar)
 
     gm = PlotCanvas(gui_parent, fig)
     layout.addWidget(gm)
@@ -48,8 +94,11 @@ def init_UI(gui_parent, fig):
     plotPartialsBar.addWidget(partialsGroup)
     rightBar.addLayout(plotPartialsBar)
 
-    catalogGroup = createCatalogGroupBox(gui_parent, fig)
-    rightBar.addWidget(catalogGroup)
+    # test_group = createTestWidgetBox(gui_parent=gui_parent, fig=fig)
+    # rightBar.addWidget(test_group)
+
+    libsGroup = createLibraryGroupBox(gui_parent, fig)
+    rightBar.addWidget(libsGroup)
 
     pick_model = PickModel(fig)
     gmt = PickTable(gui_parent, pick_model)
@@ -57,6 +106,23 @@ def init_UI(gui_parent, fig):
 
     return main_widget, pick_model
 
+
+def createTestWidgetBox(gui_parent, fig):
+    groupBox = QGroupBox("Test Widget Area", gui_parent)
+    groupBox.setMaximumWidth(sum(_pt_col_widths) + 20)
+
+    test_md_str = "H<sub>2</sub>O:C<sub>3</sub>H<sub>5</sub>(OH)<sub>3</sub>"
+    label = QLabel(test_md_str)
+    textedit = QTextEdit()
+    textedit.setMarkdown(test_md_str)
+
+    vbox = QVBoxLayout()
+    vbox.addWidget(label)
+    vbox.addWidget(textedit)
+
+    groupBox.setLayout(vbox)
+
+    return groupBox
 
 def createPlotTypeBox(gui_parent, fig):
     groupBox = QGroupBox("Plot Type", gui_parent)
@@ -174,16 +240,34 @@ def on_plot_type_toggled(fig, button):
     fig.refresh()
 
 
-def createCatalogGroupBox(gui_parent, fig):
+def createLibraryGroupBox(gui_parent, fig):
+    tab = QTabWidget()
+    tab.setMaximumWidth(sum(_pt_col_widths) + 20)
+
+    for lib in fig.glass_libs:
+        cat_pg = createCatalogGroupBox(gui_parent, fig, lib.name)
+        tab.addTab(cat_pg, lib.name)
+
+    return tab
+
+def createCatalogGroupBox(gui_parent, fig, lib: str):
     groupBox = QGroupBox("Glass Catalogs", gui_parent)
 
     check_box_list = []
-    for i, gc in enumerate(fig.glass_db.catalogs):
-        catalog, cat_name = gc
+
+    for i, catalog in enumerate(fig.glass_libs[lib]):
+        cat_name = catalog.name
         checkBox = QCheckBox(cat_name)
         checkBox.setChecked(True)
-        checkBox.stateChanged.connect(create_handle_checkbox(fig, i))
+        checkBox.stateChanged.connect(
+            create_handle_lib_cat_checkbox(fig, i, lib, cat_name))
         check_box_list.append(checkBox)
+
+    checkBox = QCheckBox("Select All")
+    checkBox.setChecked(True)
+    checkBox.stateChanged.connect(
+        create_select_all_lib_cat_checkbox(fig, lib, check_box_list))
+    check_box_list.insert(0, checkBox)
 
     vbox = QVBoxLayout()
     for cb in check_box_list:
@@ -194,17 +278,32 @@ def createCatalogGroupBox(gui_parent, fig):
     return groupBox
 
 
-def create_handle_checkbox(fig, cb_number):
+def create_select_all_lib_cat_checkbox(fig, lib, check_box_list):
+    def select_all_checkbox(state):
+        fig_delay_refresh = fig._delay_refresh
+        fig._delay_refresh = True
+        state = Qt.CheckState(state)
+        checked = state == Qt.CheckState.Checked
+        for checkBox in check_box_list:
+            checkBox.setChecked(checked)
+        fig._delay_refresh = False
+        fig.refresh()
+        fig._delay_refresh = fig_delay_refresh
+    return select_all_checkbox
+
+
+def create_handle_lib_cat_checkbox(fig, cb_number, lib, cat_name):
     def handle_checkbox(state):
         state = Qt.CheckState(state)
         checked = state == Qt.CheckState.Checked
-        fig.db_display[cb_number] = checked
+        fig.glass_libs[lib].active_state[cat_name] = checked
         fig.updateVisibility(cb_number, checked)
+        fig.refresh()
     return handle_checkbox
 
 
 class GlassMapViewer(QMainWindow):
-    def __init__(self):
+    def __init__(self, glass_libs, window_size=(1650, 1100)):
         super().__init__()
 
         self.title = 'Glass Map Viewer'
@@ -212,14 +311,18 @@ class GlassMapViewer(QMainWindow):
 
         self.left = 50
         self.top = 150
-        self.width = 1110
-        self.height = 650
+        self.width = window_size[0]
+        self.height = window_size[1]
         self.setGeometry(self.left, self.top, self.width, self.height)
 
-        self.glass_db = GlassMapDB(glassfactory._cat_names)
-        self.db_display = [True]*len(self.glass_db.catalogs)
+        self.glass_libs = glass_libs
+
+        db_display = {}
+        for lib in self.glass_libs:
+            for cat_name in lib.keys():
+                db_display[(lib.name, cat_name)] = True
         self.plot_display_type = "Refractive Index"
-        self.fig = GlassMapFigure(self.glass_db, db_display=self.db_display,
+        self.fig = GlassMapFigure(self.glass_libs, db_display=db_display,
                                   plot_display_type=self.plot_display_type,
                                   refresh_gui=self.refresh_gui,
                                   )
@@ -232,8 +335,9 @@ class GlassMapViewer(QMainWindow):
         self.pick_model.fill_table(self.fig.pick_list)
 
 
-_pt_header = ["Catalog", "Glass", "Nd", "Vd", "P F,d"]
-_pt_format = ["{:s}", "{:s}", "{:7.5f}", "{:5.2f}", "{:6.4f}"]
+_pt_header = ["Library", "Catalog", "Glass", "Nd", "Vd", "P F,d"]
+_pt_format = ["{:s}", "{:s}", "{:s}", "{:7.5f}", "{:5.2f}", "{:6.4f}"]
+_pt_col_widths = [65, 115, 100, 63, 52, 60]
 
 
 class PickTable(QTableView):
@@ -242,11 +346,12 @@ class PickTable(QTableView):
         self.setModel(pick_model)
         self.setAlternatingRowColors(True)
         self.setMinimumWidth(285)
-        self.setMaximumWidth(345)
+        self.setMaximumWidth(sum(_pt_col_widths) + 20)
         self.setDragEnabled(True)
         self.pickRow = 0
-        for i, w in enumerate([53, 100, 63, 52, 60]):
+        for i, w in enumerate(_pt_col_widths):
             self.setColumnWidth(i, w)
+        self.setItemDelegate(LabelDelegate(self))
 
     def mousePressEvent(self, event):
         """Initiate glass drag and drop operation from here. """
@@ -254,19 +359,19 @@ class PickTable(QTableView):
         if (
                 event.button() == Qt.MouseButton.LeftButton and
                 self.model().rowCount(0) > 0):
-            drag = QtGui.QDrag(self)
-            mimeData = QtCore.QMimeData()
+            drag = QDrag(self)
+            mimeData = QMimeData()
             si = self.indexAt(event.pos())
             pick_row = si.row()
             pick = self.model().pick_table[pick_row]
-            # comma separated list: glass_name,catalog_name
-            mimeData.setText(pick[1] + ',' + pick[0])
+            # comma separated list: glass_name,catalog_name,library_name
+            mimeData.setText(pick[2] + ',' + pick[1] + ',' + pick[0])
             drag.setMimeData(mimeData)
 
             drag.exec_(Qt.DropAction.CopyAction)
 
 
-class PickModel(QtCore.QAbstractTableModel):
+class PickModel(QAbstractTableModel):
     def __init__(self, fig):
         super().__init__()
         self.fig = fig
@@ -283,7 +388,7 @@ class PickModel(QtCore.QAbstractTableModel):
     def headerData(self, section, orientation, role):
         if role == Qt.ItemDataRole.DisplayRole:
             if orientation == Qt.Orientation.Horizontal:
-                if section == 4:
+                if section == 5:  # index of P F,d column
                     self.pt_header[section] = "P %s-%s" % self.fig.partials
                 return self.pt_header[section]
             elif orientation == Qt.Orientation.Vertical:
@@ -292,7 +397,8 @@ class PickModel(QtCore.QAbstractTableModel):
             return None
 
     def data(self, index, role):
-        if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
+        if (role == Qt.ItemDataRole.DisplayRole or 
+            role == Qt.ItemDataRole.EditRole):
             r = index.row()
             c = index.column()
             return self.pick_table[r][c]
@@ -307,16 +413,39 @@ class PickModel(QtCore.QAbstractTableModel):
         self.pick_table = pick_table
 
         if self.num_rows > 0:
-            self.beginRemoveRows(QtCore.QModelIndex(), 0, self.num_rows-1)
+            self.beginRemoveRows(QModelIndex(), 0, self.num_rows-1)
             self.removeRows(0, self.num_rows)
             self.endRemoveRows()
 
         self.num_rows = len(pick_table)
         if self.num_rows > 0:
-            self.beginInsertRows(QtCore.QModelIndex(), 0, self.num_rows-1)
+            self.beginInsertRows(QModelIndex(), 0, self.num_rows-1)
             self.insertRows(0, self.num_rows)
             self.endInsertRows()
 
+
+class LabelDelegate(QItemDelegate):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def get_label(self, option, index):
+        value = index.data(Qt.ItemDataRole.DisplayRole)
+        label = QLabel(value)
+        label.resize(option.rect.size())
+        return label
+
+    def paint(self, painter, option, index):
+        label = self.get_label(option, index)
+        painter.save()
+        pixmap = QPixmap(option.rect.size())
+        label.render(pixmap)
+        painter.drawPixmap(option.rect, pixmap)
+        painter.restore()
+
+    def sizeHint(self, option, index):
+        label = self.get_label(option, index)
+        return label.sizeHint()
+    
 
 class PlotCanvas(FigureCanvas):
     def __init__(self, gui_parent, fig):
@@ -337,9 +466,10 @@ def main():
                         level=logging.DEBUG)
     logger.info("opticalglass started")
     qtapp = QApplication(sys.argv)
-    qtwnd = GlassMapViewer()
+    init_glass_libs(gfact.og_glass_libs)
+    qtwnd = GlassMapViewer(gfact.og_glass_libs)
     qtwnd.show()
-    return qtapp.exec_()
+    return qtapp.exec()
 
 
 if __name__ == '__main__':
