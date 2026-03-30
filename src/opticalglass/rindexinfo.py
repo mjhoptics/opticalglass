@@ -417,18 +417,17 @@ formulas = {
     }
 
 
+
 class RIICatalog(GlassCatalogProto):
-    def __init__(self, catalog_name: str, rii_book: dict, rii_data_path: Path):
-        self.name = rii_book['BOOK']
-        self.descript = rii_book['name']
-        self.contents: list = rii_book['content']
+    def __init__(self, catalog_name: str, 
+                 rii_book: dict|None=None, 
+                 rii_data_path: Path|None=None):
+        self.name = catalog_name
+        self.descript = ""
+        self.contents: list = []
         self.catalog = CaselessDictionary()
-        for page in self.contents:
-            if 'PAGE' in page:
-                gname = page['PAGE']
-                page['data'] = rii_data_path / page['data']
-                self.catalog[gname] = page
-                self.catalog[gname]['matl'] = None
+        if rii_book is not None and rii_data_path is not None:
+            self.append_book(rii_book, rii_data_path, incl_book_name=False)
 
     def __contains__(self, gname: str) -> bool:
         return gname in self.catalog
@@ -450,6 +449,18 @@ class RIICatalog(GlassCatalogProto):
     def __len__(self) -> int:
         return len(self.catalog)
     
+    def append_book(self, rii_book: dict, rii_data_path: Path, 
+                    incl_book_name: bool=True):
+        """ Append the contents of another RII book to this catalog. """
+        self.descript += f" + {rii_book['name']}"
+        for page in rii_book['content']:
+            if 'PAGE' in page:
+                gname = (f"{rii_book['name']}.{page['PAGE']}" if incl_book_name 
+                         else page['PAGE'])
+                page['data'] = rii_data_path / page['data']
+                self.catalog[gname] = page
+                self.catalog[gname]['matl'] = None
+
     def gen_all_glasses(self):
         """ Generate all glasses in the catalog and store in self.catalog. """
         for gname in self.catalog.keys():
@@ -587,7 +598,8 @@ def get_rii_libs(rii_base_path: Optional[str|Path]=None) -> dict[str,
                                                                  GlassLibrary]:
     
     if rii_base_path is None:
-        rii_base_path = Path(os.environ.get('optics')) / "refractiveindexinfo/database"
+        rii_base_path = (Path(os.environ.get('optics')) / 
+                         "refractiveindexinfo/database")
         # rii_base_path = Path(os.environ.get('refractiveindexinfodb')) 
     rii_path = rii_base_path / "catalog-nk.yml"
     rii_data_path = rii_base_path / "data"
@@ -601,9 +613,19 @@ def get_rii_libs(rii_base_path: Optional[str|Path]=None) -> dict[str,
             rii_catalog = {}
             lib_name = shelf['SHELF']
             for book in shelf['content']:
-                if 'BOOK' in book:
-                    rii_catalog[book['BOOK']] = RIICatalog(book['BOOK'], book, 
-                                                           rii_data_path)
+                match lib_name:
+                    case 'specs' | '3d':
+                        if 'BOOK' in book:
+                            rii_catalog[book['BOOK']] = RIICatalog(
+                                book['BOOK'], book, rii_data_path)
+                    case _:
+                        if 'DIVIDER' in book:
+                            cat_name = book['DIVIDER']
+                            rii_cat2 = RIICatalog(cat_name)
+                            rii_catalog[cat_name] = rii_cat2
+                        if 'BOOK' in book:
+                            rii_cat2.append_book(book, rii_data_path)
+                        
             rii_lib_name = 'rii-'+lib_name
             rii_libs[rii_lib_name] = GlassLibrary(rii_lib_name, rii_catalog, 
                                                   list(rii_catalog.keys()))
