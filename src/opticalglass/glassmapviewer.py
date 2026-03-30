@@ -31,10 +31,10 @@ logger = logging.getLogger(__name__)
 def init_glass_libs(og_glass_libs):
     og_priority_order = [
         'xls',
-        # 'agf',
-        # 'rii-specs',
+        'agf',
+        'rii-specs',
         'rii-organic',
-        # 'rii-other',
+        'rii-other',
         'rii-3d',
         ]
     og_glass_libs.search_order = og_priority_order
