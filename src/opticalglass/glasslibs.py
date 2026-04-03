@@ -69,6 +69,7 @@ class GlassLibrary():
     def __setitem__(self, key: str, new_value: Any):
         if key not in self._lib:
             self.search_order.append(key)
+            self.active_state[key] = True
         self._lib[key] = new_value
 
     def __len__(self) -> int:
