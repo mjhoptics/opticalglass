@@ -227,7 +227,9 @@ class AGFMedium(OpticalMedium):
     def calc_absorption_coefs(self) -> NDArray:
         t_vals = np.array(self.glass_rec['it']['transmission'])
         meas_thi = np.array(self.glass_rec['it']['thickness'])
-        abs_coefs = -np.log(t_vals)/meas_thi
+        # clamp log(t_val) to zero if t_val is zero or negative
+        log_t_vals = np.where(t_vals > 0, np.log(t_vals, where=t_vals > 0), 0)
+        abs_coefs = -log_t_vals/meas_thi
         return abs_coefs
 
     def summary_plots(self):
