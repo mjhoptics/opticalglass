@@ -69,3 +69,15 @@ def calc_glass_constants(nd, nF, nC, *partials):
         P45 = (n4-n5)/dFC
         return nd, vd, PFd, P45
     return vd, PFd
+
+
+def move_to(cltn: list, i: int, item: object) -> list:
+    """ Move item to index i in collection cltn. """
+    try:
+        cltn.remove(item)
+    except ValueError:
+        # item not in cltn, nothing to move
+        return cltn
+    else:
+        cltn.insert(i, item)
+    return cltn
