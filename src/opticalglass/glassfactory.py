@@ -248,11 +248,10 @@ def create_glass(*name_catalog) -> OpticalMedium:
 
     if isinstance(name, str):
         name = name.strip()
-
     if isinstance(catalog, str):
-        return _create_glass(name, catalog.strip(), library)
+        catalog = catalog.strip()
 
-    elif isinstance(catalog, list):
+    if isinstance(catalog, list):
         for cat in catalog:
             try:
                 glass = _create_glass(name, cat.strip(), library)
@@ -263,7 +262,7 @@ def create_glass(*name_catalog) -> OpticalMedium:
         logger.info(f'glass {name} not found in {catalog}')
         raise ge.GlassNotFoundError(catalog, name)
     else:
-        raise ge.GlassCatalogNotFoundError(catalog) 
+        return _create_glass(name, catalog, library)
 
 
 libraries = ['user', 'xls', 'agf', 
