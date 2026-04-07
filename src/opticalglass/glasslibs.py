@@ -219,11 +219,29 @@ class GlassCatalog(GlassCatalogProto):
     def __contains__(self, gname: str) -> bool:
         return gname in self.catalog
 
-    def __getitem__(self, key: str) -> Any:
+    def __getitem__(self, key: str) -> 'OpticalMedium':
         return self.catalog[key]
 
+    def __setitem__(self, key: str, new_value: 'OpticalMedium'):
+        self.catalog[key] = new_value
+
     def __len__(self) -> int:
-        return len(self.catalog)
+        return len(self.catalog)  
+
+    def has_key(self, key):
+        if self.catalog.get(key):
+            return True
+        else:
+            return False
+
+    def items(self):
+        return self.catalog.items()
+
+    def keys(self):
+        return self.catalog.keys()
+
+    def values(self):
+        return self.catalog.values()
 
     def create_glass(self, gname: str) -> 'OpticalMedium':
         """ Create an instance of the glass `gname`. """
