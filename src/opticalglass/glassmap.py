@@ -35,7 +35,6 @@ class GlassMapFigure(Figure):
 
     Attributes:
         glass_libs: an instance of :class:`~.GlassLibrary`
-        db_display: list of boolean flags to control catalog display
         hover_glass_names: if True display glass name list under cursor
         plot_display_type: controls the type of data display. Supported types are:
 
@@ -62,14 +61,13 @@ class GlassMapFigure(Figure):
     home_bbox = Bbox(np.array([[95., 1.45], [20., 2.05]]))
     home_bbox_lrg = Bbox(np.array([[105., 1.30], [15., 2.15]]))
 
-    def __init__(self, glass_libs, db_display, hover_glass_names=True,
+    def __init__(self, glass_libs, hover_glass_names=True,
                  plot_display_type="Refractive Index",
                  refresh_gui=None, **kwargs):
         """GlassMap figure initialization. """
         super().__init__(**kwargs)
         self.refresh_gui = refresh_gui
         self.glass_libs = glass_libs
-        self.db_display = db_display
         self.plot_display_type = plot_display_type
         self.partials = ('F', 'd')
         self.hover_glass_names = hover_glass_names

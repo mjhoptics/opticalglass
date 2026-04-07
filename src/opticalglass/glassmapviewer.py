@@ -317,12 +317,8 @@ class GlassMapViewer(QMainWindow):
 
         self.glass_libs = glass_libs
 
-        db_display = {}
-        for lib in self.glass_libs:
-            for cat_name in lib.keys():
-                db_display[(lib.name, cat_name)] = True
         self.plot_display_type = "Refractive Index"
-        self.fig = GlassMapFigure(self.glass_libs, db_display=db_display,
+        self.fig = GlassMapFigure(self.glass_libs,
                                   plot_display_type=self.plot_display_type,
                                   refresh_gui=self.refresh_gui,
                                   )
