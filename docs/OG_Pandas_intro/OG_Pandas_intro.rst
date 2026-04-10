@@ -35,7 +35,7 @@ Import glass and catalog factory functions.
     import numpy as np
     import matplotlib.pyplot as plt
     
-    from opticalglass.glassfactory import create_glass, get_glass_catalog
+    from opticalglass.glassfactory import create_glass, og_glass_libs
 
 .. code:: ipython3
 
@@ -47,13 +47,13 @@ Import glass and catalog factory functions.
 Importing a catalog spreadsheet
 -------------------------------
 
-The :func:`~.glassfactory.get_glass_catalog` function is used to read the Excel spreadsheet and populate a |DataFrame| with it. A requirement for the import process is that the spreadsheet data be copied untouched into the catalog |DataFrame|. Only the spreadsheet row and column headers are changed in creating the catalog |DataFrame|.
+The initialization of the global variable :data:`~.glassfactory.og_glass_libs` reads the Excel spreadsheet into a |DataFrame|. A requirement for the import process is that the spreadsheet data be copied untouched into the catalog |DataFrame|. Only the spreadsheet row and column headers are changed in creating the catalog |DataFrame|.
 
 The :attr:`.GlassCatalogPandas.df` attribute has the glass catalog |DataFrame|.
 
 .. code:: ipython3
 
-    hoya_pd = get_glass_catalog('Hoya')
+    hoya_pd = og_glass_libs['xls']['Hoya']
     hoya_df = hoya_pd.df
 
 The :meth:`~.glass.GlassCatalogPandas.glass_data` method returns a |Series| of the catalog data for the specified glass name.
@@ -188,7 +188,7 @@ The refractive index at a particular spectral line can be obtained with an addit
 
 .. parsed-literal::
 
-    1.50157
+    np.float64(1.50157)
 
 
 
@@ -280,7 +280,7 @@ The transmission data may be plotted directly from the |Series| via :meth:`~pand
 
 .. parsed-literal::
 
-    <AxesSubplot:xlabel='data item'>
+    <Axes: xlabel='data item'>
 
 
 
@@ -299,7 +299,7 @@ All of the glasses in the catalog |DataFrame| may be plotted on the same graph.
 
 .. parsed-literal::
 
-    <AxesSubplot:xlabel='data item'>
+    <Axes: xlabel='data item'>
 
 
 
@@ -318,7 +318,7 @@ Transmission data for a list of glasses can be plotted as well.
 
 .. parsed-literal::
 
-    <AxesSubplot:xlabel='data item'>
+    <Axes: xlabel='data item'>
 
 
 
@@ -405,7 +405,7 @@ Call create_glass() on the glass catalog itself.
 
 .. code:: ipython3
 
-    fcd1_v2 = hoya_pd.create_glass('FCD1', 'Hoya')
+    fcd1_v2 = hoya_pd.create_glass('FCD1')
 
 .. code:: ipython3
 
@@ -416,7 +416,7 @@ Call create_glass() on the glass catalog itself.
 
 .. parsed-literal::
 
-    1.50123
+    np.float64(1.50123)
 
 
 
@@ -447,7 +447,7 @@ The :meth:`~.glass.GlassPandas.transmission_data` method returns the material tr
 
 .. parsed-literal::
 
-    [<matplotlib.lines.Line2D at 0x7f9148fcfac0>]
+    [<matplotlib.lines.Line2D at 0x150182870>]
 
 
 

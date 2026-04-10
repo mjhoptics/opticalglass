@@ -12,18 +12,10 @@ Module contents
 Submodules
 ----------
 
-opticalmedium
-+++++++++++++
+glasslibs
++++++++++
 
-.. automodule:: opticalglass.opticalmedium
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-glass
-+++++
-
-.. automodule:: opticalglass.glass
+.. automodule:: opticalglass.glasslibs
     :members:
     :undoc-members:
     :show-inheritance:
@@ -32,6 +24,14 @@ glassfactory
 ++++++++++++
 
 .. automodule:: opticalglass.glassfactory
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+opticalmedium
++++++++++++++
+
+.. automodule:: opticalglass.opticalmedium
     :members:
     :undoc-members:
     :show-inheritance:
@@ -52,26 +52,26 @@ buchdahl
     :undoc-members:
     :show-inheritance:
 
-spectral_lines
-++++++++++++++
+xls_glass
++++++++++
 
-.. automodule:: opticalglass.spectral_lines
+.. automodule:: opticalglass.glass
     :members:
     :undoc-members:
     :show-inheritance:
 
-util
-++++
+agf_glass
++++++++++
 
-.. automodule:: opticalglass.util
+.. automodule:: opticalglass.agf_glass
     :members:
     :undoc-members:
     :show-inheritance:
 
-glasserror
+rindexinfo
 ++++++++++
 
-.. automodule:: opticalglass.glasserror
+.. automodule:: opticalglass.rindexinfo
     :members:
     :undoc-members:
     :show-inheritance:
@@ -155,10 +155,29 @@ sumita
     :undoc-members:
     :show-inheritance:
 
-rindexinfo
+Misc Submodules
+---------------
+
+spectral_lines
+++++++++++++++
+
+.. automodule:: opticalglass.spectral_lines
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+util
+++++
+
+.. automodule:: opticalglass.util
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+glasserror
 ++++++++++
 
-.. automodule:: opticalglass.rindexinfo
+.. automodule:: opticalglass.glasserror
     :members:
     :undoc-members:
     :show-inheritance:

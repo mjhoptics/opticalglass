@@ -41,9 +41,6 @@ from .glasslibs import (GlassLibrary, GlassCatalog, GlassCatalogProto,
 logger = logging.getLogger(__name__)
 
 
-__all__ = ['create_glass', 'register_glass', 
-           'list_custom_glasses', 'save_custom_glasses', 'load_custom_glasses']
-
 # A place to hold user-registered glasses:
 _custom_glass_registry = {}  
 
@@ -264,13 +261,11 @@ def create_glass(*name_catalog) -> OpticalMedium:
     else:
         return _create_glass(name, catalog, library)
 
-
-libraries = ['user', 'xls', 'agf', 
-             'rii', 
-            #  'rii-main', 'rii-specs', 'rii-other', 'rii-organic', 'rii-glass', 
-             'robb']
+#: list of library names to be included in the central glass library. The order of the libraries in this list determines the search order when looking for glasses. 
+libraries = ['user', 'xls', 'agf', 'rii', 'robb']
 
 class CentralGlassLibrary(GlassLibrary):
+    """ Instantiates the :data:`libraries` list to create the central library, :data:`og_glass_libs`. """
     def __init__(self, search_order: Optional[list[str]] = None):
         if search_order is None:
             search_order = list(libraries)
@@ -310,4 +305,5 @@ class CentralGlassLibrary(GlassLibrary):
 
         super().__init__('glass library', glass_libs, search_order)
 
+#: The :class:`CentralGlassLibrary` instance containing the various glass libraries and catalogs
 og_glass_libs: CentralGlassLibrary = CentralGlassLibrary()

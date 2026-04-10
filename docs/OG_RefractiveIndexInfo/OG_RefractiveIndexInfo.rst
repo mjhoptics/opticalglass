@@ -290,6 +290,7 @@ KNbO3
 
     {'REFERENCES': 'N. Umemura, K. Yoshida, and K. Kato. Phase-matching properties of KNbO<sub>3</sub> in the mid-infrared, <a href="    https://doi.org/10.1364/AO.38.000991"><i>Appl Opt.</i> <b>38</b>, 991-994 (1999)</a>\n',
      'COMMENTS': 'n<sub>α</sub>; 22 °C.\n',
+     'CONDITIONS': {'temerature': 295, 'direction': 'alpha'},
      'DATA': [{'type': 'formula 4',
        'wavelength_range': '0.40 5.3',
        'coefficients': '4.4222 0.09972 0 0.05496 1 0 0 0 1 -0.01976 2'}]}
@@ -306,7 +307,7 @@ KNbO3
 .. parsed-literal::
 
     array([ 4.4222 ,  0.09972,  0.     ,  0.05496,  1.     ,  0.     ,
-            1.     ,  0.     ,  1.     , -0.01976,  2.     ])
+            0.     ,  0.     ,  1.     , -0.01976,  2.     ])
 
 
 
