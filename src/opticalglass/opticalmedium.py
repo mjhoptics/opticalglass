@@ -94,13 +94,20 @@ class OpticalMedium(Protocol):
         """
         return self.calc_rindex(get_wavelength(wvl))
 
-    @abstractmethod
     def transmission_data(self, thi: float) -> tuple[NDArray, NDArray]:
         """ returns an array of transmission data for the glass
 
-        Returns: np.arrays of wavelength and transmission for `thi` mm sample
+        The default implementation returns unit transmittance over the wavelength range given by :meth:`get_wl_range`
+
+        Args:
+            thi: the sample thickness in mm for the transmittance data
+
+        Returns: 
+            tuple of Numpy arrays of wavelength and transmittance
         """
-        pass
+        t_vals = np.array([1.0, 1.0])
+        wvls = np.array(self.get_wl_range)
+        return wvls, t_vals
 
 
 class Air(OpticalMedium):
@@ -124,6 +131,7 @@ class Air(OpticalMedium):
     def get_wl_range(self) -> tuple[float, float]:
         """ returns the wavelength range in nm for the medium definition """
         return 0., 10.**12
+
 
 class ConstantIndex(OpticalMedium):
     """ Constant refractive index medium. """
