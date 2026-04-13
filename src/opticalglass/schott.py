@@ -15,6 +15,7 @@ from . import glass
 
 class SchottCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
 
+    @staticmethod
     def get_rindx_wvl(header_str):
         """Returns the wavelength value from the refractive index data header string."""
         hdr = header_str.split('n')[-1]
@@ -24,11 +25,15 @@ class SchottCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
             h = hdr
         return h
 
+    @staticmethod
     def get_transmission_wvl(header_str):
         """Returns the wavelength value from the transmission data header string."""
         return float(header_str[len('TAUI10/'):])
 
-    def __init__(self, fname='SCHOTT.xls'):
+    def __init__(
+            self, 
+            fname='schott-optical-glass-overview-excel-format-en 202501113.xlsx'
+            ):
         # the xl_df has indices and columns that match the Excel worksheet border.
         # the index runs from 1 to xl_df.shape[0]
         # the columns match the pattern 'A', 'B', 'C', ... 'Z', 'AA', 'AB', ...
@@ -58,7 +63,7 @@ class SchottCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
             ('specific gravity', 'd', header_row, 'CZ'),
             ]
         kwargs = dict(
-            data_extent = (5, 127, data_col, 'FJ'),
+            data_extent = (5, 126, data_col, 'FK'),
             name_col_offset = 'A',
             )
         super().__init__('Schott', fname, series_mappings, item_mappings, 
