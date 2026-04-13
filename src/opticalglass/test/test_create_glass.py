@@ -80,9 +80,9 @@ class CreateGlassTestCase(unittest.TestCase):
 
         # make sure get_glass_catalog returns the catalog
         found = False
-        cat = og_glass_libs.find_catalog('mycatalog')
-        for c in cat:
-            if 'myglass' in c:
+        cat_list = og_glass_libs.find_catalog('mycatalog')
+        for cat, path in cat_list:
+            if 'myglass' in cat:
                 found = True
         self.assertTrue(found)
 
