@@ -44,7 +44,7 @@ class TransmissionTestCase(unittest.TestCase):
         glass = gf.create_glass('PCD51', 'Hoya')
         self.assertIsNotNone(glass)
         self.assertEqual(glass.name(), 'PCD51')
-        self.compare_transmission(glass, 2500.0, 0.8, 280.0, 0.145)
+        self.compare_transmission(glass, 2500.0, 0.8, 280.0, 0.187)
 
     def test_hoya_glass_fd140(self):
         glass = gf.create_glass('FD140', 'Hoya')

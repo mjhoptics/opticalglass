@@ -14,7 +14,7 @@ from . import glass
 
 class HoyaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
 
-    def __init__(self, fname='HOYA.xlsx'):
+    def __init__(self, fname='HOYA20260401.xlsx'):
         # the xl_df has indices and columns that match the Excel worksheet border.
         # the index runs from 1 to xl_df.shape[0]
         # the columns match the pattern 'A', 'B', 'C', ... 'Z', 'AA', 'AB', ...
@@ -28,24 +28,26 @@ class HoyaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
         
         series_mappings = [
             ('refractive indices', (lambda h: h.split('n')[-1]), 
-             2, 'K', 'AA'),
-            ('dispersion coefficients', None, 2, 'AC', 'AN'),
-            ('internal transmission mm, 10', None, 4, 'QV', 'SM'),
-            ('chemical properties', None, 4, 'BW', 'CC'),
-            ('thermal properties', None, 4, 'CD', 'DE'),
-            ('mechanical properties', None, 4, 'DF', 'DL'),
+             2, 'M', 'AC'),
+            ('dispersion coefficients', None, 2, 'AE', 'AP'),
+            ('internal transmission mm, 2', None, 4, 'NN', 'PE'),
+            ('internal transmission mm, 5', None, 4, 'PF', 'QW'),
+            ('internal transmission mm, 10', None, 4, 'QX', 'SO'),
+            ('chemical properties', None, 4, 'BY', 'CE'),
+            ('thermal properties', None, 4, 'CF', 'DG'),
+            ('mechanical properties', None, 4, 'DH', 'DN'),
             ]
         item_mappings = [
             ('abbe number', 'vd', header_row, 'F'),
-            ('abbe number', 've', header_row, 'I'),
-            ('refractive indices', (lambda h: float(h)), header_row, 'K'),
-            ('refractive indices', (lambda h: float(h)), header_row, 'L'),
+            ('abbe number', 've', header_row, 'J'),
+            ('refractive indices', (lambda h: float(h)), header_row, 'M'),
+            ('refractive indices', (lambda h: float(h)), header_row, 'N'),
             ('refractive index', 'd', header_row, 'E'),
-            ('refractive index', 'e', header_row, 'H'),
-            ('specific gravity', 'd', header_row, 'ND'),
+            ('refractive index', 'e', header_row, 'I'),
+            ('specific gravity', 'd', header_row, 'NF'),
             ]
         kwargs = dict(
-            data_extent = (5, 198, 'D', 'TA'),
+            data_extent = (5, 242, 'D', 'TC'),
             name_col_offset = 'C',
             )
         super().__init__('Hoya', fname, series_mappings, item_mappings, 
