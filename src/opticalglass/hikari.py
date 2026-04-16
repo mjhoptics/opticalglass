@@ -9,14 +9,14 @@
 """
 
 import logging
-from .util import Singleton
 
 import numpy as np
 
-from . import glass
+from . import glass as xls_glass
 
 
-class HikariCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
+class HikariCatalog(xls_glass.GlassCatalogPandas):
+    @staticmethod
     def get_rindx_wvl(header_str):
         """Returns the wavelength value from the refractive index data header string."""
         if isinstance(header_str, float):
@@ -25,11 +25,14 @@ class HikariCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
             value = header_str.split()[0]
         return value
 
+    @staticmethod
     def get_transmission_wvl(header_str):
         """Returns the wavelength header string."""
         return float(header_str[:-len('nm')])
 
-    def __init__(self, fname='HIKARI.xlsx'):
+    def __init__(self, catalog_name:str='Hikari',
+                 fname:str='hikari_general_catalog_data.xlsx', 
+                 last_data_row:int=163):
         # the xl_df has indices and columns that match the Excel worksheet border.
         # the index runs from 1 to xl_df.shape[0]
         # the columns match the pattern 'A', 'B', 'C', ... 'Z', 'AA', 'AB', ...
@@ -40,7 +43,9 @@ class HikariCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
         header_row = 3  # row with data item/header info
         data_col = 'B'  # first column of data in the imported spreadsheet
         args = num_rows, category_row , header_row, data_col
-        
+
+        first_data_row = 4
+
         series_mappings = [
             ('refractive indices', HikariCatalog.get_rindx_wvl, 
              header_row, 'D', 'X'),
@@ -59,10 +64,10 @@ class HikariCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
             ('specific gravity', 'd', header_row, 'CG'),
             ]
         kwargs = dict(
-            data_extent = (4, 163, data_col, 'GE'),
+            data_extent = (first_data_row, last_data_row, data_col, 'GE'),
             name_col_offset = 'A',
             )
-        super().__init__('Hikari', fname, series_mappings, item_mappings, 
+        super().__init__(catalog_name, fname, series_mappings, item_mappings, 
                          *args, **kwargs)
 
     def create_glass(self, gname: str, gcat: str) -> 'HikariGlass':
@@ -70,7 +75,7 @@ class HikariCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
         return HikariGlass(gname)
 
 
-class HikariGlass(glass.GlassPandas):
+class HikariGlass(xls_glass.GlassPandas):
     catalog = None
 
     def initialize_catalog(self):
