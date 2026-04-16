@@ -23,7 +23,7 @@ class OharaTestCase(unittest.TestCase):
         self.assertIsNotNone(sbsl7)
         snph1 = self.catalog.glass_index('S-NPH 1')
         self.assertIsNotNone(snph1)
-        snph53 = self.catalog.glass_index('S-NPH53')  # last in list
+        snph53 = self.catalog.glass_index('S-NPH 7')  # last in list
         self.assertIsNotNone(snph53)
 
     # def test_ohara_catalog_data_index(self):
