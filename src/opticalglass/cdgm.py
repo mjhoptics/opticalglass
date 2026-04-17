@@ -6,12 +6,11 @@
 .. codeauthor: Michael J. Hayford
 """
 import logging
-from .util import Singleton
 
 import numpy as np
 import pandas as pd
 
-from . import glass
+from . import glass as xls_glass
 
 
 def decode_dispersion_coefs(glas: pd.Series) -> tuple[list, str]:
@@ -26,9 +25,11 @@ def decode_dispersion_coefs(glas: pd.Series) -> tuple[list, str]:
     return coefs, interp_formula
 
 
-class CDGMCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
+class CDGMCatalog(xls_glass.GlassCatalogPandas):
 
-    def __init__(self, fname='CDGM202409.xlsx'):
+    def __init__(self, catalog_name:str='CDGM',
+                 fname:str='CDGM202409.xlsx', 
+                 last_data_row:int=323):
         # the xl_df has indices and columns that match the Excel worksheet border.
         # the index runs from 1 to xl_df.shape[0]
         # the columns match the pattern 'A', 'B', 'C', ... 'Z', 'AA', 'AB', ...
@@ -40,6 +41,8 @@ class CDGMCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
         data_col = 'B'  # first column of data in the imported spreadsheet
         args = num_rows, category_row , header_row, data_col
         
+        first_data_row = 3
+
         series_mappings = [
             ('refractive indices', (lambda h: h.split('n')[-1]), 
              category_row, 'C', 'V'),
@@ -59,10 +62,10 @@ class CDGMCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
             ('specific gravity', 'd', header_row, 'CK'),
             ]
         kwargs = dict(
-            data_extent = (3, 323, data_col, 'HZ'),
+            data_extent = (first_data_row, last_data_row, data_col, 'HZ'),
             name_col_offset = 'A',
             )
-        super().__init__('CDGM', fname, series_mappings, item_mappings, 
+        super().__init__(catalog_name, fname, series_mappings, item_mappings, 
                          *args, **kwargs)
 
     def glass_coefs(self, gname):
@@ -76,7 +79,7 @@ class CDGMCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
         return CDGMGlass(gname)
 
 
-class CDGMGlass(glass.GlassPandas):
+class CDGMGlass(xls_glass.GlassPandas):
     catalog: CDGMCatalog | None = None
 
     def initialize_catalog(self):

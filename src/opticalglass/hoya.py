@@ -7,14 +7,15 @@
 """
 
 import numpy as np
-from .util import Singleton
 
-from . import glass
+from . import glass as xls_glass
 
 
-class HoyaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
+class HoyaCatalog(xls_glass.GlassCatalogPandas):
 
-    def __init__(self, fname='HOYA20260401.xlsx'):
+    def __init__(self, catalog_name:str='Hoya',
+                 fname:str='HOYA20260401.xlsx', 
+                 last_data_row:int=242):
         # the xl_df has indices and columns that match the Excel worksheet border.
         # the index runs from 1 to xl_df.shape[0]
         # the columns match the pattern 'A', 'B', 'C', ... 'Z', 'AA', 'AB', ...
@@ -26,6 +27,8 @@ class HoyaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
         data_col = 'D'  # first column of data in the imported spreadsheet
         args = num_rows, category_row , header_row, data_col
         
+        first_data_row = 5
+
         series_mappings = [
             ('refractive indices', (lambda h: h.split('n')[-1]), 
              2, 'M', 'AC'),
@@ -47,10 +50,10 @@ class HoyaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
             ('specific gravity', 'd', header_row, 'NF'),
             ]
         kwargs = dict(
-            data_extent = (5, 242, 'D', 'TC'),
+            data_extent = (first_data_row, last_data_row, data_col, 'TC'),
             name_col_offset = 'C',
             )
-        super().__init__('Hoya', fname, series_mappings, item_mappings, 
+        super().__init__(catalog_name, fname, series_mappings, item_mappings, 
                          *args, **kwargs)
 
     def glass_coefs(self, gname):
@@ -63,7 +66,7 @@ class HoyaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
         return HoyaGlass(gname)
 
 
-class HoyaGlass(glass.GlassPandas):
+class HoyaGlass(xls_glass.GlassPandas):
     catalog = None
 
     def initialize_catalog(self):

@@ -6,14 +6,13 @@
 .. codeauthor: Michael J. Hayford
 """
 import logging
-from .util import Singleton
 
 import numpy as np
 
-from . import glass
+from . import glass as xls_glass
 
 
-class SchottCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
+class SchottCatalog(xls_glass.GlassCatalogPandas):
 
     @staticmethod
     def get_rindx_wvl(header_str):
@@ -30,10 +29,10 @@ class SchottCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
         """Returns the wavelength value from the transmission data header string."""
         return float(header_str[len('TAUI10/'):])
 
-    def __init__(
-            self, 
-            fname='schott-optical-glass-overview-excel-format-en 202501113.xlsx'
-            ):
+    def __init__(self, 
+                 catalog_name:str='Schott', 
+                 fname='schott-optical-glass-overview-excel-format-en 202501113.xlsx',
+                 last_data_row:int=126):
         # the xl_df has indices and columns that match the Excel worksheet border.
         # the index runs from 1 to xl_df.shape[0]
         # the columns match the pattern 'A', 'B', 'C', ... 'Z', 'AA', 'AB', ...
@@ -45,6 +44,8 @@ class SchottCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
         data_col = 'B'  # first column of data in the imported spreadsheet
         args = num_rows, category_row , header_row, data_col
         
+        first_data_row = 5
+
         series_mappings = [
             ('refractive indices', SchottCatalog.get_rindx_wvl, header_row, 
              'DM', 'EI'),
@@ -63,10 +64,10 @@ class SchottCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
             ('specific gravity', 'd', header_row, 'CZ'),
             ]
         kwargs = dict(
-            data_extent = (5, 126, data_col, 'FK'),
+            data_extent = (first_data_row, last_data_row, data_col, 'FK'),
             name_col_offset = 'A',
             )
-        super().__init__('Schott', fname, series_mappings, item_mappings, 
+        super().__init__(catalog_name, fname, series_mappings, item_mappings, 
                          *args, **kwargs)
 
     def create_glass(self, gname: str, gcat: str) -> 'SchottGlass':
@@ -74,7 +75,7 @@ class SchottCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
         return SchottGlass(gname)
 
 
-class SchottGlass(glass.GlassPandas):
+class SchottGlass(xls_glass.GlassPandas):
     catalog = None
 
     def initialize_catalog(self):

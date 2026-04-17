@@ -66,7 +66,7 @@ class SumitaCatalog(xls_glass.GlassCatalogPandas):
             data_extent = (first_data_row, last_data_row, data_col, 'FC'),
             name_col_offset = 'C',
             )
-        super().__init__('Sumita', fname, series_mappings, item_mappings, 
+        super().__init__(catalog_name, fname, series_mappings, item_mappings, 
                          *args, **kwargs)
 
     def create_glass(self, gname: str, gcat: str) -> 'SumitaGlass':
