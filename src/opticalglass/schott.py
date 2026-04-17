@@ -10,10 +10,10 @@ import logging
 import numpy as np
 
 from . import glass as xls_glass
+from .util import Singleton
 
 
-class SchottCatalog(xls_glass.GlassCatalogPandas):
-
+class SchottCatalog(xls_glass.GlassCatalogPandas, metaclass=Singleton):
     @staticmethod
     def get_rindx_wvl(header_str):
         """Returns the wavelength value from the refractive index data header string."""

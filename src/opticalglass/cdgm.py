@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 
 from . import glass as xls_glass
+from .util import Singleton
 
 
 def decode_dispersion_coefs(glas: pd.Series) -> tuple[list, str]:
@@ -24,8 +25,7 @@ def decode_dispersion_coefs(glas: pd.Series) -> tuple[list, str]:
         interp_formula = "schott"
     return coefs, interp_formula
 
-
-class CDGMCatalog(xls_glass.GlassCatalogPandas):
+class CDGMCatalog(xls_glass.GlassCatalogPandas, metaclass=Singleton):
 
     def __init__(self, catalog_name:str='CDGM',
                  fname:str='CDGM202409.xlsx', 

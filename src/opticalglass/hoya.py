@@ -9,9 +9,10 @@
 import numpy as np
 
 from . import glass as xls_glass
+from .util import Singleton
 
 
-class HoyaCatalog(xls_glass.GlassCatalogPandas):
+class HoyaCatalog(xls_glass.GlassCatalogPandas, metaclass=Singleton):
 
     def __init__(self, catalog_name:str='Hoya',
                  fname:str='HOYA20260401.xlsx', 
