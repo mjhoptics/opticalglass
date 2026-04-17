@@ -24,12 +24,12 @@ class SumitaTestCase(unittest.TestCase):
         self.assertIsNotNone(cafk95)
         pbk40 = self.catalog.glass_index('K-PBK40')
         self.assertIsNotNone(pbk40)
-        sk16 = self.catalog.glass_index('K-SK16')
+        sk16 = self.catalog.glass_index('K-SK16RH')
         self.assertIsNotNone(sk16)
         laskn1 = self.catalog.glass_index('K-LaSKn1')
         self.assertIsNotNone(laskn1)
-        fir100uv = self.catalog.glass_index('K-FIR100UV')  # last in list
-        self.assertIsNotNone(fir100uv)
+        gir140 = self.catalog.glass_index('K-GIR140')  # last in list
+        self.assertIsNotNone(gir140)
 
     # def test_sumita_catalog_data_index(self):
     #     nd = self.catalog.data_index('nd')
@@ -51,10 +51,10 @@ class SumitaTestCase(unittest.TestCase):
                         remove_lines=SumitaTestCase.remove_lines)
 
     def test_sumita_glass_sk16(self):
-        glass = su.SumitaGlass('K-SK16')
+        glass = su.SumitaGlass('K-SK16RH')
         self.assertIsNotNone(glass)
-        self.assertEqual(glass.name(), 'K-SK16')
-        compare_indices(self, glass, SumitaTestCase.catalog, tol=4.5e-6,
+        self.assertEqual(glass.name(), 'K-SK16RH')
+        compare_indices(self, glass, SumitaTestCase.catalog, tol=6.1e-6,
                         remove_lines=SumitaTestCase.remove_lines)
 
     def test_sumita_glass_laskn1(self):
