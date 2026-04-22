@@ -19,6 +19,8 @@ instance of the appropriate catalog type, given the glass and catalog names.
 
 .. codeauthor: Michael J. Hayford
 """
+from dataclasses import dataclass
+from functools import lru_cache
 import importlib
 import itertools
 import logging
@@ -28,7 +30,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from typing import Any, Optional
+from typing import Any, Callable
 from numpy.typing import NDArray
 from abc import abstractmethod
 
@@ -163,7 +165,7 @@ def glass_catalog_factory(cat_name, mod_name=None, cls_name=None):
     return catalog
 
 
-def xl_cols():
+def xl_cols() -> list[str]:
     """ Generate Excel column labels, A thru ZZ. """
     caps_word = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     cols = list(caps_word)
@@ -174,11 +176,11 @@ def xl_cols():
     return cols
 
 
-def xl2df(fname):
-    """ Read Excel fname into a dataframe and apply Excel based column names. """
+def xl2df(file_name: str) -> pd.DataFrame:
+    """ Read Excel file_name into a dataframe and apply Excel column names. """
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=UserWarning)
-        xl_df = pd.read_excel(get_filepath(fname), header=None)
+        xl_df = pd.read_excel(get_filepath(file_name), header=None)
     shape = xl_df.shape
     xl_df.index = pd.RangeIndex(start=1, stop=shape[0]+1, step=1)
     xl_df.columns = xl_cols()[:shape[1]]
@@ -186,7 +188,7 @@ def xl2df(fname):
 
 
 def build_glass_cat(xl_df, series_mappings, item_mappings, 
-                    *args, **kwargs):
+                    *args, **kwargs) -> pd.DataFrame:
     """ Apply series and item mappings to xl_df, and return catalog df. """
     num_rows, category_row , header_row, data_col = args
     r0, rk, c0, ck = kwargs['data_extent']
@@ -236,6 +238,31 @@ def build_glass_cat(xl_df, series_mappings, item_mappings,
     glass_cat = glass_cat.convert_dtypes()
 
     return glass_cat
+
+@dataclass
+class PandasMappingDef:
+    catalog_name: str
+    file_name: str
+    series_mappings: list[tuple[str, Callable|None, int, str, str]]  
+    item_mappings: list[tuple[str, str, int, str]]
+    args: tuple[int, int, int, str]
+    kwargs: dict
+
+    def __hash__(self):
+        return hash((self.catalog_name, self.file_name, 
+                    #  tuple(self.series_mappings), 
+                     tuple(self.item_mappings), 
+                     self.args, 
+                     self.kwargs['data_extent']))
+
+
+#@lru_cache(maxsize=None)
+def xls_to_df(pmd: PandasMappingDef) -> pd.DataFrame:
+    """ Read Excel file_name into a dataframe and apply series and item mappings. """  
+    xl_df = xl2df(pmd.file_name)
+    glass_cat_df = build_glass_cat(xl_df, pmd.series_mappings, 
+                                   pmd.item_mappings, *pmd.args, **pmd.kwargs)
+    return glass_cat_df
 
 
 class GlassCatalogPandas(GlassCatalogProto):
@@ -308,8 +335,10 @@ class GlassCatalogPandas(GlassCatalogProto):
         glass_lookup:
     """
 
-    def __init__(self, name, fname, series_mappings, item_mappings, 
-                 *args, **kwargs):
+    # def __init__(self, name, fname, series_mappings, item_mappings, 
+    #              *args, **kwargs):
+    @lru_cache(maxsize=None)
+    def __init__(self, pmd: PandasMappingDef):
         """
 
         Args:
@@ -321,23 +350,21 @@ class GlassCatalogPandas(GlassCatalogProto):
             args: the header string for the first refractive index value column 
                     in fname
         """
-        self.name = name
+        self.name: str = pmd.catalog_name
         # Open the workbook
-        xl_df = xl2df(fname)
-        self.df = build_glass_cat(xl_df, series_mappings, item_mappings, 
-                                  *args, **kwargs)
+        self.df: pd.DataFrame = xls_to_df(pmd)
 
         # build an alphabetical list of decoded glass names
         gnames = self.df.index.array
-        glass_list = [(decode_glass_name(gn), gn, name)
+        glass_list = [(decode_glass_name(gn), gn, pmd.catalog_name)
                       for gn in gnames]
         glass_list = sorted(glass_list, key=lambda glass: glass[0][0])
         # build a lookup dict of the glass defs keyed to decoded glass names
         glass_lookup = {gn_decode: (gn, gc)
                         for gn_decode, gn, gc in glass_list}
-        # attach these 'static' lists to class variables
-        self.__class__.glass_list = glass_list
-        self.__class__.glass_lookup = glass_lookup
+
+        self.glass_list = glass_list
+        self.glass_lookup = glass_lookup
 
     @abstractmethod
     def create_glass(self, gname: str) -> OpticalMedium:

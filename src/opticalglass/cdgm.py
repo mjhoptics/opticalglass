@@ -25,7 +25,8 @@ def decode_dispersion_coefs(glas: pd.Series) -> tuple[list, str]:
         interp_formula = "schott"
     return coefs, interp_formula
 
-class CDGMCatalog(xls_glass.GlassCatalogPandas, metaclass=Singleton):
+#class CDGMCatalog(xls_glass.GlassCatalogPandas, metaclass=Singleton):
+class CDGMCatalog(xls_glass.GlassCatalogPandas):
 
     def __init__(self, catalog_name:str='CDGM',
                  fname:str='CDGM202409.xlsx', 
@@ -65,8 +66,10 @@ class CDGMCatalog(xls_glass.GlassCatalogPandas, metaclass=Singleton):
             data_extent = (first_data_row, last_data_row, data_col, 'HZ'),
             name_col_offset = 'A',
             )
-        super().__init__(catalog_name, fname, series_mappings, item_mappings, 
-                         *args, **kwargs)
+        pmd = xls_glass.PandasMappingDef(catalog_name, fname, series_mappings,
+                                         item_mappings, args, kwargs)
+        super().__init__(pmd)
+        CDGMGlass.catalog = self
 
     def glass_coefs(self, gname):
         """ returns an array of glass coefficients for the glass at *gname* """

@@ -13,7 +13,8 @@ from . import glass as xls_glass
 from .util import Singleton
 
 
-class SchottCatalog(xls_glass.GlassCatalogPandas, metaclass=Singleton):
+#class SchottCatalog(xls_glass.GlassCatalogPandas, metaclass=Singleton):
+class SchottCatalog(xls_glass.GlassCatalogPandas):
     @staticmethod
     def get_rindx_wvl(header_str):
         """Returns the wavelength value from the refractive index data header string."""
@@ -67,8 +68,11 @@ class SchottCatalog(xls_glass.GlassCatalogPandas, metaclass=Singleton):
             data_extent = (first_data_row, last_data_row, data_col, 'FK'),
             name_col_offset = 'A',
             )
-        super().__init__(catalog_name, fname, series_mappings, item_mappings, 
-                         *args, **kwargs)
+        pmd = xls_glass.PandasMappingDef(catalog_name, fname, series_mappings,
+                                         item_mappings, args, kwargs)
+        super().__init__(pmd)
+        SchottGlass.catalog = self
+
 
     def create_glass(self, gname: str) -> 'SchottGlass':
         """ Create an instance of the glass `gname`. """

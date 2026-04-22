@@ -12,7 +12,8 @@ from . import glass as xls_glass
 from .util import Singleton
 
 
-class HoyaCatalog(xls_glass.GlassCatalogPandas, metaclass=Singleton):
+#class HoyaCatalog(xls_glass.GlassCatalogPandas, metaclass=Singleton):
+class HoyaCatalog(xls_glass.GlassCatalogPandas):
 
     def __init__(self, catalog_name:str='Hoya',
                  fname:str='HOYA20260401.xlsx', 
@@ -54,8 +55,10 @@ class HoyaCatalog(xls_glass.GlassCatalogPandas, metaclass=Singleton):
             data_extent = (first_data_row, last_data_row, data_col, 'TC'),
             name_col_offset = 'C',
             )
-        super().__init__(catalog_name, fname, series_mappings, item_mappings, 
-                         *args, **kwargs)
+        pmd = xls_glass.PandasMappingDef(catalog_name, fname, series_mappings,
+                                         item_mappings, args, kwargs)
+        super().__init__(pmd)
+        HoyaGlass.catalog = self
 
     def glass_coefs(self, gname):
         c = super().glass_coefs(gname)
