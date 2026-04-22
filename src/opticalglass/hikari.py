@@ -16,7 +16,8 @@ from . import glass as xls_glass
 from .util import Singleton
 
 
-class HikariCatalog(xls_glass.GlassCatalogPandas, metaclass=Singleton):
+#class HikariCatalog(xls_glass.GlassCatalogPandas, metaclass=Singleton):
+class HikariCatalog(xls_glass.GlassCatalogPandas):
     @staticmethod
     def get_rindx_wvl(header_str):
         """Returns the wavelength value from the refractive index data header string."""
@@ -38,7 +39,7 @@ class HikariCatalog(xls_glass.GlassCatalogPandas, metaclass=Singleton):
         # the index runs from 1 to xl_df.shape[0]
         # the columns match the pattern 'A', 'B', 'C', ... 'Z', 'AA', 'AB', ...
         # this facilitates transferring areas on the spreadsheet to areas in the catalog DataFrame
-        
+
         num_rows = 3  # number of header rows in the imported spreadsheet
         category_row = 2  # row with categories
         header_row = 3  # row with data item/header info
@@ -68,8 +69,10 @@ class HikariCatalog(xls_glass.GlassCatalogPandas, metaclass=Singleton):
             data_extent = (first_data_row, last_data_row, data_col, 'GE'),
             name_col_offset = 'A',
             )
-        super().__init__(catalog_name, fname, series_mappings, item_mappings, 
-                         *args, **kwargs)
+        pmd = xls_glass.PandasMappingDef(catalog_name, fname, series_mappings,
+                                         item_mappings, args, kwargs)
+        super().__init__(pmd)
+        HikariGlass.catalog = self
 
     def create_glass(self, gname: str, gcat: str) -> 'HikariGlass':
         """ Create an instance of the glass `gname`. """

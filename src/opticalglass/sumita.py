@@ -15,7 +15,8 @@ from . import glass as xls_glass
 from .util import Singleton
 
 
-class SumitaCatalog(xls_glass.GlassCatalogPandas, metaclass=Singleton):
+#class SumitaCatalog(xls_glass.GlassCatalogPandas, metaclass=Singleton):
+class SumitaCatalog(xls_glass.GlassCatalogPandas):
     @staticmethod
     def get_rindx_wvl(header_str):
         """Returns the wavelength value from the refractive index data header string."""
@@ -66,8 +67,10 @@ class SumitaCatalog(xls_glass.GlassCatalogPandas, metaclass=Singleton):
             data_extent = (first_data_row, last_data_row, data_col, 'FC'),
             name_col_offset = 'C',
             )
-        super().__init__(catalog_name, fname, series_mappings, item_mappings, 
-                         *args, **kwargs)
+        pmd = xls_glass.PandasMappingDef(catalog_name, fname, series_mappings,
+                                         item_mappings, args, kwargs)
+        super().__init__(pmd)
+        SumitaGlass.catalog = self
 
     def create_glass(self, gname: str, gcat: str) -> 'SumitaGlass':
         """ Create an instance of the glass `gname`. """
