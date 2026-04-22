@@ -8,15 +8,15 @@
 .. codeauthor: Michael J. Hayford
 """
 import logging
-from .util import Singleton
 
 import numpy as np
 
-from . import glass
+from . import glass as xls_glass
+from .util import Singleton
 
 
-class SumitaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
-
+class SumitaCatalog(xls_glass.GlassCatalogPandas, metaclass=Singleton):
+    @staticmethod
     def get_rindx_wvl(header_str):
         """Returns the wavelength value from the refractive index data header string."""
         hdr = header_str.split('n')[-1]
@@ -26,11 +26,14 @@ class SumitaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
             h = hdr
         return h
 
+    @staticmethod
     def get_transmission_wvl(header_str):
         """Returns the wavelength value from the transmission data header string."""
         return float(header_str[len('T2_'):])
 
-    def __init__(self, fname='SUMITA.xlsx'):
+    def __init__(self, catalog_name:str='Sumita',
+                 fname:str='glassdata_ver14.01.03_en.xlsx', 
+                 last_data_row:int=130):
         # the xl_df has indices and columns that match the Excel worksheet border.
         # the index runs from 1 to xl_df.shape[0]
         # the columns match the pattern 'A', 'B', 'C', ... 'Z', 'AA', 'AB', ...
@@ -42,13 +45,15 @@ class SumitaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
         data_col = 'D'  # first column of data in the imported spreadsheet
         args = num_rows, category_row , header_row, data_col
         
+        first_data_row = 3
+
         series_mappings = [
             ('refractive indices', SumitaCatalog.get_rindx_wvl, 
              header_row, 'H', 'V'),
             ('dispersion coefficients', None, header_row, 'AV', 'BA'),
             ('internal transmission mm, 10', 
              SumitaCatalog.get_transmission_wvl, header_row, 'DB', 'EB'),
-            ('chemical properties', None, header_row, 'BQ', 'BT'),
+            ('chemical properties', None, header_row, 'BQ', 'BS'),
             ('thermal properties', None, header_row, 'BI', 'BP'),
             ('mechanical properties', None, header_row, 'BB', 'BH'),
             ]
@@ -58,10 +63,10 @@ class SumitaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
             ('specific gravity', 'd', header_row, 'BX'),
             ]
         kwargs = dict(
-            data_extent = (3, 136, data_col, 'FC'),
+            data_extent = (first_data_row, last_data_row, data_col, 'FC'),
             name_col_offset = 'C',
             )
-        super().__init__('Sumita', fname, series_mappings, item_mappings, 
+        super().__init__(catalog_name, fname, series_mappings, item_mappings, 
                          *args, **kwargs)
 
     def create_glass(self, gname: str) -> 'SumitaGlass':
@@ -69,7 +74,7 @@ class SumitaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
         return SumitaGlass(gname)
 
 
-class SumitaGlass(glass.GlassPandas):
+class SumitaGlass(xls_glass.GlassPandas):
     catalog = None
 
     def initialize_catalog(self):

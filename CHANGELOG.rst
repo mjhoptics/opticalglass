@@ -4,6 +4,10 @@
 Changelog
 =========
 
+Version 1.2.0
+=============
+Updated the spreadsheets for the vendors to the most recent publicly available data. This includes a major update to the CDGM data, to support two different dispersion formula. The method :meth:`~opticalglass.glass.GlassPandas.transmission_data` enables different thicknesses to be queried, if the catalog data is available. Min python version is 3.12.
+
 Version 1.1.1
 =============
 Add custom_glass_registry and functions to :func:`~opticalglass.glassfactory.register_glass`, :func:`~opticalglass.glassfactory.list_custom_glasses`, :func:`~opticalglass.glassfactory.save_custom_glasses` and :func:`~opticalglass.glassfactory.load_custom_glasses`. Thanks to @fujiisoup for the suggestion and implementation.

@@ -6,14 +6,15 @@
 .. codeauthor: Michael J. Hayford
 """
 import logging
-from .util import Singleton
 
 import numpy as np
 
-from . import glass
+from . import glass as xls_glass
+from .util import Singleton
 
 
-class OharaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
+class OharaCatalog(xls_glass.GlassCatalogPandas, metaclass=Singleton):
+    @staticmethod
     def get_rindx_wvl(header_str):
         """Returns the wavelength value from the refractive index data header string."""
         hdr = header_str.split('n')[-1]
@@ -23,7 +24,9 @@ class OharaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
             h = hdr
         return h
 
-    def __init__(self, fname='OHARA.xlsx'):
+    def __init__(self, catalog_name:str='Ohara',
+                 fname:str='ohara-catalog-20250312-S-6dec.xlsx', 
+                 last_data_row:int=136):
         # the xl_df has indices and columns that match the Excel worksheet border.
         # the index runs from 1 to xl_df.shape[0]
         # the columns match the pattern 'A', 'B', 'C', ... 'Z', 'AA', 'AB', ...
@@ -35,25 +38,27 @@ class OharaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
         data_col = 'C'  # first column of data in the imported spreadsheet
         args = num_rows, category_row , header_row, data_col
         
+        first_data_row = 3
+
         series_mappings = [
             ('refractive indices', OharaCatalog.get_rindx_wvl, 
              header_row, 'E', 'X'),
             ('dispersion coefficients', None, header_row, 'BI', 'BN'),
             ('internal transmission mm, 10', None, header_row, 'CC', 'DH'),
-            ('chemical properties', None, header_row, 'FT', 'FY'),
-            ('thermal properties', None, header_row, 'FE', 'FI'),
-            ('mechanical properties', None, header_row, 'FM', 'FS'),
+            ('chemical properties', None, header_row, 'LR', 'LW'),
+            ('thermal properties', None, header_row, 'JO', 'JS'),
+            ('mechanical properties', None, header_row, 'LK', 'LQ'),
             ]
         item_mappings = [
-            ('abbe number', 'vd', header_row, 'Y'),
-            ('abbe number', 've', header_row, 'Z'),
-            ('specific gravity', 'd', header_row, 'GA'),
+            ('abbe number', 'vd', header_row, 'AA'),
+            ('abbe number', 've', header_row, 'AB'),
+            ('specific gravity', 'd', header_row, 'LX'),
             ]
         kwargs = dict(
-            data_extent = (3, 136, data_col, 'GA'),
+            data_extent = (first_data_row, last_data_row, data_col, 'LX'),
             name_col_offset = 'B',
             )
-        super().__init__('Ohara', fname, series_mappings, item_mappings, 
+        super().__init__(catalog_name, fname, series_mappings, item_mappings, 
                          *args, **kwargs)
 
     def create_glass(self, gname: str) -> 'OharaGlass':
@@ -61,7 +66,7 @@ class OharaCatalog(glass.GlassCatalogPandas, metaclass=Singleton):
         return OharaGlass(gname)
 
 
-class OharaGlass(glass.GlassPandas):
+class OharaGlass(xls_glass.GlassPandas):
     catalog = None
 
     def initialize_catalog(self):

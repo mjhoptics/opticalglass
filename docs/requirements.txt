@@ -6,9 +6,9 @@
 #
 json-tricks==3.17.3
     # via opticalglass (setup.py)
-matplotlib==3.10.3
+matplotlib==3.10.8
     # via opticalglass (setup.py)
-numpy==2.3.1
+numpy==2.4.3
     # via
     #   contourpy
     #   matplotlib
@@ -17,17 +17,17 @@ numpy==2.3.1
     #   scipy
 openpyxl==3.1.5
     # via opticalglass (setup.py)
-pandas==2.3.0
+pandas==3.0.2
     # via opticalglass (setup.py)
-pyside6==6.9.1
+pyside6==6.11.0
     # via opticalglass (setup.py)
-pyyaml==6.0.2
+pyyaml==6.0.3
     # via opticalglass (setup.py)
-requests==2.32.4
+requests==2.33.1
     # via opticalglass (setup.py)
-scipy==1.16.0
+scipy==1.17.1
     # via opticalglass (setup.py)
-xlrd==2.0.1
+xlrd==2.0.2
     # via opticalglass (setup.py)
 sphinx==8.2.3
-sphinx_rtd_theme==3.0.2
+sphinx_rtd_theme==3.1.0

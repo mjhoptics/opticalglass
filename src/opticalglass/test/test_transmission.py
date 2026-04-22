@@ -44,7 +44,7 @@ class TransmissionTestCase(unittest.TestCase):
         glass = gf.create_glass('PCD51', 'Hoya')
         self.assertIsNotNone(glass)
         self.assertEqual(glass.name(), 'PCD51')
-        self.compare_transmission(glass, 2500.0, 0.8, 280.0, 0.145)
+        self.compare_transmission(glass, 2500.0, 0.8, 280.0, 0.187)
 
     def test_hoya_glass_fd140(self):
         glass = gf.create_glass('FD140', 'Hoya')
@@ -83,16 +83,16 @@ class TransmissionTestCase(unittest.TestCase):
         self.compare_transmission(glass, 2500.0, 0.997, 250.0, 0.09)
 
     def test_sumita_glass_ksk16(self):
-        glass = gf.create_glass('K-SK16', 'Sumita')
+        glass = gf.create_glass('K-SK16RH', 'Sumita')
         self.assertIsNotNone(glass)
-        self.assertEqual(glass.name(), 'K-SK16')
-        self.compare_transmission(glass, 300.0, 0.014, 2000.0, 0.937)
+        self.assertEqual(glass.name(), 'K-SK16RH')
+        self.compare_transmission(glass, 300.0, 0.031, 2000.0, 0.887)
 
     def test_sumita_glass_kbk7(self):
         glass = gf.create_glass('K-BK7', 'Sumita')
         self.assertIsNotNone(glass)
         self.assertEqual(glass.name(), 'K-BK7')
-        self.compare_transmission(glass, 270.0, 0.02, 2000.0, 0.959)
+        self.compare_transmission(glass, 270.0, 0.022, 2000.0, 0.959)
 
 
 if __name__ == '__main__':
