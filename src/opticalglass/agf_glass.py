@@ -21,7 +21,7 @@ from opticalglass.glasserror import GlassDBNotSupported
 from opticalglass.spectral_lines import get_wavelength
 from opticalglass import buchdahl
 from opticalglass import util
-from opticalglass.glasslibs import GlassCatalogPrototype, GlassLibrary
+from opticalglass.glasslibs import GlassCatalogBase, GlassLibrary
 from opticalglass.caselessDictionary import CaselessDictionary
 
 import logging
@@ -111,7 +111,7 @@ def summary_plots(opt_medium, opt_medium_yaml=None):
     plt.show()
 
 
-class AGFCatalog(GlassCatalogPrototype):
+class AGFCatalog(GlassCatalogBase):
     def __init__(self, catalog_name: str, catalog: dict):
         self.name = catalog_name
         self.catalog = CaselessDictionary(catalog)

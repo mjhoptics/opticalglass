@@ -22,7 +22,7 @@ from numpy.typing import NDArray
 
 from opticalglass.agf_glass import AGFMedium
 from opticalglass.caselessDictionary import CaselessDictionary
-from opticalglass.glasslibs import GlassCatalogProto, GlassLibrary
+from opticalglass.glasslibs import GlassCatalogBase, GlassLibrary
 import opticalglass.glasslibs as glibs
 from opticalglass.opticalmedium import OpticalMedium, InterpolatedMedium
 from opticalglass.glasserror import GlassDBNotSupported
@@ -417,8 +417,7 @@ formulas = {
     }
 
 
-
-class RIICatalog(GlassCatalogProto):
+class RIICatalog(GlassCatalogBase):
     def __init__(self, catalog_name: str, 
                  rii_book: dict|None=None, 
                  rii_data_path: Path|None=None):

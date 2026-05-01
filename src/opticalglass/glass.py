@@ -40,7 +40,7 @@ from . import glasserror as ge
 from .opticalmedium import OpticalMedium
 from .util import Singleton, Counter
 from .spectral_lines import get_wavelength
-from .glasslibs import GlassCatalogPrototype, GlassLibrary
+from .glasslibs import GlassCatalogBase, GlassLibrary
 from .caselessDictionary import CaselessDictionary
 
 logger = logging.getLogger(__name__)
@@ -265,7 +265,7 @@ def xls_to_df(pmd: PandasMappingDef) -> pd.DataFrame:
     return glass_cat_df
 
 
-class GlassCatalogPandas(GlassCatalogPrototype):
+class GlassCatalogPandas(GlassCatalogBase):
     """ Pandas-based glass catalog
     
     Optical glass manufacturers have settled on Excel spreadsheets as a means 
@@ -744,7 +744,7 @@ def get_robb_lib(fname='robb1983_data_final.txt') -> GlassLibrary:
     return robb_lib
 
 
-class RobbCatalog(GlassCatalogPrototype):
+class RobbCatalog(GlassCatalogBase):
     """ glass catalog based on data in Robb, et als 1983 paper on Buchdahl's
     chromatic coordinate
 

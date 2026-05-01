@@ -22,10 +22,10 @@ from opticalglass.caselessDictionary import CaselessDictionary
 logger = logging.getLogger(__name__)
 
 
-class GlassCatalogPrototype():
+class GlassCatalogBase():
     """ Prototype for a glass catalog. 
     
-    A GlassCatalogPrototype defines the interface for a glass catalog, which is a collection of optical glasses. 
+    A GlassCatalogBase defines the interface for a glass catalog, which is a collection of optical glasses. 
     The create_glass method will return a subclass of OpticalMedium for the input glass name. The [] access will return either an OpticalMedium subclass or data directly related to the data source.
     The glass_map_data method will return arrays of index and dispersion data for all glasses in the catalog for a specified wavelength range. This is used to facilitate glass map displays.
     """
@@ -176,7 +176,7 @@ class GlassLibrary():
                 lib = library._lib[lib_key]
                 glasscat_path.append(lib_key)
                 if glass_name in lib:
-                    if isinstance(lib, GlassCatalogPrototype):
+                    if isinstance(lib, GlassCatalogBase):
                         full_path = glasscat_path.copy()
                         full_path.append(glass_name)
                         full_path.reverse()
@@ -193,7 +193,7 @@ class GlassLibrary():
         return find_paths(self, gname, path_list)
 
     def find_catalog(self, cat_name: str) -> list[
-        tuple[GlassCatalogPrototype, list[str]]
+        tuple[GlassCatalogBase, list[str]]
         ]:
         """ find all occurences of `cat_name` in the library
 
@@ -201,7 +201,7 @@ class GlassLibrary():
             cat_name (str): the glass catalog to find
 
         Returns:
-            list[tuple[GlassCatalogPrototype, list[str]]]: list of tuples consisting of a `GlassCatalog` and the path to the catalog as a list of library/catalog names
+            list[tuple[GlassCatalogBase, list[str]]]: list of tuples consisting of a `GlassCatalog` and the path to the catalog as a list of library/catalog names
         """
         def find_catalogs(library, cat_name: str, cat_list):
             for lib_key in library.search_order:
@@ -224,7 +224,7 @@ class GlassLibrary():
         return find_catalogs(self, cat_name, cat_list)
 
 
-class GlassCatalog(GlassCatalogPrototype):
+class GlassCatalog(GlassCatalogBase):
     """ A collection of OpticalMedium."""
     def __init__(self, catalog_name: str, catalog: dict[str, 'OpticalMedium']):
         self.name: str = catalog_name

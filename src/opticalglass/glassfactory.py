@@ -34,7 +34,7 @@ from . import agf_glass as agf
 from . import glasserror as ge
 from . import rindexinfo
 from .opticalmedium import OpticalMedium
-from .glasslibs import (GlassLibrary, GlassCatalog, GlassCatalogPrototype, 
+from .glasslibs import (GlassLibrary, GlassCatalog, GlassCatalogBase, 
                         calc_glass_map_arrays)
 
 
@@ -99,7 +99,7 @@ def register_glass(medium: OpticalMedium):
                                                 {medium.name(): medium})
 
 
-class CustomGlassCatalog(GlassCatalogPrototype):
+class CustomGlassCatalog(GlassCatalogBase):
 
     def __init__(self, catalog_name: str, catalog: dict[str, Any]):
         self.name: str = catalog_name
