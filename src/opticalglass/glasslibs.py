@@ -11,7 +11,7 @@ import logging
 
 import numpy as np
 
-from typing import Any, Optional
+from typing import Any
 from abc import abstractmethod
 
 from opticalglass.spectral_lines import get_wavelength
@@ -22,12 +22,61 @@ from opticalglass.caselessDictionary import CaselessDictionary
 logger = logging.getLogger(__name__)
 
 
+class GlassCatalogPrototype():
+    """ Prototype for a glass catalog. 
+    
+    A GlassCatalogPrototype defines the interface for a glass catalog, which is a collection of optical glasses. 
+    The create_glass method will return a subclass of OpticalMedium for the input glass name. The [] access will return either an OpticalMedium subclass or data directly related to the data source.
+    The glass_map_data method will return arrays of index and dispersion data for all glasses in the catalog for a specified wavelength range. This is used to facilitate glass map displays.
+    """
+    @abstractmethod
+    def __contains__(self, gname: str) -> bool:
+        pass
+
+    @abstractmethod
+    def __getitem__(self, key: str) -> Any:
+        pass
+
+    @abstractmethod
+    def __len__(self) -> int:
+        pass  
+    
+    @abstractmethod
+    def create_glass(self, gname: str) -> 'OpticalMedium':
+        """ Create an instance of the glass `gname`. """
+        pass
+
+    @abstractmethod
+    def glass_map_data(self, wvl='d', **kwargs):
+        """ return index and dispersion data for all glasses in the catalog
+
+        Args:
+            wvl (str): the central wavelength for the data, either 'd' or 'e'
+
+        Returns:
+            index, V-number, partial dispersion, Buchdahl coefficients, and
+            glass names
+        """
+        pass
+
+
 class GlassLibrary():
-    """ A collection of libs or catalogs. 
+    """ A collection of libraries or catalogs. 
     
-    This class acts like a dictionary of libraries or catalogs. Each library or catalog is accessed by its name as the key. The library maintains a search order for the mapped items that is used when looking for a catalog or glass. A GlassLibrary supports iteration and uses the search order when iterating over its contents. Libraries or catalogs can be excluded from the search by changing their active_state to False. The library can contain any number of nested libraries and catalogs, and the search will be performed recursively through the nested structure.
+    This class acts like a dictionary of libraries or catalogs. Each entry in the `GlassLibrary` is accessed using its name as the key. The library maintains a search order for the mapped items that is used when looking for a catalog or glass. A `GlassLibrary` supports iteration and uses the search order when iterating over its contents. Libraries or catalogs can be excluded from the search by changing their active_state to False. The library can contain any number of nested libraries and catalogs, and the search will be performed recursively through the nested structure.
     
-    The find_path_to_glass method can be used to find all paths to a specific glass in the library, and the find_catalog method can be used to find all occurrences of a specific catalog in the library.
+    The :meth:`find_path_to_glass` method can be used to find all paths to a specific glass in the library, and the :meth:`find_catalog` method can be used to find all occurrences of a specific catalog in the library.
+
+    Args:
+        name (str): the name of the library
+        lib (dict[str, Any]): a dictionary of libraries or catalogs
+        search_order (list[str]): the order used when iterating over the contents of the library
+        active_cltns (list[str]): an optional list of library or catalog names that are active, i.e. included in the search. All items are active by default.
+
+    Attributes:
+        name (str): the name of the library
+        active_state (dict[str, bool]): a dictionary of the entries in this library where the value is whether an entry is active or not, Only active entries are included when iterating over the library.
+        search_order (list[str]): the order used when iterating over the contents of the library. The search order can omit entries in the library.
     """
     def __init__(self, name: str, lib: dict[str, Any], 
                  search_order: list[str],
@@ -47,6 +96,7 @@ class GlassLibrary():
 
     @property
     def active_cltns(self) -> list[str]:
+        """ list of the active entries in the library. """
         return [key for key, value in self.active_state.items() if value]
 
     @active_cltns.setter
@@ -126,7 +176,7 @@ class GlassLibrary():
                 lib = library._lib[lib_key]
                 glasscat_path.append(lib_key)
                 if glass_name in lib:
-                    if isinstance(lib, GlassCatalogProto):
+                    if isinstance(lib, GlassCatalogPrototype):
                         full_path = glasscat_path.copy()
                         full_path.append(glass_name)
                         full_path.reverse()
@@ -142,14 +192,16 @@ class GlassLibrary():
         glasscat_path = []
         return find_paths(self, gname, path_list)
 
-    def find_catalog(self, cat_name: str) -> list[tuple['GlassCatalogProto', list[str]]]:
+    def find_catalog(self, cat_name: str) -> list[
+        tuple[GlassCatalogPrototype, list[str]]
+        ]:
         """ find all occurences of `cat_name` in the library
 
         Args:
             cat_name (str): the glass catalog to find
 
         Returns:
-            list[tuple['GlassCatalogProto', list[str]]]: list of tuples consisting of a GlassCatalog and the path to the catalog as a list of library/catalog names
+            list[tuple[GlassCatalogPrototype, list[str]]]: list of tuples consisting of a `GlassCatalog` and the path to the catalog as a list of library/catalog names
         """
         def find_catalogs(library, cat_name: str, cat_list):
             for lib_key in library.search_order:
@@ -172,45 +224,7 @@ class GlassLibrary():
         return find_catalogs(self, cat_name, cat_list)
 
 
-class GlassCatalogProto():
-    """ Prototype for a glass catalog. 
-    
-    A GlassCatalogProto defines the interface for a glass catalog, which is a collection of optical glasses. 
-    The create_glass method will return a subclass of OpticalMedium for the input glass name. The [] access will return either an OpticalMedium subclass or data directly related to the data source.
-    The glass_map_data method will return arrays of index and dispersion data for all glasses in the catalog for a specified wavelength range. This is used to facilitate glass map displays.
-    """
-    @abstractmethod
-    def __contains__(self, gname: str) -> bool:
-        pass
-
-    @abstractmethod
-    def __getitem__(self, key: str) -> Any:
-        pass
-
-    @abstractmethod
-    def __len__(self) -> int:
-        pass  
-    
-    @abstractmethod
-    def create_glass(self, gname: str) -> 'OpticalMedium':
-        """ Create an instance of the glass `gname`. """
-        pass
-
-    @abstractmethod
-    def glass_map_data(self, wvl='d', **kwargs):
-        """ return index and dispersion data for all glasses in the catalog
-
-        Args:
-            wvl (str): the central wavelength for the data, either 'd' or 'e'
-
-        Returns:
-            index, V-number, partial dispersion, Buchdahl coefficients, and
-            glass names
-        """
-        pass
-
-
-class GlassCatalog(GlassCatalogProto):
+class GlassCatalog(GlassCatalogPrototype):
     """ A collection of OpticalMedium."""
     def __init__(self, catalog_name: str, catalog: dict[str, 'OpticalMedium']):
         self.name: str = catalog_name
