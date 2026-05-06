@@ -25,8 +25,8 @@ logger = logging.getLogger(__name__)
 class GlassCatalogBase():
     """ Prototype for a glass catalog. 
     
-    A GlassCatalogBase defines the interface for a glass catalog, which is a collection of optical glasses. 
-    The create_glass method will return a subclass of OpticalMedium for the input glass name. The [] access will return either an OpticalMedium subclass or data directly related to the data source.
+    A `GlassCatalogBase` defines the interface for a glass catalog, which is a collection of optical glasses. 
+    The `create_glass` method will return a subclass of `OpticalMedium` for the input glass name. The [] access will return either an `OpticalMedium` subclass or data directly related to the data source.
     The glass_map_data method will return arrays of index and dispersion data for all glasses in the catalog for a specified wavelength range. This is used to facilitate glass map displays.
     """
     @abstractmethod
@@ -225,7 +225,16 @@ class GlassLibrary():
 
 
 class GlassCatalog(GlassCatalogBase):
-    """ A collection of OpticalMedium."""
+    """ A collection of `OpticalMedium`
+
+    This is a basic implementation of the `GlassCatalogBase` protocol.
+
+    Attributes:
+        name (str): the name of the catalog
+        catalog (dict[str, OpticalMedium]): a dict of `OpticalMedium` keyed by glass name
+
+    In this implementation, the [] operator and the :meth:`create_glass` method return the same thing, an `OpticalMedium` instance for the input glass name.
+    """
     def __init__(self, catalog_name: str, catalog: dict[str, 'OpticalMedium']):
         self.name: str = catalog_name
         self.catalog: dict[str, 'OpticalMedium'] = catalog

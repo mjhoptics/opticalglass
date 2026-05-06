@@ -18,12 +18,15 @@ from scipy.interpolate import interp1d
 from .spectral_lines import get_wavelength
 
 
-def glass_encode(n, v):
+def glass_encode(n: float, v: float) -> str:
+    """ encode index and v-number as a 6 digit code. """
     return f'{int(1000*round((n - 1), 3)):3d}.{int(round(10*v, 3)):3d}'
 
 
-def glass_decode(gc):
-    return round(1.0 + (int(gc)/1000), 3), round(100.0*(gc - int(gc)), 3)
+def glass_decode(gc: str) -> tuple[float, float]:
+    """ decode a 6 digit code into index and v-number. """
+    return round(1.0 + (int(gc)/1000), 3), round(100.0*(float(gc) - int(gc)), 3)
+
 
 # --- material definitions
 @runtime_checkable

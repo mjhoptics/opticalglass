@@ -14,18 +14,19 @@
 #
 import os
 import sys
+from pathlib import Path
 
 # -- Path setup --------------------------------------------------------------
 
-__location__ = os.path.dirname(__file__)
+__location__ = Path(__file__).parent
 
-sys.path.insert(0, os.path.join(__location__, "../src"))
+sys.path.insert(0, (__location__ / "../src").as_posix())
 
 
 # -- Project information -----------------------------------------------------
 
 project = 'opticalglass'
-copyright = '2017-2026, Michael J. Hayford'
+copyright = '2017-%Y, Michael J. Hayford'
 author = 'Michael J. Hayford'
 
 # version: The short X.Y version.

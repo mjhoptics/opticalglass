@@ -11,10 +11,23 @@
 opticalglass
 ============
 
-Tools for reading commercial optical glass catalogs
----------------------------------------------------
+Tools for reading optical material catalogs and libraries
+---------------------------------------------------------
 
-This package is a set of python scripts for reading the excel spreadsheets published by optical glass manufacturers.
+`opticalglass` provides a common interface for querying optical material definitions for refractive index data and other properties. Optical material definitions can be imported from the following data sources:
+
+    * Excel spreadsheets published by optical glass manufacturers
+    * Zemax ANSI Glass Format (.agf) files
+    * The `RefractiveIndex.INFO <https://refractiveindex.info>`_ database
+
+The global function `create_glass <https://opticalglass.readthedocs.io/en/latest/opticalglass.html#opticalglass.glassfactory.create_glass>`_ returns a `glass object <https://opticalglass.readthedocs.io/en/stable/opticalglass.html#opticalglass.opticalmedium.OpticalMedium>`_ given a glass name and, optionally, a catalog name. This glass instance can be queried for refractive index and transmittance values.
+
+
+
+Interface to optical glass manufacturer glass data spreadsheets
+---------------------------------------------------------------
+
+The excel spreadsheets published by optical glass manufacturers are imported using `pandas`. The imported data is read into a dataframe and then mapped to the final glass catalog dataframe, with a common set of headings for different data categories.
 
 The package currently supports the following manufacturers:
 
@@ -29,6 +42,12 @@ The package currently supports the following manufacturers:
 
    All rights and ownership of the data is retained by the original owners, i.e the respective manufacturers.
 
+Interface to .AGF files
+-----------------------
+
+`opticalglass` provides a wrapper around the .agf file importer in the ZemaxGlass package. Each .agf file is mapped to a Glass Catalog.
+
+
 Interface to RefractiveIndex.INFO database
 ------------------------------------------
 
@@ -38,11 +57,3 @@ Documentation
 -------------
 
 The documentation for **opticalglass** is hosted at `Read the Docs <https://opticalglass.readthedocs.io>`_
-
-.. _pyscaffold-notes:
-
-Note
-====
-
-This project has been set up using PyScaffold 4.3. For details and usage
-information on PyScaffold see https://pyscaffold.org/.

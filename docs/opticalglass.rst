@@ -76,6 +76,14 @@ rindexinfo
     :undoc-members:
     :show-inheritance:
 
+rii_download
+++++++++++++
+
+.. automodule:: opticalglass.rii_download
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 GUI Submodules
 --------------
 

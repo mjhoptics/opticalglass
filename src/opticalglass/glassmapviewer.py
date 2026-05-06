@@ -14,9 +14,9 @@ from PySide6.QtCore import Qt
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, QMimeData, Slot
 from PySide6.QtGui import QDrag, QPixmap
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QHBoxLayout,
-                             QVBoxLayout, QGridLayout, QSizePolicy, QGroupBox,
-                             QCheckBox, QRadioButton, QTableView, QTabWidget, 
-                             QLabel, QTextEdit, QItemDelegate)
+                               QVBoxLayout, QGridLayout, QSizePolicy, QGroupBox,
+                               QCheckBox, QRadioButton, QTableView, QTabWidget, 
+                               QLabel, QTextEdit, QItemDelegate)
 
 from matplotlib.backends.backend_qtagg \
      import FigureCanvasQTAgg as FigureCanvas
@@ -459,7 +459,7 @@ def main():
     logging.basicConfig(filename='opticalglass.log',
                         filemode='w',
                         format='%(asctime)s: %(message)s',
-                        level=logging.DEBUG)
+                        level=logging.INFO)
     logger.info("opticalglass started")
     qtapp = QApplication(sys.argv)
     init_glass_libs(gfact.og_glass_libs)
