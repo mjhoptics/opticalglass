@@ -17,10 +17,10 @@ from scipy.interpolate import interp1d
 import yaml
 import importlib
 
-from typing import Union, Any, Optional
+from typing import Union, Any
 from numpy.typing import NDArray
 
-from opticalglass.agf_glass import AGFMedium
+import opticalglass.rii_download as rii_download
 from opticalglass.caselessDictionary import CaselessDictionary
 from opticalglass.glasslibs import GlassCatalogBase, GlassLibrary
 import opticalglass.glasslibs as glibs
@@ -102,7 +102,7 @@ def get_glassname_from_filestr(filestr: str, include_rii_page=False):
         else:
             name = f"{name_catalog[0]}"
 
-    logger.info(f"glassname_from_filestr: {db:7s}:   {catalog:25s}  {name}")
+    logger.debug(f"glassname_from_filestr: {db:7s}:   {catalog:25s}  {name}")
     return db, name, catalog
 
 
@@ -593,13 +593,23 @@ class RIIMedium(OpticalMedium):
         return self.kvals_wvls, t_vals
 
 
-def get_rii_libs(rii_base_path: Optional[str|Path]=None) -> dict[str, 
-                                                                 GlassLibrary]:
+def get_rii_libs(rii_base_path: str|Path|None=None) -> dict[str, GlassLibrary]:
+    """ This function populates a dict of `GlassLibrary` instances, using a RefractiveIndex.INFO database at rii_base_path
     
+    If the rii_base_path is None, the environment variable ``refractiveindexinfodb`` is checked for a path, and if that is not set, the default path `~/.refractiveindex.info-database` is used. The RefractiveIndex.INFO database is downloaded from GitHub if necessary.
+    """
     if rii_base_path is None:
-        rii_base_path = (Path(os.environ.get('optics')) / 
-                         "refractiveindexinfo/database")
-        # rii_base_path = Path(os.environ.get('refractiveindexinfodb')) 
+        rii_base_path = os.getenv('refractiveindexinfodb', 
+                                  rii_download._DEFAULT_DB_PATH)
+    rii_base_path = Path(rii_base_path)
+
+    auto_download = True
+    update_database = False
+    ssl_certificate_location = None
+    rii_download.ensure_database(rii_base_path, 
+                                 auto_download, update_database, 
+                                 ssl_certificate_location)
+
     rii_path = rii_base_path / "catalog-nk.yml"
     rii_data_path = rii_base_path / "data"
 
