@@ -6,18 +6,17 @@
 
 .. codeauthor: Michael J. Hayford
 """
-from typing import Any, Optional
 from pathlib import Path
 
 import numpy as np
-from scipy.interpolate import interp1d
 
+from typing import Any, Optional
+from collections.abc import Mapping
 from numpy.typing import NDArray
 
 import ZemaxGlass as zg
 
-from opticalglass.opticalmedium import OpticalMedium, InterpolatedMedium
-from opticalglass.glasserror import GlassDBNotSupported
+from opticalglass.opticalmedium import OpticalMedium
 from opticalglass.spectral_lines import get_wavelength
 from opticalglass import buchdahl
 from opticalglass import util
@@ -111,7 +110,7 @@ def summary_plots(opt_medium, opt_medium_yaml=None):
     plt.show()
 
 
-class AGFCatalog(GlassCatalogBase):
+class AGFCatalog(Mapping, GlassCatalogBase):
     def __init__(self, catalog_name: str, catalog: dict):
         self.name = catalog_name
         self.catalog = CaselessDictionary(catalog)
@@ -125,6 +124,9 @@ class AGFCatalog(GlassCatalogBase):
     def __len__(self) -> int:
         return len(self.catalog)
 
+    def __iter__(self):
+        return self.catalog.__iter__()
+    
     def create_glass(self, gname: str) -> 'AGFMedium':
         """ Create an instance of the glass `gname`. """
         return AGFMedium(gname, self.name, self.catalog[gname])

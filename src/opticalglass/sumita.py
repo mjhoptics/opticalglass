@@ -69,6 +69,7 @@ class SumitaCatalog(xls_glass.GlassCatalogPandas):
             )
         pmd = xls_glass.PandasMappingDef(catalog_name, fname, series_mappings,
                                          item_mappings, args, kwargs)
+        self._hash = pmd.__hash__()
         super().__init__(pmd)
         SumitaGlass.catalog = self
 

@@ -22,7 +22,6 @@ instance of the appropriate catalog type, given the glass and catalog names.
 from dataclasses import dataclass
 from functools import lru_cache
 import importlib
-import itertools
 import logging
 import warnings
 from pathlib import Path
@@ -31,6 +30,7 @@ import numpy as np
 import pandas as pd
 
 from typing import Any, Callable
+from collections.abc import Mapping
 from numpy.typing import NDArray
 from abc import abstractmethod
 
@@ -38,7 +38,7 @@ from . import buchdahl
 from . import util
 from . import glasserror as ge
 from .opticalmedium import OpticalMedium
-from .util import Singleton, Counter
+from .util import Counter
 from .spectral_lines import get_wavelength
 from .glasslibs import GlassCatalogBase, GlassLibrary
 from .caselessDictionary import CaselessDictionary
@@ -265,7 +265,7 @@ def xls_to_df(pmd: PandasMappingDef) -> pd.DataFrame:
     return glass_cat_df
 
 
-class GlassCatalogPandas(GlassCatalogBase):
+class GlassCatalogPandas(GlassCatalogBase, Mapping):
     """ Pandas-based glass catalog
     
     Optical glass manufacturers have settled on Excel spreadsheets as a means 
@@ -335,8 +335,6 @@ class GlassCatalogPandas(GlassCatalogBase):
         glass_lookup:
     """
 
-    # def __init__(self, name, fname, series_mappings, item_mappings, 
-    #              *args, **kwargs):
     @lru_cache(maxsize=None)
     def __init__(self, pmd: PandasMappingDef):
         """
@@ -366,6 +364,12 @@ class GlassCatalogPandas(GlassCatalogBase):
         self.glass_list = glass_list
         self.glass_lookup = glass_lookup
 
+        # the hash value needs to be set in the subclasses before calling 
+        # __init__(). The mix-in abc makes a fuss for some reason. would be 
+        # nice to do it here but no.
+        # self._hash: int = pmd.__hash__()
+        self._hash: int
+
     @abstractmethod
     def create_glass(self, gname: str) -> OpticalMedium:
         """ Create an instance of the glass `gname`. 
@@ -376,7 +380,10 @@ class GlassCatalogPandas(GlassCatalogBase):
 
     def catalog_name(self):
         return self.name
-
+    
+    def __hash__(self):
+        return self._hash
+    
     def __contains__(self, gname: str) -> bool:
         return gname in self.df.index.array
 
@@ -385,6 +392,9 @@ class GlassCatalogPandas(GlassCatalogBase):
 
     def __len__(self) -> int:
         return len(self.df.index.array) 
+
+    def __iter__(self):
+        return self.df.index.array.__iter__()
 
     def get_glass_names(self):
         """ returns a list of glass names """

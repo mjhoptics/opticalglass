@@ -13,7 +13,9 @@ import numpy as np
 
 from typing import Any
 from abc import abstractmethod
+from collections.abc import MutableMapping
 
+from opticalglass.opticalmedium import OpticalMedium
 from opticalglass.spectral_lines import get_wavelength
 from opticalglass import buchdahl
 from opticalglass import util
@@ -25,8 +27,10 @@ logger = logging.getLogger(__name__)
 class GlassCatalogBase():
     """ Prototype for a glass catalog. 
     
-    A `GlassCatalogBase` defines the interface for a glass catalog, which is a collection of optical glasses. 
+    A `GlassCatalogBase` defines the interface for a glass catalog, which is a collection of optical glasses. Subclasses should mix in the `Mapping` protocol to provide dictionary-like access to the glasses in the catalog. Immutable mappings are used for vendor catalogs and other imported datasets. `MutableMapping` can be used for user constructed catalogs or other types of grouping, e.g. plastics or IR materials.
+
     The `create_glass` method will return a subclass of `OpticalMedium` for the input glass name. The [] access will return either an `OpticalMedium` subclass or data directly related to the data source.
+
     The glass_map_data method will return arrays of index and dispersion data for all glasses in the catalog for a specified wavelength range. This is used to facilitate glass map displays.
     """
     @abstractmethod
@@ -42,7 +46,7 @@ class GlassCatalogBase():
         pass  
     
     @abstractmethod
-    def create_glass(self, gname: str) -> 'OpticalMedium':
+    def create_glass(self, gname: str) -> OpticalMedium:
         """ Create an instance of the glass `gname`. """
         pass
 
@@ -60,7 +64,7 @@ class GlassCatalogBase():
         pass
 
 
-class GlassLibrary():
+class GlassLibrary(MutableMapping):
     """ A collection of libraries or catalogs. 
     
     This class acts like a dictionary of libraries or catalogs. Each entry in the `GlassLibrary` is accessed using its name as the key. The library maintains a search order for the mapped items that is used when looking for a catalog or glass. A `GlassLibrary` supports iteration and uses the search order when iterating over its contents. Libraries or catalogs can be excluded from the search by changing their active_state to False. The library can contain any number of nested libraries and catalogs, and the search will be performed recursively through the nested structure.
@@ -92,7 +96,6 @@ class GlassLibrary():
                                                   for key in self._lib.keys()})
 
         self.search_order: list[str] = search_order
-        self._g: Any
 
     @property
     def active_cltns(self) -> list[str]:
@@ -107,12 +110,6 @@ class GlassLibrary():
             active_state[key] = True
         self.active_state = active_state
 
-    def __json_encode__(self):
-        attrs = dict(vars(self))
-        if hasattr(self, '_g'):
-            del attrs['_g']
-        return attrs
-
     def __getitem__(self, key: str) -> Any:
         return self._lib[key]
 
@@ -121,6 +118,11 @@ class GlassLibrary():
             self.search_order.append(key)
             self.active_state[key] = True
         self._lib[key] = new_value
+
+    def __delitem__(self, key: str):
+        del self._lib[key]
+        del self.active_state[key]
+        del self.search_order[self.search_order.index(key)]
 
     def __len__(self) -> int:
         return len(self._lib)  
@@ -133,34 +135,15 @@ class GlassLibrary():
                 if key in self._lib[lib_key]:
                     return True
         return False
-
-    def has_key(self, key):
-        if self._lib.get(key):
-            return True
-        else:
-            return False
-
-    def items(self):
-        return self._lib.items()
-
-    def keys(self):
-        return self._lib.keys()
-
-    def values(self):
-        return self._lib.values()
         
     def __iter__(self):
         def gen() -> Any:
             """ generator for the library items in search order """
             for key in self.search_order:
                 if self.active_state[key]:
-                    yield self._lib[key]
+                    yield key
 
-        self._g = gen()
-        return self
-    
-    def __next__(self) -> Any:
-        return next(self._g)
+        return gen()
     
     def find_path_to_glass(self, gname) -> list[list[str]]:
         """ find all occurances of the path to the glass `gname`
@@ -224,49 +207,42 @@ class GlassLibrary():
         return find_catalogs(self, cat_name, cat_list)
 
 
-class GlassCatalog(GlassCatalogBase):
+class GlassCatalog(MutableMapping, GlassCatalogBase):
     """ A collection of `OpticalMedium`
 
-    This is a basic implementation of the `GlassCatalogBase` protocol.
+    This is the basic implementation of the `GlassCatalogBase` protocol.
 
     Attributes:
         name (str): the name of the catalog
         catalog (dict[str, OpticalMedium]): a dict of `OpticalMedium` keyed by glass name
 
     In this implementation, the [] operator and the :meth:`create_glass` method return the same thing, an `OpticalMedium` instance for the input glass name.
+
+    This collection is mutable, so glasses can be added, removed, or modified using the [] operator.
     """
-    def __init__(self, catalog_name: str, catalog: dict[str, 'OpticalMedium']):
+    def __init__(self, catalog_name: str, catalog: dict[str, OpticalMedium]):
         self.name: str = catalog_name
-        self.catalog: dict[str, 'OpticalMedium'] = catalog
+        self.catalog: dict[str, OpticalMedium] = catalog
 
     def __contains__(self, gname: str) -> bool:
         return gname in self.catalog
 
-    def __getitem__(self, key: str) -> 'OpticalMedium':
+    def __getitem__(self, key: str) -> OpticalMedium:
         return self.catalog[key]
 
-    def __setitem__(self, key: str, new_value: 'OpticalMedium'):
+    def __setitem__(self, key: str, new_value: OpticalMedium):
         self.catalog[key] = new_value
+
+    def __delitem__(self, key: str):
+        del self.catalog[key]
+        
+    def __iter__(self):
+        return self.catalog.__iter__()
 
     def __len__(self) -> int:
         return len(self.catalog)  
 
-    def has_key(self, key):
-        if self.catalog.get(key):
-            return True
-        else:
-            return False
-
-    def items(self):
-        return self.catalog.items()
-
-    def keys(self):
-        return self.catalog.keys()
-
-    def values(self):
-        return self.catalog.values()
-
-    def create_glass(self, gname: str) -> 'OpticalMedium':
+    def create_glass(self, gname: str) -> OpticalMedium:
         """ Create an instance of the glass `gname`. """
         return self.catalog[gname]
 
@@ -284,7 +260,7 @@ class GlassCatalog(GlassCatalogBase):
         return calc_glass_map_arrays(glasses, wvl, 'F', 'C', **kwargs)
 
 
-def calc_glass_map_arrays(glasses: list['OpticalMedium'], 
+def calc_glass_map_arrays(glasses: list[OpticalMedium], 
                           d_str, F_str, C_str, **kwargs):
     """ return index and dispersion data arrays for input spectral range
 

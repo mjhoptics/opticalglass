@@ -10,20 +10,20 @@ import os
 import requests
 import urllib.parse
 from pathlib import Path
+import yaml
+import importlib
 
 import numpy as np
 from scipy.interpolate import interp1d
 
-import yaml
-import importlib
-
 from typing import Union, Any
+from collections.abc import Mapping
 from numpy.typing import NDArray
 
 import opticalglass.rii_download as rii_download
 from opticalglass.caselessDictionary import CaselessDictionary
-from opticalglass.glasslibs import GlassCatalogBase, GlassLibrary
-import opticalglass.glasslibs as glibs
+from opticalglass.glasslibs import (GlassCatalogBase, GlassLibrary, 
+                                    calc_glass_map_arrays)
 from opticalglass.opticalmedium import OpticalMedium, InterpolatedMedium
 from opticalglass.glasserror import GlassDBNotSupported
 from .spectral_lines import get_wavelength
@@ -417,7 +417,7 @@ formulas = {
     }
 
 
-class RIICatalog(GlassCatalogBase):
+class RIICatalog(Mapping, GlassCatalogBase):
     def __init__(self, catalog_name: str, 
                  rii_book: dict|None=None, 
                  rii_data_path: Path|None=None):
@@ -447,6 +447,9 @@ class RIICatalog(GlassCatalogBase):
 
     def __len__(self) -> int:
         return len(self.catalog)
+
+    def __iter__(self):
+        return self.catalog.__iter__()
     
     def append_book(self, rii_book: dict, rii_data_path: Path, 
                     incl_book_name: bool=True):
@@ -493,7 +496,7 @@ class RIICatalog(GlassCatalogBase):
                 glass_rec['matl'] = matl
             glasses.append(glass_rec['matl'])
 
-        return glibs.calc_glass_map_arrays(glasses, wvl, 'F', 'C', **kwargs)
+        return calc_glass_map_arrays(glasses, wvl, 'F', 'C', **kwargs)
 
 
 class RIIMedium(OpticalMedium):
