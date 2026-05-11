@@ -12,10 +12,8 @@ import logging
 import numpy as np
 
 from . import glass as xls_glass
-from .util import Singleton
 
 
-#class SumitaCatalog(xls_glass.GlassCatalogPandas, metaclass=Singleton):
 class SumitaCatalog(xls_glass.GlassCatalogPandas):
     @staticmethod
     def get_rindx_wvl(header_str):
@@ -69,7 +67,8 @@ class SumitaCatalog(xls_glass.GlassCatalogPandas):
             )
         pmd = xls_glass.PandasMappingDef(catalog_name, fname, series_mappings,
                                          item_mappings, args, kwargs)
-        self._hash = pmd.__hash__()
+
+        self.pmd = pmd
         super().__init__(pmd)
         SumitaGlass.catalog = self
 

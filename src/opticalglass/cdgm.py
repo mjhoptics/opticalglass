@@ -11,7 +11,6 @@ import numpy as np
 import pandas as pd
 
 from . import glass as xls_glass
-from .util import Singleton
 
 
 def decode_dispersion_coefs(glas: pd.Series) -> tuple[list, str]:
@@ -25,7 +24,6 @@ def decode_dispersion_coefs(glas: pd.Series) -> tuple[list, str]:
         interp_formula = "schott"
     return coefs, interp_formula
 
-#class CDGMCatalog(xls_glass.GlassCatalogPandas, metaclass=Singleton):
 class CDGMCatalog(xls_glass.GlassCatalogPandas):
 
     def __init__(self, catalog_name:str='CDGM',
@@ -68,7 +66,8 @@ class CDGMCatalog(xls_glass.GlassCatalogPandas):
             )
         pmd = xls_glass.PandasMappingDef(catalog_name, fname, series_mappings,
                                          item_mappings, args, kwargs)
-        self._hash = pmd.__hash__()
+
+        self.pmd = pmd
         super().__init__(pmd)
         CDGMGlass.catalog = self
 

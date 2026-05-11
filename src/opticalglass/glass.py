@@ -248,10 +248,20 @@ class PandasMappingDef:
     args: tuple[int, int, int, str]
     kwargs: dict
 
+    def __eq__(self, other):
+        if not isinstance(other, PandasMappingDef):
+            return NotImplemented
+        return (self.catalog_name == other.catalog_name and
+                self.file_name == other.file_name and
+                # self.series_mappings == other.series_mappings and
+                # self.item_mappings == other.item_mappings and
+                self.args == other.args and
+                self.kwargs['data_extent'] == other.kwargs['data_extent'])
+
     def __hash__(self):
         return hash((self.catalog_name, self.file_name, 
                     #  tuple(self.series_mappings), 
-                     tuple(self.item_mappings), 
+                    #  tuple(self.item_mappings), 
                      self.args, 
                      self.kwargs['data_extent']))
 
@@ -330,6 +340,7 @@ class GlassCatalogPandas(GlassCatalogBase, Mapping):
 
     Attributes:
         name: the glass catalog name
+        pmd: the :class:`PandasMappingDef` instance defining the mapping of the Excel data to the catalog |DataFrame|
         df: the |DataFrame| containing the catalog data
         glass_list: 
         glass_lookup:
@@ -340,14 +351,10 @@ class GlassCatalogPandas(GlassCatalogBase, Mapping):
         """
 
         Args:
-            name: name of the glass catalog
-            fname: excel filename, located in ``data`` directory
-            series_mappings: the header string for the Glass column in fname
-            item_mappings: the header string for the first refractive index 
-                            coefficient column in fname
-            args: the header string for the first refractive index value column 
-                    in fname
+            pmd: the :class:`PandasMappingDef` instance defining the mapping of the Excel data to the catalog |DataFrame|
+
         """
+        self.pmd: PandasMappingDef = pmd
         self.name: str = pmd.catalog_name
         # Open the workbook
         self.df: pd.DataFrame = xls_to_df(pmd)
@@ -381,8 +388,11 @@ class GlassCatalogPandas(GlassCatalogBase, Mapping):
     def catalog_name(self):
         return self.name
     
+    def __eq__(self, other):
+        return self.pmd == other.pmd
+    
     def __hash__(self):
-        return self._hash
+        return self.pmd.__hash__()
     
     def __contains__(self, gname: str) -> bool:
         return gname in self.df.index.array
