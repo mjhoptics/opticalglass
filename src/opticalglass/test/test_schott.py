@@ -7,12 +7,13 @@
 
 import unittest
 import opticalglass.schott as s
+from opticalglass.glassfactory import og_glass_libs
 
 from opticalglass.test.util import compare_indices
 
 
 class SchottTestCase(unittest.TestCase):
-    catalog = s.SchottCatalog()
+    catalog = og_glass_libs['xls']['Schott']
 
     def test_schott_catalog_glass_index(self):
         f2 = self.catalog.glass_index('F2')

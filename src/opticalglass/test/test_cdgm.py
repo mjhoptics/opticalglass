@@ -7,12 +7,13 @@
 
 import unittest
 import opticalglass.cdgm as c
+from opticalglass.glassfactory import og_glass_libs
 
 from opticalglass.test.util import compare_indices
 
 
 class CDGMTestCase(unittest.TestCase):
-    catalog = c.CDGMCatalog()
+    catalog = og_glass_libs['xls']['CDGM']
 
     def test_cdgm_catalog_glass_index(self):
         g1 = self.catalog.glass_index('H-FK55')  # first in list

@@ -10,16 +10,17 @@
 
 import unittest
 import opticalglass.sumita as su
+from opticalglass.glassfactory import og_glass_libs
 
 from opticalglass.test.util import compare_indices
 
 
 class SumitaTestCase(unittest.TestCase):
-    catalog = su.SumitaCatalog()
+    catalog = og_glass_libs['xls']['Sumita']
     # Sumita doesn't tabulate the 's' spectral line
     remove_lines = ['s']
 
-    def test_ohara_catalog_glass_index(self):
+    def test_sumita_catalog_glass_index(self):
         cafk95 = self.catalog.glass_index('K-CaFK95')  # first in list
         self.assertIsNotNone(cafk95)
         pbk40 = self.catalog.glass_index('K-PBK40')

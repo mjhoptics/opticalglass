@@ -7,12 +7,13 @@
 
 import unittest
 import opticalglass.ohara as o
+from opticalglass.glassfactory import og_glass_libs
 
 from opticalglass.test.util import compare_indices
 
 
 class OharaTestCase(unittest.TestCase):
-    catalog = o.OharaCatalog()
+    catalog = og_glass_libs['xls']['Ohara']
 
     def test_ohara_catalog_glass_index(self):
         sfpl51 = self.catalog.glass_index('S-FPL51')  # first in list

@@ -10,12 +10,13 @@
 
 import unittest
 import opticalglass.hikari as hi
+from opticalglass.glassfactory import og_glass_libs
 
 from opticalglass.test.util import compare_indices
 
 
 class HikariTestCase(unittest.TestCase):
-    catalog = hi.HikariCatalog()
+    catalog = og_glass_libs['xls']['Hikari']
 
     def test_hikari_catalog_glass_index(self):
         fk5 = self.catalog.glass_index('J-FK5')  # first in list

@@ -7,12 +7,13 @@
 
 import unittest
 import opticalglass.hoya as h
+from opticalglass.glassfactory import og_glass_libs
 
 from opticalglass.test.util import compare_indices
 
 
 class HoyaTestCase(unittest.TestCase):
-    catalog = h.HoyaCatalog()
+    catalog = og_glass_libs['xls']['Hoya']
 
     def test_hoya_catalog_glass_index(self):
         pandas_offset = 1
