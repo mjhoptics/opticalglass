@@ -1,9 +1,72 @@
 [build-system]
-# AVOID CHANGING REQUIRES: IT WILL BE UPDATED BY PYSCAFFOLD!
-requires = ["setuptools>=46.1.0", "setuptools_scm[toml]>=5"]
+requires = ["setuptools>=80", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools_scm]
-# For smarter version schemes and other configuration options,
-# check out https://github.com/pypa/setuptools_scm
-version_scheme = "no-guess-dev"
+[project]
+name = "opticalglass"
+description = "Tools for reading optical glass catalogs"
+readme = "README.rst"
+
+license = "BSD-3-Clause"
+license-files = ["LICENSE", "AUTHORS",]
+
+authors = [
+    {name = "Michael J Hayford", email = "mjhoptics@gmail.com"},
+]
+
+classifiers = [ 
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Development Status :: 5 - Production/Stable",
+]
+keywords = [ "glass", "optical glass", "refractive index", "optics", 
+             "glass catalog",]
+
+requires-python = ">=3.12"
+
+dependencies = [ 
+    "numpy>=2.4.3", 
+    "scipy>=1.17.1", 
+    "matplotlib>=3.10.8", 
+    "pandas>=3.0.2", 
+    "xlrd>=2.0.2", 
+    "openpyxl>=3.1.5", 
+    "zemaxglass>=1.0", 
+    "requests>=2.33.1", 
+    "json_tricks>=3.17.3", 
+    "pyyaml>=6.0.3", 
+    "pyside6>=6.11.0",
+]
+dynamic = [ "version",]
+
+[project.urls]
+Homepage = "https://github.com/mjhoptics/opticalglass"
+Changelog = "https://opticalglass.readthedocs.io/en/stable/changelog.html"
+Documentation = "https://opticalglass.readthedocs.io/en/stable/"
+"Bug Tracker" = "https://github.com/mjhoptics/opticalglass/issues"
+"Source Code" = "https://github.com/mjhoptics/opticalglass"
+
+[project.optional-dependencies]
+testing = [ "setuptools", "pytest", "pytest-cov",]
+
+[project.gui-scripts]
+glassmap = "opticalglass.glassmapviewer:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+[tool.setuptools.package-data]
+data = [ "*.xlsx", "*.xls", "*.txt",]
+
+[tool.pytest.ini_options]
+addopts = "--verbose"
+norecursedirs = [ "dist", "build", ".tox",]
+testpaths = [ "tests",]
