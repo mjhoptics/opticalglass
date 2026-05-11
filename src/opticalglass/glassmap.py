@@ -13,6 +13,7 @@ import numpy as np
 from matplotlib.figure import Figure
 from matplotlib.patches import Polygon
 from matplotlib.transforms import Bbox
+from numpy import lib
 
 from . import glassfactory as gf
 from . import glasspolygons as gp
@@ -131,13 +132,14 @@ class GlassMapFigure(Figure):
         ctyp = ("disp_coefs"
                 if self.plot_display_type == "Buchdahl Dispersion Coefficients"
                 else None)
-        for lib in self.glass_libs:
-            for cat in lib:
+        for lib_name in self.glass_libs:
+            for cat_name in self.glass_libs[lib_name]:
+                cat = self.glass_libs[lib_name][cat_name]
                 if len(cat) > 0:
                     gmap_data = cat.glass_map_data(ctype=ctyp,
                                                 partials=self.partials)
                     n, v, p, coefs0, coefs1, glass_names = gmap_data
-                    self.rawData.append([(lib.name, cat.name),
+                    self.rawData.append([(lib_name, cat_name),
                                         (n, v, p, coefs0, coefs1, glass_names)])
         return self
 

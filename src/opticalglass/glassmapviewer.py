@@ -244,9 +244,9 @@ def createLibraryGroupBox(gui_parent, fig):
     tab = QTabWidget()
     tab.setMaximumWidth(sum(_pt_col_widths) + 20)
 
-    for lib in fig.glass_libs:
-        cat_pg = createCatalogGroupBox(gui_parent, fig, lib.name)
-        tab.addTab(cat_pg, lib.name)
+    for lib_name in fig.glass_libs:
+        cat_pg = createCatalogGroupBox(gui_parent, fig, lib_name)
+        tab.addTab(cat_pg, lib_name)
 
     return tab
 
@@ -255,8 +255,7 @@ def createCatalogGroupBox(gui_parent, fig, lib: str):
 
     check_box_list = []
 
-    for i, catalog in enumerate(fig.glass_libs[lib]):
-        cat_name = catalog.name
+    for i, cat_name in enumerate(fig.glass_libs[lib]):
         checkBox = QCheckBox(cat_name)
         checkBox.setChecked(True)
         checkBox.stateChanged.connect(
