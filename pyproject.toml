@@ -8,7 +8,7 @@ description = "Tools for reading optical glass catalogs"
 readme = "README.rst"
 
 license = "BSD-3-Clause"
-license-files = ["LICENSE", "AUTHORS",]
+license-files = ["LICENSE",]
 
 authors = [
     {name = "Michael J Hayford", email = "mjhoptics@gmail.com"},
@@ -65,6 +65,8 @@ include-package-data = true
 
 [tool.setuptools.package-data]
 data = [ "*.xlsx", "*.xls", "*.txt",]
+
+[tool.setuptools_scm]
 
 [tool.pytest.ini_options]
 addopts = "--verbose"
