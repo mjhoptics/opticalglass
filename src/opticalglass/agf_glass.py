@@ -14,7 +14,7 @@ from typing import Any, Optional
 from collections.abc import Mapping
 from numpy.typing import NDArray
 
-import ZemaxGlass as zg
+import ZemaxGlass.ZemaxGlass as zg
 
 from opticalglass.opticalmedium import OpticalMedium
 from opticalglass.spectral_lines import get_wavelength

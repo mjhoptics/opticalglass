@@ -36,7 +36,7 @@ dependencies = [
     "pandas>=3.0.2", 
     "xlrd>=2.0.2", 
     "openpyxl>=3.1.5", 
-    "zemaxglass>=1.0", 
+    "zemaxglass>=2.0", 
     "requests>=2.33.1", 
     "json_tricks>=3.17.3", 
     "pyyaml>=6.0.3", 
@@ -53,6 +53,8 @@ Documentation = "https://opticalglass.readthedocs.io/en/stable/"
 
 [project.optional-dependencies]
 testing = [ "setuptools", "pytest", "pytest-cov",]
+rtd = [ "sphinx", "sphinx_rtd_theme",]
+dev = [ "opticalglass[testing, rtd]",]
 
 [project.gui-scripts]
 glassmap = "opticalglass.glassmapviewer:main"
