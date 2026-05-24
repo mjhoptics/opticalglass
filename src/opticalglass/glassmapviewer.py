@@ -45,8 +45,7 @@ def init_glass_libs(og_glass_libs):
     agf_priority_order = [
     'hoya',
     'ohara',
-    'schott glasses preferred and special June-2025-B',
-    # 'schott',
+    'schott',
     'misc',
     'cdgm',
     'hikari',

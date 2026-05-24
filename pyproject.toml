@@ -36,7 +36,7 @@ dependencies = [
     "pandas>=3.0.2", 
     "xlrd>=2.0.2", 
     "openpyxl>=3.1.5", 
-    "zemaxglass>=2.0", 
+    "zemaxglass@git+https://github.com/mjhoptics/zemaxglass.git@be6b7986423fc99aecd45494454001ef3fd6111d",
     "requests>=2.33.1", 
     "json_tricks>=3.17.3", 
     "pyyaml>=6.0.3", 
