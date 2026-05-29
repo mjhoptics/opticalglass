@@ -361,12 +361,12 @@ class GlassCatalogPandas(GlassCatalogBase, Mapping):
 
         # build an alphabetical list of decoded glass names
         gnames = self.df.index.array
-        glass_list = [(decode_glass_name(gn), gn, pmd.catalog_name)
+        glass_list = [(decode_glass_name(gn), gn, pmd.catalog_name, 'xls')
                       for gn in gnames]
         glass_list = sorted(glass_list, key=lambda glass: glass[0][0])
         # build a lookup dict of the glass defs keyed to decoded glass names
-        glass_lookup = {gn_decode: (gn, gc)
-                        for gn_decode, gn, gc in glass_list}
+        glass_lookup = {gn_decode: (gn, gc, glib)
+                        for gn_decode, gn, gc, glib in glass_list}
 
         self.glass_list = glass_list
         self.glass_lookup = glass_lookup
@@ -701,7 +701,8 @@ def glass_catalog_stats(glass_list, do_print=False):
     Print out the original glass names and the decoded version side by side.
 
     Args:
-        glass_list: ((group, num), prefix, suffix), glass_name, glass_cat_name
+        glass_list: ((group, num), prefix, suffix), 
+                     glass_name, glass_cat_name, glass_lib_name)
         do_print (bool): if True, print the glass name and the decoded version
 
     Returns:
@@ -715,7 +716,7 @@ def glass_catalog_stats(glass_list, do_print=False):
     prefixes = Counter()
     suffixes = Counter()
     for g in glass_list:
-        (group_num, prefix, suffix), gn, gc = g
+        (group_num, prefix, suffix), gn, gc, glib = g
         group, num = group_num
         if prefix != '':
             prefixes[prefix] += 1
