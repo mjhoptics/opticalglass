@@ -1,0 +1,2 @@
+# stop GitHub from identifying opticalglass package Language as Jupyter Notebook :-/
+*.ipynb linguist-detectable=false
