@@ -10,7 +10,7 @@ import logging
 import numpy as np
 import pandas as pd
 
-from . import glass as xls_glass
+from . import xls_glass
 
 
 def decode_dispersion_coefs(glas: pd.Series) -> tuple[list, str]:

@@ -9,7 +9,7 @@ import logging
 
 import numpy as np
 
-from . import glass as xls_glass
+from . import xls_glass
 
 
 class OharaCatalog(xls_glass.GlassCatalogPandas):

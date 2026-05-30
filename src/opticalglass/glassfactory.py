@@ -29,7 +29,7 @@ from typing import Optional, Any
 from pathlib import Path
 import json_tricks
 
-from . import glass as cat_glass
+from . import xls_glass
 from . import agf_glass as agf
 from . import glasserror as ge
 from . import rindexinfo
@@ -281,7 +281,7 @@ class CentralGlassLibrary(GlassLibrary):
                                             ['custom'])
                     glass_libs.update({lib: user_lib})
                 case 'xls':
-                    xls_lib = cat_glass.get_xls_lib()
+                    xls_lib = xls_glass.get_xls_lib()
                     glass_libs.update({lib: xls_lib})
                 case 'agf':
                     agf_lib = agf.get_agf_lib()
@@ -297,7 +297,7 @@ class CentralGlassLibrary(GlassLibrary):
                     rii_idx = search_order.index('rii') + 1
                     search_order[rii_idx:rii_idx] = list(rii_libs.keys())
                 case 'robb':
-                    robb_lib = cat_glass.get_robb_lib()
+                    robb_lib = xls_glass.get_robb_lib()
                     glass_libs.update({lib: robb_lib})
                 case _:
                     _lib = GlassLibrary(lib, {}, [])

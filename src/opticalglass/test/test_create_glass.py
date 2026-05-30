@@ -13,7 +13,6 @@ from opticalglass.glassfactory import (
 from opticalglass import glasserror as ge
 from opticalglass import opticalmedium as om
 from opticalglass import modelglass as mg
-from opticalglass import glass as cat_glass
 
 class CreateGlassTestCase(unittest.TestCase):
 

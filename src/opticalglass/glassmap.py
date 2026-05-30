@@ -17,7 +17,7 @@ from numpy import lib
 
 from . import glassfactory as gf
 from . import glasspolygons as gp
-from . import util
+from . import util as og_util
 
 logger = logging.getLogger(__name__)
 
@@ -244,7 +244,7 @@ class GlassMapFigure(Figure):
         """Draw the glass polygons on the map. """
         for glass, poly in gp.polygons.items():
             rgb = gp.rgb[glass]
-            p = Polygon(poly, closed=True, fc=util.rgb2mpl(rgb), ec='black',
+            p = Polygon(poly, closed=True, fc=og_util.rgb2mpl(rgb), ec='black',
                         linewidth=1.0)
             self.ax.add_artist(p)
 

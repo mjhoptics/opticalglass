@@ -8,7 +8,7 @@
 
 import numpy as np
 
-from . import glass as xls_glass
+from . import xls_glass
 
 
 class HoyaCatalog(xls_glass.GlassCatalogPandas):

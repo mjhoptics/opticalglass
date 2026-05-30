@@ -3,7 +3,7 @@
 # Copyright © 2019 Michael J. Hayford
 """ Support for Glass catalogs and instances
 
-The ``glass`` module contains the two base classes fundamental to the
+The ``xls_glass`` module contains the two base classes fundamental to the
 :mod:`opticalglass` module. The :class:`~opticalglass.glass.GlassCatalog` class
 implements as much of the common functionality needed for access to the
 catalog data as possible.
@@ -35,13 +35,12 @@ from numpy.typing import NDArray
 from abc import abstractmethod
 
 from . import buchdahl
-from . import util
 from . import glasserror as ge
 from .opticalmedium import OpticalMedium
-from .util import Counter
 from .spectral_lines import get_wavelength
 from .glasslibs import GlassCatalogBase, GlassLibrary
 from .caselessDictionary import CaselessDictionary
+from . import util as og_util
 
 logger = logging.getLogger(__name__)
 
@@ -96,9 +95,9 @@ def get_glass_map_arrays(cat, d_str, F_str, C_str, **kwargs):
         wl_a, wl_b = kwargs['partials']
         na = cat.df['refractive indices'][wl_a].to_numpy(dtype=float)
         nb = cat.df['refractive indices'][wl_b].to_numpy(dtype=float)
-        nd, vd, PFd, Pab = util.calc_glass_constants(nd, nF, nC, na, nb)
+        nd, vd, PFd, Pab = og_util.calc_glass_constants(nd, nF, nC, na, nb)
     else:
-        vd, Pab = util.calc_glass_constants(nd, nF, nC)
+        vd, Pab = og_util.calc_glass_constants(nd, nF, nC)
 
     return nd, vd, Pab, coefs[0], coefs[1], names
 
@@ -361,9 +360,10 @@ class GlassCatalogPandas(GlassCatalogBase, Mapping):
 
         # build an alphabetical list of decoded glass names
         gnames = self.df.index.array
-        glass_list = [(decode_glass_name(gn), gn, pmd.catalog_name, 'xls')
+        glass_list = [(og_util.decode_glass_name(gn), 
+                       gn, pmd.catalog_name, 'xls')
                       for gn in gnames]
-        glass_list = sorted(glass_list, key=lambda glass: glass[0][0])
+        glass_list = sorted(glass_list, key=lambda glass: glass[0].group)
         # build a lookup dict of the glass defs keyed to decoded glass names
         glass_lookup = {gn_decode: (gn, gc, glib)
                         for gn_decode, gn, gc, glib in glass_list}
@@ -623,86 +623,14 @@ class GlassPandas(OpticalMedium):
         return t10_wvls, t10_np
 
 
-def decode_glass_name(glass_name: str) -> tuple[tuple[str, str], str, str]:
-    """Split glass_name into prefix, group, num, suffix.
-
-    Manufacturers glass names follow a common pattern. At the simplest, it is
-    a short character string, typically used to identify a particular glass
-    composition, with a numeric qualifier. The composition group and product
-    serial number are combined to form the basic product id, the group_num:
-
-        - F2
-        - SF56
-
-    Manufacturers will often use a single character prefix to indicate
-    different categories of glasses, e.g. moldable or "New":
-
-        - N-BK7
-        - P-LASF50
-
-    Similarly, a suffix with one or more characters is often used to
-    differentiate between different variations of the same base material.
-
-        - N-SF57
-        - N-SF57HT
-        - N-SF57HTultra
-
-    This function takes an input glass name and returns a tuple of strings. A
-    valid glass_name should always have a non-null group_num; prefixes and
-    suffixes are optional and used differently by different manufacturers.
-
-        * group_num, prefix, suffix
-        * group, num = group_num
-
-    Args:
-        glass_name (str): a glass manufacturer's glass name
-
-    Returns: group_num, prefix, suffix, where group_num = group, num
-
-    Returned strings are uppercase.
-
-    """
-    gn = glass_name.upper().split('-')
-    suffix = ''
-    if len(gn) == 1:
-        prefix = ''
-        gn2 = gn[0]
-    elif len(gn) == 3:
-        prefix = gn[0]
-        suffix = gn[2]
-        gn2 = gn[1]
-    elif len(gn) == 2:
-        if len(gn[0]) < 3:
-            prefix = gn[0]
-            gn2 = gn[1]
-        else:
-            prefix = ''
-            gn2 = gn[0]
-            suffix = gn[1]
-
-    group = gn2
-    num = ''
-    for i, char in enumerate(gn2):
-        if char.isdigit():
-            start = i
-            while i < len(gn2) and gn2[i].isdigit():
-                i += 1
-            group = gn2[:start].rstrip()
-            num = gn2[start:i]
-            break
-    suffix = gn2[i:] if suffix == '' else suffix
-    group_num = group, num
-    return group_num, prefix, suffix
-
-
 def glass_catalog_stats(glass_list, do_print=False):
     """Decode all of the glass names in glass_cat_name.
 
     Print out the original glass names and the decoded version side by side.
 
     Args:
-        glass_list: ((group, num), prefix, suffix), 
-                     glass_name, glass_cat_name, glass_lib_name)
+        glass_list: list[tuple[DecodedGlassName, str, str, str]]
+                    (DecodedGlassName, glass_name, glass_cat_name, glass_lib_name)
         do_print (bool): if True, print the glass name and the decoded version
 
     Returns:
@@ -711,22 +639,22 @@ def glass_catalog_stats(glass_list, do_print=False):
         prefixes (dict): all the non-null prefixes used
         suffixes (dict): all the non-null suffixes used
     """
-    groups = Counter()
-    group_nums = Counter()
-    prefixes = Counter()
-    suffixes = Counter()
+    groups = og_util.Counter()
+    group_nums = og_util.Counter()
+    prefixes = og_util.Counter()
+    suffixes = og_util.Counter()
     for g in glass_list:
-        (group_num, prefix, suffix), gn, gc, glib = g
-        group, num = group_num
-        if prefix != '':
-            prefixes[prefix] += 1
-        if suffix != '':
-            suffixes[suffix] += 1
-        groups[group] += 1
-        group_nums[group_num] += 1
+        gn_decode, gn, gc, glib = g
+
+        if gn_decode.prefix != '':
+            prefixes[gn_decode.prefix] += 1
+        if gn_decode.suffix != '':
+            suffixes[gn_decode.suffix] += 1
+        groups[gn_decode.group] += 1
+        group_nums[gn_decode.group_num] += 1
         if do_print:
-            fmt_3 = "{:14s} {:>2s}  {:8s}  {:12s}"
-            print(fmt_3.format(gn, prefix, group+num, suffix))
+            print(f"{gn:14s} {gn_decode.prefix:>2s} - "
+                  f"{gn_decode.group_num:8s} - {gn_decode.suffix:12s}")
     # filter group_nums to include only multi-use items
     group_nums = {k: v for k, v in group_nums.items() if v > 1}
     return groups, group_nums, prefixes, suffixes
@@ -747,7 +675,7 @@ def get_robb_lib(fname='robb1983_data_final.txt') -> GlassLibrary:
                 tokens = line.split()
                 gname = tokens[0]
                 try:
-                    gname_decode = decode_glass_name(gname)
+                    gname_decode = og_util.decode_glass_name(gname)
                 except UnboundLocalError:
                     print(catalog, gname)
                 else:
@@ -858,7 +786,7 @@ class RobbCatalog(GlassCatalogBase):
         omm_C = np.array([om_C, om_C**2])
         nC = np.matmul(gdata[:, 1:], omm_C) + gdata[:, 0]
 
-        vd, PCd = util.calc_glass_constants(nd, nF, nC)
+        vd, PCd = og_util.calc_glass_constants(nd, nF, nC)
 
         coefs = np.array(gdata[:, 1:3])
         ctype = kwargs.get('ctype', None)
