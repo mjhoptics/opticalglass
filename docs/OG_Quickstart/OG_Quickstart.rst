@@ -217,7 +217,7 @@ The create_glass function accepts a glass that has been "dragged" from the glass
 
 .. code:: ipython3
 
-    og.glass.decode_glass_name(sbsl7.name())
+    og.util.decode_glass_name(sbsl7.name())
 
 
 

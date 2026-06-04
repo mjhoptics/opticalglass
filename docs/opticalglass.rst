@@ -55,7 +55,7 @@ buchdahl
 xls_glass
 +++++++++
 
-.. automodule:: opticalglass.glass
+.. automodule:: opticalglass.xls_glass
     :members:
     :undoc-members:
     :show-inheritance:
