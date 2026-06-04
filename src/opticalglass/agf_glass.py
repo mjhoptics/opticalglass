@@ -222,16 +222,24 @@ class AGFMedium(OpticalMedium):
 
         Returns: np.arrays of wavelength and transmission for 10mm sample
         """
-        wvls = 1000.0 * np.array(self.glass_rec['it']['wavelength'])
-        t_vals = np.array(self.glass_rec['it']['transmission'])
+        if 'it' in self.glass_rec:
+            wvls = 1000.0 * np.array(self.glass_rec['it']['wavelength'])
+            t_vals = np.array(self.glass_rec['it']['transmission'])
+        else:
+            wvls = np.array(self.get_wl_range())
+            t_vals = np.array([1., 1.])
         return wvls, t_vals
     
     def calc_absorption_coefs(self) -> NDArray:
-        t_vals = np.array(self.glass_rec['it']['transmission'])
-        meas_thi = np.array(self.glass_rec['it']['thickness'])
-        # clamp log(t_val) to zero if t_val is zero or negative
-        log_t_vals = np.where(t_vals > 0, np.log(t_vals, where=t_vals > 0), 0)
-        abs_coefs = -log_t_vals/meas_thi
+        if 'it' in self.glass_rec:
+            t_vals = np.array(self.glass_rec['it']['transmission'])
+            meas_thi = np.array(self.glass_rec['it']['thickness'])
+            # clamp log(t_val) to zero if t_val is zero or negative
+            log_t_vals = np.where(t_vals > 0, 
+                                  np.log(t_vals, out=None, where=t_vals > 0), 0)
+            abs_coefs = -log_t_vals/meas_thi
+        else:
+            abs_coefs = np.array([0., 0.])
         return abs_coefs
 
     def summary_plots(self):
