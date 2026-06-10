@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=80", "setuptools-scm>=8"]
+requires = ["setuptools>=82.0.1", "setuptools-scm>=10.0.5"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -30,17 +30,17 @@ keywords = [ "glass", "optical glass", "refractive index", "optics",
 requires-python = ">=3.12"
 
 dependencies = [ 
-    "numpy>=2.4.3", 
+    "numpy>=2.4.6", 
     "scipy>=1.17.1", 
-    "matplotlib>=3.10.8", 
-    "pandas>=3.0.2", 
+    "matplotlib>=3.10.9", 
+    "pandas>=3.0.3", 
     "xlrd>=2.0.2", 
     "openpyxl>=3.1.5", 
-    "zemaxglass@git+https://github.com/mjhoptics/zemaxglass.git@be6b7986423fc99aecd45494454001ef3fd6111d",
-    "requests>=2.33.1", 
+    "zemaxglass@git+https://github.com/mjhoptics/zemaxglass.git@31001d6729b524e09320ac77718dc498026053b1",
+    "requests>=2.34.2", 
     "json_tricks>=3.17.3", 
     "pyyaml>=6.0.3", 
-    "pyside6>=6.11.0",
+    "pyside6>=6.11.1",
 ]
 dynamic = [ "version",]
 
