@@ -9,7 +9,7 @@ opticalglass
 .. toctree::
    :maxdepth: 2
 
-   README
+   OG_Overview
 
    OG_Quickstart/OG_Quickstart
    OG_Pandas_intro/OG_Pandas_intro
