@@ -49,7 +49,7 @@ _catalog_names = ["CDGM", "Hikari", "Hoya", "Ohara", "Schott", "Sumita"]
 def get_filepath(fname):
     """ given a (spreadsheet) file name, return a complete Path to the file
 
-    The data files included with the ``opticalglass`` package are located in
+    The data files included with the |opticalglass| package are located in
     a data directory in the package hierarchy.
     ::
 
@@ -554,11 +554,11 @@ class GlassPandas(OpticalMedium):
         return self.catalog.df.loc[self.gname]
 
     def name(self):
-        """ returns the glass name, :attr:`gname` """
+        """ returns the glass name """
         return self.gname
 
     def catalog_name(self):
-        """ returns the glass name, :attr:`gname` """
+        """ returns the glass catalog name """
         return self.catalog.catalog_name()
     
     def get_wl_range(self):

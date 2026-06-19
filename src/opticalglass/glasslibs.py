@@ -29,7 +29,7 @@ class GlassCatalogBase():
     
     A `GlassCatalogBase` defines the interface for a glass catalog, which is a collection of optical glasses. Subclasses should mix in the `Mapping` protocol to provide dictionary-like access to the glasses in the catalog. Immutable mappings are used for vendor catalogs and other imported datasets. `MutableMapping` can be used for user constructed catalogs or other types of grouping, e.g. plastics or IR materials.
 
-    The `create_glass` method will return a subclass of `OpticalMedium` for the input glass name. The [] access will return either an `OpticalMedium` subclass or data directly related to the data source.
+    The `create_glass` method will return a subclass of |OpticalMedium| for the input glass name. The [] access will return either an |OpticalMedium| subclass or data directly related to the data source.
 
     The glass_map_data method will return arrays of index and dispersion data for all glasses in the catalog for a specified wavelength range. This is used to facilitate glass map displays.
     """
@@ -62,7 +62,7 @@ class GlassCatalogBase():
             glass names
         """
         pass
-
+    
 
 class GlassLibrary(MutableMapping):
     """ A collection of libraries or catalogs. 
@@ -211,15 +211,15 @@ class GlassLibrary(MutableMapping):
 
 
 class GlassCatalog(MutableMapping, GlassCatalogBase):
-    """ A collection of `OpticalMedium`
+    """ A collection of |OpticalMedium|
 
     This is the basic implementation of the `GlassCatalogBase` protocol.
 
     Attributes:
         name (str): the name of the catalog
-        catalog (dict[str, OpticalMedium]): a dict of `OpticalMedium` keyed by glass name
+        catalog (dict[str, OpticalMedium]): a dict of |OpticalMedium| keyed by glass name
 
-    In this implementation, the [] operator and the :meth:`create_glass` method return the same thing, an `OpticalMedium` instance for the input glass name.
+    In this implementation, the [] operator and the :meth:`create_glass` method return the same thing, an |OpticalMedium| instance for the input glass name.
 
     This collection is mutable, so glasses can be added, removed, or modified using the [] operator.
     """

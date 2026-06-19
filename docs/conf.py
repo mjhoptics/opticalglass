@@ -95,6 +95,10 @@ rst_prolog = """
 .. |minimum_numpy_version| replace:: 2.4.3
 .. |Series| replace:: :class:`~pandas.Series`
 .. |DataFrame| replace:: :class:`~pandas.DataFrame`
+.. |opticalglass| replace:: :mod:`~opticalglass`
+.. |og_glass_libs| replace:: :data:`~.glassfactory.og_glass_libs`
+.. |OpticalMedium| replace:: :class:`~.opticalmedium.OpticalMedium`
+.. |GlassCatalogBase| replace:: :class:`~.glasslibs.GlassCatalogBase`
 """
 
 # -- Options for HTML output -------------------------------------------------
