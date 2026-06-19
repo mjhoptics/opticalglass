@@ -97,6 +97,9 @@ class GlassLibrary(MutableMapping):
 
         self.search_order: list[str] = search_order
 
+    def __str__(self) -> str:
+        return f"{self.name} library with {len(self._lib)} entries"
+    
     @property
     def active_cltns(self) -> list[str]:
         """ list of the active entries in the library. """
@@ -223,6 +226,9 @@ class GlassCatalog(MutableMapping, GlassCatalogBase):
     def __init__(self, catalog_name: str, catalog: dict[str, OpticalMedium]):
         self.name: str = catalog_name
         self.catalog: dict[str, OpticalMedium] = catalog
+
+    def __str__(self) -> str:
+        return f"{self.name} catalog with {len(self)} entries"
 
     def __contains__(self, gname: str) -> bool:
         return gname in self.catalog

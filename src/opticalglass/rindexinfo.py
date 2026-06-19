@@ -428,6 +428,9 @@ class RIICatalog(Mapping, GlassCatalogBase):
         if rii_book is not None and rii_data_path is not None:
             self.append_book(rii_book, rii_data_path, incl_book_name=False)
 
+    def __str__(self) -> str:
+        return f"{self.name} catalog in RII library with {len(self)} entries"
+
     def __contains__(self, gname: str) -> bool:
         return gname in self.catalog
 

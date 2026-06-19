@@ -115,6 +115,9 @@ class AGFCatalog(Mapping, GlassCatalogBase):
         self.name = catalog_name
         self.catalog = CaselessDictionary(catalog)
 
+    def __str__(self) -> str:
+        return f"{self.name} catalog in agf library with {len(self)} entries"
+
     def __contains__(self, gname: str) -> bool:
         return gname in self.catalog
 

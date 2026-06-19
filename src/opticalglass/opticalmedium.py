@@ -112,6 +112,9 @@ class OpticalMedium(Protocol):
         wvls = np.array(self.get_wl_range)
         return wvls, t_vals
 
+    def __str__(self) -> str:
+        return f"{self.name()} ({self.catalog_name()})"
+
 
 class Air(OpticalMedium):
     """ Optical definition for air (low fidelity definition) """

@@ -377,6 +377,9 @@ class GlassCatalogPandas(GlassCatalogBase, Mapping):
         # self._hash: int = pmd.__hash__()
         self._hash: int
 
+    def __str__(self) -> str:
+        return f"{self.catalog_name()} catalog in xls library with {len(self)} entries"
+
     @abstractmethod
     def create_glass(self, gname: str) -> OpticalMedium:
         """ Create an instance of the glass `gname`. 
@@ -714,6 +717,9 @@ class RobbCatalog(GlassCatalogBase):
 
     def catalog_name(self):
         return self.name
+
+    def __str__(self) -> str:
+        return f"{self.catalog_name()} catalog in Robb library with {len(self)} entries"
 
     def __contains__(self, gname: str) -> bool:
         return gname in self.catalog
