@@ -36,7 +36,7 @@ spectral_lines = [[2325.42, '', 'infrared mercury line', 'Hg'],
                   [248.3, '', 'ultraviolet mercury line', 'Hg']]
 
 
-spectra = {'Nd': 1060.0,
+spectra: dict[str, float] = {'Nd': 1060.0,
            't': 1013.98,
            's': 852.11,
            "A'": 768.195,
@@ -53,7 +53,8 @@ spectra = {'Nd': 1060.0,
            'g': 435.8343,
            'h': 404.6561,
            'i': 365.014}
-""" dict:
+"""
+    dict of spectral line labels and wavelengths in nm
 
        - keys: spectral line labels
        - values: wavelengths in nm
@@ -94,7 +95,7 @@ def get_wavelength(wvl) -> float | npt.NDArray:
         float: the wavelength in nm, or a numpy array of floats
 
     Raises:
-        KeyError: if ``wvl`` is not in the spectra dictionary
+        KeyError: if ``wvl`` is not in the :data:`~.spectra` dictionary
     """
     if isinstance(wvl, float):
         return wvl

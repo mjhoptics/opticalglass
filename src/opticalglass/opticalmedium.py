@@ -19,13 +19,33 @@ from .spectral_lines import get_wavelength
 
 
 def glass_encode(n: float, v: float) -> str:
-    """ encode index and v-number as a 6 digit code. """
-    return f'{int(1000*round((n - 1), 3)):3d}.{int(round(10*v, 3)):3d}'
+    """ encode index and v-number as a 6 digit code. 
+
+    Example::
+
+        In [1]: glass_encode(1.517, 64.2)
+        Out[1]: '517.642'
+
+        In [2]: glass_encode(1.5168, 64.17)
+        Out[2]: '517.642'
+    
+    """
+    return f'{int(1000*round((n - 1), 3)):3d}.{int(round(10*v)):3d}'
 
 
 def glass_decode(gc: str) -> tuple[float, float]:
-    """ decode a 6 digit code into index and v-number. """
-    return round(1.0 + (int(gc)/1000), 3), round(100.0*(float(gc) - int(gc)), 3)
+    """ decode a 6 digit code into index and v-number. 
+
+    Example::
+
+        In [1]: gc = glass_decode('517.642'); gc
+        Out[1]: (1.517, 64.2)
+    
+    
+    """
+    gc_parts = gc.split('.')
+    return (round(1.0 + (int(gc_parts[0])/1000), 3), 
+            round(100.0*(float(gc_parts[1]) / 1000), 3))
 
 
 # --- material definitions
@@ -78,7 +98,7 @@ class OpticalMedium(Protocol):
             float: the refractive index at wvl
 
         Raises:
-            KeyError: if *wvl* is not in the spectra dictionary
+            KeyError: if *wvl* is not in the :data:`~.spectral_lines.spectra` dictionary
         """
         pass
 
@@ -93,7 +113,7 @@ class OpticalMedium(Protocol):
             float: the refractive index at wv_nm
 
         Raises:
-            KeyError: if ``wvl`` is not in the spectra dictionary
+            KeyError: if ``wvl`` is not in the :data:`~.spectral_lines.spectra` dictionary
         """
         return self.calc_rindex(get_wavelength(wvl))
 
