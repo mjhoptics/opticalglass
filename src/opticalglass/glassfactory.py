@@ -45,138 +45,6 @@ logger = logging.getLogger(__name__)
 # A place to hold user-registered glasses:
 _custom_glass_registry = {}  
 
-
-def list_custom_glasses():
-    """Lists the glasses registered in the custom glasses dict. """
-    num_glasses = 0
-    for lib in og_glass_libs['user']:
-        num_glasses += len(lib.catalog)
-    if num_glasses > 0:
-        print("Medium         Catalog")
-    else:
-        print("None")
-
-    for lib in og_glass_libs['user']:
-        for g in lib.catalog.values():
-            print(f"{g.name():12s}   {g.catalog_name():10s}")
-
-
-def register_glass(medium: OpticalMedium):
-    """
-    Registers a custom optical glass medium in the internal registry.
-
-    This function adds a user-defined `OpticalMedium` instance to the custom 
-    glass registry, allowing it to be referenced and used elsewhere in the 
-    application. The medium is indexed by a tuple of its name and catalog name. 
-    If the catalog name is new, it is also added to the list of known catalog 
-    names (both in original and uppercase forms).
-
-    Parameters:
-        medium (OpticalMedium): The optical medium instance to register. Must be an instance
-            of the `OpticalMedium` class, and have a valid `name` and `catalog_name`.
-
-    Raises:
-        TypeError: If `medium` is not an instance of `OpticalMedium`.
-
-    Side Effects:
-        - Updates the `_custom_glass_registry` dictionary with the new medium.
-
-    Example:
-        >>> custom_medium = OpticalMedium(name="MyGlass", catalog_name="CustomCat", ...)
-        >>> register_glass(custom_medium)
-        >>> # Now `custom_medium` can be accessed via name and catalog
-        >>> glass = create_glass("MyGlass,CustomCat")
-    """
-    if not isinstance(medium, OpticalMedium):
-        raise TypeError('medium must be an instance of OpticalMedium')
-    
-    user_lib = og_glass_libs['user']
-    cat_name = medium.catalog_name()
-    if cat_name in user_lib:
-        user_lib[cat_name].catalog.update({medium.name(): medium})
-    else:
-        # user_lib[cat_name] = CustomGlassCatalog(cat_name, 
-        user_lib[cat_name] = GlassCatalog(cat_name, 
-                                                {medium.name(): medium})
-
-
-class CustomGlassCatalog(GlassCatalogBase):
-
-    def __init__(self, catalog_name: str, catalog: dict[str, Any]):
-        self.name: str = catalog_name
-        self.catalog: dict[str, Any] = catalog
-
-    def catalog_name(self):
-        return self.name
-
-    def __contains__(self, gname: str) -> bool:
-        return gname in self.catalog
-    
-    def __getitem__(self, key: str) -> Any:
-        return self.catalog[key]
-
-    def create_glass(self, gname: str) -> OpticalMedium|None:
-        """ Create an instance of the glass `gname`. """
-        return self.catalog[gname]
-    
-    def glass_map_data(self, wvl='d', **kwargs):
-        """ return index and dispersion data for all glasses in the catalog
-
-        Args:
-            wvl (str): the central wavelength for the data, either 'd' or 'e'
-
-        Returns:
-            index, V-number, partial dispersion, Buchdahl coefficients, and
-            glass names
-        """
-        glasses = list(self.catalog.values())
-        return calc_glass_map_arrays(glasses, wvl, 'F', 'C', **kwargs)
-
-
-def save_custom_glasses(dirname: str|Path):
-    '''
-    Save the custom glasses to the specified directory.
-    '''
-    dirpath = Path(dirname)
-    if not dirpath.exists():
-        dirpath.mkdir()
-
-    filename = dirpath / 'user_glass_lib.json'
-    with open(filename, 'w') as f:
-        json_tricks.dump(og_glass_libs['user'], f, indent=4)
-
-
-def load_custom_glasses(dirname: str|Path):
-    '''
-    Load custom glasses from the specified directory.
-    '''
-    dirpath = Path(dirname)
-    if not dirpath.exists():
-        raise FileNotFoundError(f'Directory {dirname} does not exist')
-    
-    user_lib_path = dirpath / 'user_glass_lib.json'
-    custom_lib_path = dirpath / 'custom_glasses.json'
-
-    if user_lib_path.exists():
-        with open(user_lib_path, 'r') as f:
-            user_lib = json_tricks.load(f)
-            og_glass_libs['user'] = user_lib
-    elif custom_lib_path.exists():
-        imported_glasses = []
-        with open(custom_lib_path, 'r') as f:
-            imported_glasses = json_tricks.load(f)
-        for medium in imported_glasses:
-            register_glass(medium)
-    else:
-        import os
-        for root, _, files in os.walk(dirname):
-            for filename in files:
-                if filename.endswith('.json'):
-                    with open(os.path.join(root, filename), 'r') as f:
-                        medium = json_tricks.load(f)
-                        register_glass(medium)
-
-
 def create_glass(*name_catalog) -> OpticalMedium:
     """ Factory function returning a catalog glass instance.
     
@@ -192,9 +60,8 @@ def create_glass(*name_catalog) -> OpticalMedium:
         - 3 string arguments: glass_name, catalog_name, library.
 
     If 2 arguments are used and the catalog is "rindexinfo", the "name" field 
-    is taken as a URL or filepath to a material in the `RefractiveIndex.INFO <https://refractiveindex.info>`_ database.
+    is taken as a URL or filepath to a material in the |RII|_ database.
 
-    
     Arguments:
         *name_catalog: tuple of 1, 2 or 3 input items
 
@@ -308,3 +175,135 @@ class CentralGlassLibrary(GlassLibrary):
 
 #: The :class:`CentralGlassLibrary` instance containing the various glass libraries and catalogs
 og_glass_libs: CentralGlassLibrary = CentralGlassLibrary()
+
+
+def list_custom_glasses():
+    """Lists the glasses registered in the custom glasses dict. """
+    num_glasses = 0
+    for lib in og_glass_libs['user']:
+        num_glasses += len(lib.catalog)
+    if num_glasses > 0:
+        print("Medium         Catalog")
+    else:
+        print("None")
+
+    for lib in og_glass_libs['user']:
+        for g in lib.catalog.values():
+            print(f"{g.name():12s}   {g.catalog_name():10s}")
+
+
+def register_glass(medium: OpticalMedium):
+    """
+    Registers a custom optical glass medium in the internal registry.
+
+    This function adds a user-defined |OpticalMedium| instance to the custom 
+    glass registry, allowing it to be referenced and used elsewhere in the 
+    application. The medium is indexed by a tuple of its name and catalog name. 
+    If the catalog name is new, it is also added to the list of known catalog 
+    names (both in original and uppercase forms).
+
+    Parameters:
+        medium (OpticalMedium): The optical medium instance to register. Must be an instance
+            of the |OpticalMedium| class, and have a valid `name` and `catalog_name`.
+
+    Raises:
+        TypeError: If `medium` is not an instance of |OpticalMedium|.
+
+    Side Effects:
+        - Updates the `_custom_glass_registry` dictionary with the new medium.
+
+    Example:
+        >>> custom_medium = OpticalMedium(name="MyGlass", catalog_name="CustomCat", ...)
+        >>> register_glass(custom_medium)
+        >>> # Now `custom_medium` can be accessed via name and catalog
+        >>> glass = create_glass("MyGlass,CustomCat")
+    """
+    if not isinstance(medium, OpticalMedium):
+        raise TypeError('medium must be an instance of OpticalMedium')
+    
+    user_lib = og_glass_libs['user']
+    cat_name = medium.catalog_name()
+    if cat_name in user_lib:
+        user_lib[cat_name].catalog.update({medium.name(): medium})
+    else:
+        # user_lib[cat_name] = CustomGlassCatalog(cat_name, 
+        user_lib[cat_name] = GlassCatalog(cat_name, 
+                                                {medium.name(): medium})
+
+
+class CustomGlassCatalog(GlassCatalogBase):
+
+    def __init__(self, catalog_name: str, catalog: dict[str, Any]):
+        self.name: str = catalog_name
+        self.catalog: dict[str, Any] = catalog
+
+    def catalog_name(self):
+        return self.name
+
+    def __contains__(self, gname: str) -> bool:
+        return gname in self.catalog
+    
+    def __getitem__(self, key: str) -> Any:
+        return self.catalog[key]
+
+    def create_glass(self, gname: str) -> OpticalMedium|None:
+        """ Create an instance of the glass `gname`. """
+        return self.catalog[gname]
+    
+    def glass_map_data(self, wvl='d', **kwargs):
+        """ return index and dispersion data for all glasses in the catalog
+
+        Args:
+            wvl (str): the central wavelength for the data, either 'd' or 'e'
+
+        Returns:
+            index, V-number, partial dispersion, Buchdahl coefficients, and
+            glass names
+        """
+        glasses = list(self.catalog.values())
+        return calc_glass_map_arrays(glasses, wvl, 'F', 'C', **kwargs)
+
+
+def save_custom_glasses(dirname: str|Path):
+    '''
+    Save the custom glasses to the specified directory.
+    '''
+    dirpath = Path(dirname)
+    if not dirpath.exists():
+        dirpath.mkdir()
+
+    filename = dirpath / 'user_glass_lib.json'
+    with open(filename, 'w') as f:
+        json_tricks.dump(og_glass_libs['user'], f, indent=4)
+
+
+def load_custom_glasses(dirname: str|Path):
+    '''
+    Load custom glasses from the specified directory.
+    '''
+    dirpath = Path(dirname)
+    if not dirpath.exists():
+        raise FileNotFoundError(f'Directory {dirname} does not exist')
+    
+    user_lib_path = dirpath / 'user_glass_lib.json'
+    custom_lib_path = dirpath / 'custom_glasses.json'
+
+    if user_lib_path.exists():
+        with open(user_lib_path, 'r') as f:
+            user_lib = json_tricks.load(f)
+            og_glass_libs['user'] = user_lib
+    elif custom_lib_path.exists():
+        imported_glasses = []
+        with open(custom_lib_path, 'r') as f:
+            imported_glasses = json_tricks.load(f)
+        for medium in imported_glasses:
+            register_glass(medium)
+    else:
+        import os
+        for root, _, files in os.walk(dirname):
+            for filename in files:
+                if filename.endswith('.json'):
+                    with open(os.path.join(root, filename), 'r') as f:
+                        medium = json_tricks.load(f)
+                        register_glass(medium)
+
