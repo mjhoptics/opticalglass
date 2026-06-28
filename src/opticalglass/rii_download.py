@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Support for downloading the RefractiveIndex.INFO database from GitHub.
+Support for downloading the |RII|_ database from GitHub.
 
 fork of https://github.com/toftul/refractiveindex/refractiveindex/refractiveindex.py under the following license:
 

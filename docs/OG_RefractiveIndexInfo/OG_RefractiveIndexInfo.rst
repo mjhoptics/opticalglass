@@ -4,7 +4,7 @@
 RefractiveIndex.Info interface
 ##############################
 
-Access to the `RefractiveIndex.INFO <https://refractiveindex.info>`_ database is provided by the :mod:`~.rindexinfo` module. A major function of this module is to create glass instances (:class:`~.rindexinfo.RIIMedium` or :class:`~.opticalmedium.InterpolatedMedium`) for use in optical models.
+Access to the |RII|_ database is provided by the :mod:`~.rindexinfo` module. A major function of this module is to create glass instances (:class:`~.rindexinfo.RIIMedium` or :class:`~.opticalmedium.InterpolatedMedium`) for use in optical models.
 
 
 
@@ -17,7 +17,7 @@ Typical use scenario - Polycarbonate
 ====================================
 
 Ofttimes, a Google search of a "refractive index for Polycarbonate" will include a RefractiveIndex.Info link in the query. 
-Follow the link to the page on `RefractiveIndex.INFO <https://refractiveindex.info>`_ for Polycarbonate.
+Follow the link to the page on |RII|_ for Polycarbonate.
 
 .. image:: RII_page_top.png
    :align: center
@@ -99,7 +99,7 @@ The 'DATA' key contains the raw index data. The 'REFERENCES' key is always prese
 
 .. parsed-literal::
 
-    '1) X. Zhang, J. Qiu, X. Li, J. Zhao, L. Liu.\nComplex refractive indices measurements of polymers in visible and near-infrared bands.\n<a href="https://doi.org/10.1364/AO.383831"><i>Appl. Opt.</i> <b>59</b>, 2337-2344 (2020)</a>\n(0.4-2 µm)<br>\n2) X. Zhang, J. Qiu, J. Zhao, X. Li, L. Liu.\nComplex refractive indices measurements of polymers in infrared bands.\n<a href="https://doi.org/10.1016/j.jqsrt.2020.107063"><i>J. Quant. Spectrosc. Radiat. Transf.</i> <b>252</b>, 107063 (2020)</a>\n(2-20 µm)\n'
+    '1) X. Zhang, J. Qiu, X. Li, J. Zhao, L. Liu.\nComplex refractive indices measurements of polymers in visible and near-infrared bands.\n[*Appl. Opt.* **59**, 2337-2344 (2020)](https://doi.org/10.1364/AO.383831)\n(0.4-2 µm)<br>\n2) X. Zhang, J. Qiu, J. Zhao, X. Li, L. Liu.\nComplex refractive indices measurements of polymers in infrared bands.\n[*J. Quant. Spectrosc. Radiat. Transf.* **252**, 107063 (2020)](https://doi.org/10.1016/j.jqsrt.2020.107063)\n(2-20 µm)\n'
 
 
 
@@ -224,13 +224,7 @@ MgF2
 .. code:: ipython3
 
     url_root = 'https://refractiveindex.info/database/data/'
-
-.. code:: ipython3
-
     url = url_root + 'main/MgF2/nk/Li-e.yml'
-
-.. code:: ipython3
-
     MgF2 = create_glass(url, "rindexinfo")
     summary_plots(MgF2)
 
@@ -241,7 +235,7 @@ MgF2
 
 
 
-.. image:: output_28_1.png
+.. image:: output_26_1.png
 
 
 KNbO3
@@ -250,9 +244,6 @@ KNbO3
 .. code:: ipython3
 
     url = url_root + 'main/KNbO3/nk/Umemura-alpha.yml'
-
-.. code:: ipython3
-
     KNbO3 = create_glass(url, "rindexinfo")
     summary_plots(KNbO3)
 
@@ -263,7 +254,7 @@ KNbO3
 
 
 
-.. image:: output_31_1.png
+.. image:: output_28_1.png
 
 
 .. code:: ipython3
@@ -288,7 +279,7 @@ KNbO3
 
 .. parsed-literal::
 
-    {'REFERENCES': 'N. Umemura, K. Yoshida, and K. Kato. Phase-matching properties of KNbO<sub>3</sub> in the mid-infrared, <a href="    https://doi.org/10.1364/AO.38.000991"><i>Appl Opt.</i> <b>38</b>, 991-994 (1999)</a>\n',
+    {'REFERENCES': 'N. Umemura, K. Yoshida, and K. Kato. Phase-matching properties of KNbO<sub>3</sub> in the mid-infrared, [*Appl Opt.* **38**, 991-994 (1999)](    https://doi.org/10.1364/AO.38.000991)\n',
      'COMMENTS': 'n<sub>α</sub>; 22 °C.\n',
      'CONDITIONS': {'temerature': 295, 'direction': 'alpha'},
      'DATA': [{'type': 'formula 4',

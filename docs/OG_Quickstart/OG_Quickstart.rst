@@ -10,9 +10,11 @@ Command Line Quick Start
     import pandas as pd
     import matplotlib.pyplot as plt
 
-    import opticalglass as og
-    import opticalglass.glassmap as gm
+.. code:: ipython3
+
     from opticalglass.glassfactory import create_glass, og_glass_libs
+    from opticalglass import glassmap
+    import opticalglass.util as og_util
 
 Creating a Glass Object
 -----------------------
@@ -74,7 +76,7 @@ Use the :func:`~.util.calc_glass_constants` function to calculate the optical co
 
 .. code:: ipython3
 
-    vd, PCd = og.util.calc_glass_constants(nd, nF, nC)
+    vd, PCd = og_util.calc_glass_constants(nd, nF, nC)
     nd, vd, PCd
 
 
@@ -135,12 +137,12 @@ You can get all of the refractive indices for a NumPy array of wavelengths using
 
 .. parsed-literal::
 
-    [<matplotlib.lines.Line2D at 0x159e4e7e0>]
+    [<matplotlib.lines.Line2D at 0x175d45c70>]
 
 
 
 
-.. image:: output_16_1.png
+.. image:: output_14_1.png
 
 
 .. code:: ipython3
@@ -157,12 +159,12 @@ You can get all of the refractive indices for a NumPy array of wavelengths using
 
 .. parsed-literal::
 
-    [<matplotlib.lines.Line2D at 0x159e71340>]
+    [<matplotlib.lines.Line2D at 0x177d7c050>]
 
 
 
 
-.. image:: output_17_1.png
+.. image:: output_15_1.png
 
 
 Display a Glass Map
@@ -170,17 +172,17 @@ Display a Glass Map
 
 The default display is index vs V-number. Other display options are available in the :class:`~.glassmap.GlassMapFigure` class.
 
-The data plotted is controlled by :class:`~.glassmap.GlassMapDB`,the glass_db list. The default list includes all of the supported commercial catalogs. Additional lists of glasses can be added to the display.
+The glass map is populated from a :class:`~.glasslibs.GlassLibrary` instance. A subset of the library's contents can be obtained by setting the active items in the library.
 
 .. code:: ipython3
 
     og_glass_libs.active_cltns = ['user', 'xls']
-    gmf = plt.figure(FigureClass=gm.GlassMapFigure,
+    gmf = plt.figure(FigureClass=glassmap.GlassMapFigure,
                      glass_libs=og_glass_libs).plot()
 
 
 
-.. image:: output_19_0.png
+.. image:: output_17_0.png
 
 
 Drag and Drop to the Command Line
@@ -217,14 +219,14 @@ The create_glass function accepts a glass that has been "dragged" from the glass
 
 .. code:: ipython3
 
-    og.util.decode_glass_name(sbsl7.name())
+    og_util.decode_glass_name(sbsl7.name())
 
 
 
 
 .. parsed-literal::
 
-    (('BSL', '7'), 'S', '')
+    DecodedGlassName(prefix='S', group='BSL', num='7', suffix='')
 
 
 
@@ -253,11 +255,11 @@ Plot Transmission vs Wavelength
 
 .. parsed-literal::
 
-    [<matplotlib.lines.Line2D at 0x159efac60>]
+    [<matplotlib.lines.Line2D at 0x308160e30>]
 
 
 
 
-.. image:: output_28_1.png
+.. image:: output_26_1.png
 
 

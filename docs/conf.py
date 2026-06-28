@@ -99,6 +99,8 @@ rst_prolog = """
 .. |og_glass_libs| replace:: :data:`~.glassfactory.og_glass_libs`
 .. |OpticalMedium| replace:: :class:`~.opticalmedium.OpticalMedium`
 .. |GlassCatalogBase| replace:: :class:`~.glasslibs.GlassCatalogBase`
+.. |RII| replace:: RefractiveIndex.INFO
+.. _RII: https://refractiveindex.info
 """
 
 # -- Options for HTML output -------------------------------------------------

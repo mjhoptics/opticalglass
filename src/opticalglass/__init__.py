@@ -1,17 +1,17 @@
 """ 
     Common interface for sources of optical material data
 
-    |opticalglass| provides a common API to a number of different optical material data sources. These include
+    OpticalGlass provides a common API to a number of different optical material data sources. These include
 
     - interfaces to vendor supplied Excel spreadsheets with glass data.
     - ability to import material files in the Zemax .agf data format.
-    - ability to import material data from the RefractiveIndex.INFO database.
+    - ability to import material data from the |RII|_ database.
 
     These and other sources of data are organized into libraries. Each library contains one or more catalogs, and each catalog contains one or more glasses. The glass catalog of particular vendors (e.g. Hoya, Ohara, Schott) will be found in multiple libraries. The user can control the order in which the libraries are searched, as well as the order of the catalogs available from each library.
 
     The global variable |og_glass_libs| is an instance of the :class:`~.glassfactory.CentralGlassLibrary` class that contains the various libraries and catalogs. 
 
-    The :mod:`opticalglass` package currently supports the following vendors:
+    OpticalGlass currently supports glass spreadsheets fromthe following vendors:
 
         - CDGM
         - Hikari
@@ -27,8 +27,8 @@
     :func:`~.glassfactory.create_glass` function returns a |OpticalMedium| 
     object, given the glass and catalog names.
 
-    An interface to the `RefractiveIndex.INFO <https://refractiveindex.info>`_ 
-    database is provided by the :mod:`~.rindexinfo` module. 
+    An interface to the |RII|_ database is provided by the :mod:`~.rindexinfo` 
+    module. 
 
     A set of legacy catalogs, circa 1980, is available via the
     :class:`~glass.Robb1983Catalog` class. The data used by this class is from

@@ -6,7 +6,9 @@ Glass Catalog Spreadsheets and Python
 
 Optical glass manufacturers have settled on Excel spreadsheets as a means of documenting the technical details of their glass products. The formats are broadly similar but different in the details. 
 
-A major goal of the opticalglass package is to make the data in these vendor spreadsheets accessible to the Python user. opticalglass uses the pandas package to import and save the glass catalog in a |DataFrame|. Common data categories across all vendors include:
+A major goal of the OpticalGlass package is to make the data in these vendor spreadsheets accessible to the Python user. OpticalGlass uses the pandas package to import and save the glass catalog in a |DataFrame|. These Excel spreadsheet catalogs are added to the 'xls' library, og_glass_libs['xls'].
+
+Common data categories across all vendors include:
 
     - 'refractive indices'
     - 'dispersion coefficients'
@@ -22,7 +24,7 @@ The catalogs also contain single items of interest. The 2 that are supported acr
     - 'abbe number'
     - 'specific gravity'
 
-A higher level interface is available as a set of catalog-specific subclasses of :class:`~.glass.GlassPandas`.
+A higher level interface is available as a set of catalog-specific subclasses of :class:`~.xls_glass.GlassPandas`.
 
 .. code:: ipython3
 
@@ -47,25 +49,19 @@ Import glass and catalog factory functions.
 Importing a catalog spreadsheet
 -------------------------------
 
-The initialization of the global variable :data:`~.glassfactory.og_glass_libs` reads the Excel spreadsheet into a |DataFrame|. A requirement for the import process is that the spreadsheet data be copied untouched into the catalog |DataFrame|. Only the spreadsheet row and column headers are changed in creating the catalog |DataFrame|.
+The initialization of the global variable |og_glass_libs| reads the Excel spreadsheet into a |DataFrame|. A requirement for the import process is that the spreadsheet data be copied untouched into the catalog |DataFrame|. Only the spreadsheet row and column headers are changed in creating the catalog |DataFrame|.
 
 The :attr:`.GlassCatalogPandas.df` attribute has the glass catalog |DataFrame|.
 
 .. code:: ipython3
 
-    hoya_pd = og_glass_libs['xls']['Hoya']
-    hoya_df = hoya_pd.df
-
-The :meth:`~.glass.GlassCatalogPandas.glass_data` method returns a |Series| of the catalog data for the specified glass name.
-
-.. code:: ipython3
-
-    fcd1_pd = hoya_pd.glass_data('FCD1')
+    hoya_xls = og_glass_libs['xls']['Hoya']
+    hoya_df = hoya_xls.df
 
 Listing a catalog's data categories
 -----------------------------------
 
-The column categories can be listed using the get_level_values() method and eliminating duplicates. Categories defined by ``opticalglass`` are all lower case.
+The column categories can be listed using the get_level_values() method and eliminating duplicates. Categories defined by OpticalGlass are all lower case.
 
 .. code:: ipython3
 
@@ -106,6 +102,8 @@ The column categories can be listed using the get_level_values() method and elim
                                                       'Stress Optical Coefficient ',
                                                                  'specific gravity',
                                                           'Spectral Transmittance ',
+                                                      'internal transmission mm, 2',
+                                                      'internal transmission mm, 5',
                                                      'internal transmission mm, 10',
                                                       'Glass Cross Reference Index',
                                                                           'Remarks',
@@ -113,6 +111,12 @@ The column categories can be listed using the get_level_values() method and elim
           dtype='object', name='category')
 
 
+
+The :meth:`~.xls_glass.GlassPandas.glass_data` method returns a |Series| of the catalog data for the specified glass name.
+
+.. code:: ipython3
+
+    fcd1_pd = hoya_xls.glass_data('FCD1')
 
 The standard data categories can then be used to access the specific glass's data.
 
@@ -236,9 +240,9 @@ Transmission data for 10mm thick samples is available.
     1060.0    0.999
     1050.0    0.999
     1000.0    0.999
-    950.0     0.999
-    900.0     0.999
-    850.0     0.999
+    950.0     0.998
+    900.0     0.997
+    850.0     0.998
     830.0     0.999
     800.0     0.999
     780.0     0.999
@@ -247,24 +251,24 @@ Transmission data for 10mm thick samples is available.
     650.0     0.998
     600.0     0.999
     550.0     0.999
-    500.0     0.999
-    480.0     0.999
+    500.0     0.998
+    480.0     0.998
     460.0     0.997
-    440.0     0.997
-    420.0     0.997
-    400.0     0.995
-    390.0     0.996
-    380       0.995
-    370.0      0.99
-    360.0     0.972
-    350.0     0.939
-    340.0     0.878
-    330.0     0.761
-    320.0     0.586
-    310.0     0.376
-    300.0      0.19
-    290.0     0.077
-    280.0     0.027
+    440.0     0.996
+    420.0     0.996
+    400.0     0.998
+    390.0     0.997
+    380       0.996
+    370.0     0.992
+    360.0     0.981
+    350.0     0.958
+    340.0     0.907
+    330.0     0.826
+    320.0      0.68
+    310.0     0.486
+    300.0     0.284
+    290.0     0.133
+    280.0     0.052
     Name: FCD1, dtype: object
 
 
@@ -329,12 +333,12 @@ Transmission data for a list of glasses can be plotted as well.
 OpticalMedium subclasses
 ------------------------
 
-The glass data |Series| gives access to all of the vendor's glass data, but doesn't address the important case of using the dispersion coefficients to calculate the refractive index at an arbitrary wavelength. This is provided by catalog-specific subclasses of :class:`~.opticalmedium.OpticalMedium`. 
+The glass data |Series| gives access to all of the vendor's glass data, but doesn't address the important case of using the dispersion coefficients to calculate the refractive index at an arbitrary wavelength. This is provided by catalog-specific subclasses of |OpticalMedium|. 
 
 .. code:: ipython3
 
-    fcd1 = create_glass('FCD1', 'Hoya')
-    ef2 = create_glass('E-F2', 'Hoya')
+    fcd1 = create_glass('FCD1', 'Hoya', 'xls')
+    ef2 = create_glass('E-F2', 'Hoya', 'xls')
 
 Compare measured values vs. the dispersion equation
 ---------------------------------------------------
@@ -401,11 +405,11 @@ The following produces a table comparing the measured values to the output from 
 An alternative way to create an glass object 
 --------------------------------------------
 
-Call create_glass() on the glass catalog itself.
+Call :meth:`~.glasslibs.GlassCatalogBase.create_glass` on the glass catalog itself.
 
 .. code:: ipython3
 
-    fcd1_v2 = hoya_pd.create_glass('FCD1')
+    fcd1_v2 = hoya_xls.create_glass('FCD1')
 
 .. code:: ipython3
 
@@ -436,7 +440,7 @@ Call create_glass() on the glass catalog itself.
 Plotting transmission data
 --------------------------
 
-The :meth:`~.glass.GlassPandas.transmission_data` method returns the material transmission data for a 10mm thick sample, as well as the sample wavelengths. The data may be passed directly into matplotlib plot routines.
+The :meth:`~.xls_glass.GlassPandas.transmission_data` method returns the material transmission data for a 10mm thick sample, as well as the sample wavelengths. The data may be passed directly into matplotlib plot routines.
 
 .. code:: ipython3
 
@@ -447,7 +451,7 @@ The :meth:`~.glass.GlassPandas.transmission_data` method returns the material tr
 
 .. parsed-literal::
 
-    [<matplotlib.lines.Line2D at 0x150182870>]
+    [<matplotlib.lines.Line2D at 0x175d521b0>]
 
 
 

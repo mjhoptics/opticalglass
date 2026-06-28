@@ -1,20 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # Copyright © 2019 Michael J. Hayford
-""" Support for Glass catalogs and instances
+""" 
+.. |GlassCatalogPandas| replace:: :class:`~.GlassCatalogPandas`
+.. |GlassPandas| replace:: :class:`~.GlassPandas`
 
-The ``xls_glass`` module contains the two base classes fundamental to the
-:mod:`opticalglass` module. The :class:`~opticalglass.glass.GlassCatalog` class
-implements as much of the common functionality needed for access to the
-catalog data as possible.
+Support for spreadsheet glass catalogs
+--------------------------------------
 
-The :class:`~opticalglass.glass.Glass` is an interface to the data for a particular
-glass in a catalog. The primary function of interest for optical calculations
-is :func:`~opticalglass.glass.Glass.rindex` which returns the refractive index at the
-input wavelength (nm).
+A common way for optical glass manufacturers to supply detailed technical data for each glass is via spreadsheets. The format of these spreadsheets is similar but different in the details. The |GlassCatalogPandas| class and related functions provide a means of mapping the spreadsheet contents into a **pandas** |DataFrame|.  A requirement for the import process is that the spreadsheet data be copied untouched into the catalog |DataFrame|. Only the spreadsheet row and column headers are changed in creating the catalog |DataFrame|. Some data categories are relabeled to take advantage of commonalities across catalogs. The :attr:`.GlassCatalogPandas.df` attribute has the catalog |DataFrame|.
 
-A factory interface to ``Glass`` creation is the function
-:func:`~opticalglass.glassfactory.create_glass` that returns a ``Glass``
+The |GlassCatalogPandas| class implements the |GlassCatalogBase| interface, as well as providing access to data beyond the refractive index and transmission data provided by the |OpticalMedium| interface. The catalog-specific subclasses of |GlassCatalogPandas| provide specific mapping information for the vendor spreadsheet format.
+
+The |GlassPandas| class implements the |OpticalMedium| interface for the data of a particular glass in a catalog. The |GlassPandas| base class manages the generic operations on the individual glass instances. These include refractive index interpolation using either the :meth:`~.GlassPandas.calc_rindex` or the :meth:`~.GlassPandas.rindex` methods. The :meth:`~.GlassPandas.meas_rindex` method, with a spectral line argument, e.g. 'd', 'F', 'C', will return the measured index data from the catalog. The :meth:`~.GlassPandas.transmission_data` method returns transmission data (10mm sample thickness) for the glass instance.
+
+A factory interface to |OpticalMedium| creation is the function
+:func:`~.glassfactory.create_glass` that returns a |OpticalMedium|
 instance of the appropriate catalog type, given the glass and catalog names.
 
 .. codeauthor: Michael J. Hayford
@@ -582,21 +583,6 @@ class GlassPandas(OpticalMedium):
         """
         rindx = self.glass_data()['refractive indices'][wvl]
         return rindx
-
-    def rindex(self, wvl) -> float:
-        """ returns the interpolated refractive index at wvl
-
-        Args:
-            wvl: either the wavelength in nm or a string with a spectral line
-                 identifier. for the refractive index query
-
-        Returns:
-            float: the refractive index at wv_nm
-
-        Raises:
-            KeyError: if ``wvl`` is not in the spectra dictionary
-        """
-        return self.calc_rindex(get_wavelength(wvl))
 
     def calc_rindex(self, wv_nm: float | NDArray) -> float | NDArray:
         """ returns the interpolated refractive index at wv_nm

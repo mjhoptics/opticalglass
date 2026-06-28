@@ -1,6 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Interface to the `RefractiveIndex.INFO <https://refractiveindex.info>`_ database
+"""
+    Interface to the |RII|_ database
+
+    :func:`~.rindexinfo.read_rii_file` and :func:`~.rindexinfo.read_rii_url` 
+    return the native yaml representation used by |RII|_. The 
+    :func:`~.rindexinfo.create_material` function returns an object depending 
+    on the yaml database specification. If the material is specified by an 
+    interpolating polynomial, a :class:`~.rindexinfo.RIIMedium` instance is 
+    returned. If the material is specified by a set of data points, an 
+    :class:`~.opticalmedium.InterpolatedMedium` instance is returned.
 
 .. Created on Sun Nov 14 21:03:50 2021
 

@@ -3,7 +3,15 @@
 User's Guide
 ============
 
-Optical glass manufacturers provide detailed technical data for optical glasses via Excel spreadsheets. The :mod:`opticalglass` package provides uniform access to data from different vendors.
+OpticalGlass provides a common API for querying refractive index data and other properties to a number of different optical material data sources. These include:
+
+- interfaces to vendor supplied Excel spreadsheets with glass data.
+- ability to import material files in the Zemax .agf data format.
+- ability to import material data from the RefractiveIndex.INFO database.
+
+These and other sources of data are organized into libraries. Each library contains one or more catalogs, and each catalog contains one or more glasses. The glass catalog of particular vendors (e.g. Hoya, Ohara, Schott) will be found in multiple libraries. The user can control the order in which the libraries are searched, as well as the order of the catalogs available from each library.
+
+The global variable |og_glass_libs| is an instance of the :class:`~.glassfactory.CentralGlassLibrary` class that contains the various libraries and catalogs. 
 
 .. note::
 
@@ -12,13 +20,13 @@ Optical glass manufacturers provide detailed technical data for optical glasses 
 Installation
 ------------
 
-To install :mod:`opticalglass` using pip, use
+To install OpticalGlass using pip, use
 
 .. code::
 
    > pip install opticalglass
 
-Alternatively, :mod:`opticalglass` can be installed from the conda-forge channel using conda
+Alternatively, OpticalGlass can be installed from the conda-forge channel using conda
 
 .. code::
 
@@ -27,7 +35,7 @@ Alternatively, :mod:`opticalglass` can be installed from the conda-forge channel
 Glass Map Application
 ---------------------
 
-A desktop application is installed as part of :mod:`opticalglass`. It is invoked by running ``glassmap`` at the command line.
+A desktop application is installed as part of OpticalGlass. It is invoked by running ``glassmap`` at the command line.
 
 .. code::
 
@@ -58,10 +66,10 @@ The Buchdahl Dispersion Coefficient display can be used to find glass pairs that
 Python Data Model
 -----------------
 
-Two families of objects are provided to manage access to glass data. The :class:`~.glass.GlassCatalogPandas` base class manages the generic operations on the catalog. The catalog data is maintained in a |DataFrame|, accessible via the attribute :attr:`~.glass.GlassCatalogPandas.df`. The catalog-specific subclasses of :class:`~.glass.GlassCatalogPandas` provide specific mapping information for the vendor spreadsheet format.
+The :mod:`~.glasslibs` module defines the :class:`~.glasslibs.GlassLibrary` class and |GlassCatalogBase| interface. These, along with the interface definition of |OpticalMedium|, provide a common set of interfaces for accessing optical material data from various sources. 
 
-The :class:`~.glass.GlassPandas` base class manages the generic operations on the individual glass instances. These include refractive index interpolation using either the :meth:`~.glass.GlassPandas.calc_rindex` or the :meth:`~.glass.GlassPandas.rindex` methods. The :meth:`~.glass.GlassPandas.meas_rindex` method, with a spectral line argument, e.g. 'd', 'F', 'C', will return the measured index data from the catalog. The :meth:`~.glass.GlassPandas.transmission_data` method returns transmission data (10mm sample thickness) for the glass instance.
+The :class:`~.glasslibs.GlassLibrary` class represents a collection of either glass catalogs or libraries. The collection is iterable, with the iteration order controlled by the :attr:`~.glasslibs.GlassLibrary.search_order` list.  Which items in the collection are "active" can be controlled by setting the :attr:`~.glasslibs.GlassLibrary.active_cltns` property. These settings are used to control the iteration over a library for the :func:`~.glassfactory.create_glass` global function and the methods :meth:`~.glasslibs.GlassLibrary.find_path_to_glass` and :meth:`~.glasslibs.GlassLibrary.find_catalog`.
 
-A factory interface to :class:`~.glass.GlassPandas` creation is the function :func:`~.glassfactory.create_glass` that returns a :class:`~.glass.GlassPandas` instance of the appropriate catalog type, given the glass and catalog names.
+The :class:`~.glasslibs.GlassCatalog` class is a basic implementation of the |GlassCatalogBase| interface. It is essentially a dict of |OpticalMedium| instances, with the glass name as the key. Each catalog implementation also provides the methods :meth:`~.glasslibs.GlassCatalogBase.create_glass` and  :meth:`~.glasslibs.GlassCatalogBase.glass_map_data`.
 
-A Glass Map display can be created using the :mod:`~.glassmap` module. Lists of glasses as well as catalog names can be used to populate the map, using the :class:`~.glassmap.GlassMapDB` class. That is used as input to the :class:`~.glassmap.GlassMapFigure` class that creates the glass map plot.
+Finally, the |OpticalMedium| instances contained in the catalogs provide a common interface for querying refractive index values (:meth:`~.opticalmedium.OpticalMedium.calc_rindex` and :meth:`~.opticalmedium.OpticalMedium.rindex`, among others) and transmission data (:meth:`~.opticalmedium.OpticalMedium.transmission_data`). The wavelength range of the refractive index data is available using the :meth:`~.opticalmedium.OpticalMedium.get_wl_range` method. A specific wavelength can be tested using :meth:`~.opticalmedium.OpticalMedium.within_wl_range`.

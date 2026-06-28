@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "opticalglass"
-description = "Tools for reading optical glass catalogs"
-readme = "README.rst"
+description = "Tools for reading optical material catalogs and libraries"
+readme = "docs/README.rst"
 
 license = "BSD-3-Clause"
 license-files = ["LICENSE",]
