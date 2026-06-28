@@ -13,7 +13,7 @@ from openpyxl import load_workbook
 from openpyxl import worksheet
 
 from opticalglass import ohara
-import opticalglass.glass as catgl
+import opticalglass.xls_glass as catgl
 from opticalglass import glassfactory as gfact
 
 NBK7 = gfact.create_glass('N-BK7', 'Schott')
