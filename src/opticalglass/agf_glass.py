@@ -147,12 +147,14 @@ class AGFCatalog(Mapping, GlassCatalogBase):
         return get_glass_map_arrays(self, wvl, 'F', 'C', **kwargs)
 
 
-def get_agf_lib(agf_path: Optional[str] = None, 
+def get_agf_lib(agf_path_str: str = '', 
                 cat_list: list[str]|str = 'all') -> GlassLibrary:
     
-    if agf_path is None:
+    if agf_path_str is '':
         zg_path = Path(zg.__file__)
         agf_path = zg_path.parent / 'AGF_files'
+    else:
+        agf_path = Path(agf_path_str)
 
     cat_list = cat_list if cat_list is not None else 'all'
     agf_library = zg.read_library(agf_path, catalog=cat_list)
