@@ -4,6 +4,28 @@
 Changelog
 =========
 
+Version 2.0.0
+=============
+This release is a major upgrade to OpticalGlass. The :mod:`~.xls_glass` module for reading Zemax AGF files has been added and a local copy of |RII|_ can be used as a source of data. To handle this additional data, a :class:`~.glasslibs.GlassLibrary` is used to collect instances of GlassCatalogs. When :mod:`~.glassfactory` is imported, a central library |og_glass_libs| is created containing the following libraries:
+
+	- 'user': the 'custom' GlassCatalog wraps the custom_glass_registry
+	- 'xls': catalog data source is an Excel spreadsheet
+	- 'agf': catalog data source is a Zemax .agf file
+	- 'rii': web urls are imported into the 'rindexinfo' catalog
+	- 'rii-main': 'main' "Shelf" of RII dataset
+	- 'rii-organic': 'organic' "Shelf" of RII dataset
+	- 'rii-glass': 'glass' "Shelf" of RII dataset
+	- 'rii-other': 'other' "Shelf" of RII dataset
+	- 'rii-specs': 'specs' "Shelf" of RII dataset
+	- 'rii-3d': '3d' "Shelf" of RII dataset
+	- 'robb': legacy dataset from the 1980s
+
+GlassLibraries may be queried to find all occurances of glasses and catalogs.
+
+The :mod:`~.glass` module was renamed to :mod:`~.xls_glass`.
+
+:mod:`~.glassmapviewer` and :mod:`~.glassmap` were substantially rewritten to use |og_glass_libs| as a data source. The classes :class:`~.glassmap.GlassMapDB` and :class:`~.glassmap.GlassMapSet` were removed.
+
 Version 1.2.0
 =============
 Updated the spreadsheets for the vendors to the most recent publicly available data. This includes a major update to the CDGM data, to support two different dispersion formula. The method :meth:`~opticalglass.glass.GlassPandas.transmission_data` enables different thicknesses to be queried, if the catalog data is available. Min python version is 3.12.
