@@ -22,15 +22,6 @@ from . import util as og_util
 logger = logging.getLogger(__name__)
 
 
-def md_sub_to_mathtex(md_str: str) -> str:
-    """Convert markdown subscript to mathtex format. """
-    if '<sub>' in md_str:
-        temp1 = md_str.replace('<sub>', '_{')
-        temp2 = temp1.replace('</sub>', '}')
-        return '$' + temp2 + '$'
-    return md_str
-
-
 class GlassMapFigure(Figure):
     """Matplotlib implementation of an optical glass map.
 
@@ -281,7 +272,7 @@ class GlassMapFigure(Figure):
                     ind = info['ind']
                     n, v, p, coef0, coef1, glass_name = raw_data_pkg[1]
                     for k in ind:
-                        gname = md_sub_to_mathtex(glass_name[k])
+                        gname = og_util.md_sub_to_mathtex(glass_name[k])
                         text = f"{gname}, {cat_name} ({lib_name})"
                         info_text.append(text)
             # Update annotation with glass list

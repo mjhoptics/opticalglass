@@ -36,6 +36,7 @@ from opticalglass.glasslibs import (GlassCatalogBase, GlassLibrary,
 from opticalglass.opticalmedium import OpticalMedium, InterpolatedMedium
 from opticalglass.glasserror import GlassDBNotSupported
 from .spectral_lines import get_wavelength
+from . import util as og_util
 
 import logging
 logger = logging.getLogger(__name__)
@@ -76,7 +77,10 @@ def summary_plots(opt_medium, opt_medium_yaml=None):
         plt.plot(opt_medium.kvals_wvls, opt_medium.kvals, label='k value')
         plt.plot(*opt_medium.transmission_data(), label='T @ 10mm')
 
-    plt.title(f"{opt_medium.catalog_name()}: {opt_medium.name()}")
+    gname = og_util.md_sub_to_mathtex(opt_medium.name())
+    
+    sep = '\n' if len(gname) > 32 else ','
+    plt.title(f"{gname}{sep} {opt_medium.catalog_name()} ('rii')")
     plt.xlabel('wavelength (nm)')
 
     plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))

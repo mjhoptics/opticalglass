@@ -54,6 +54,15 @@ def move_to(cltn: list, i: int, item: object) -> list:
     return cltn
 
 
+def md_sub_to_mathtex(md_str: str) -> str:
+    """Convert markdown subscript to mathtex format. """
+    if '<sub>' in md_str:
+        temp1 = md_str.replace('<sub>', '_{')
+        temp2 = temp1.replace('</sub>', '}')
+        return '$' + temp2 + '$'
+    return md_str
+
+
 def rgb2mpl(rgb):
     """ convert 8 bit RGB data to 0 to 1 range for mpl """
     if len(rgb) == 3:
