@@ -77,7 +77,7 @@ urllib3==2.7.0
     # via requests
 xlrd==2.0.2
     # via opticalglass (pyproject.toml)
-zemaxglass==1.0.0
+zemaxglass==2.0.0
     # via opticalglass (pyproject.toml)
 sphinx==8.2.3
 sphinx_rtd_theme==3.1.0
