@@ -6,7 +6,7 @@ Changelog
 
 Version 2.0.0
 =============
-This release is a major upgrade to OpticalGlass. The :mod:`~.xls_glass` module for reading Zemax AGF files has been added and a local copy of |RII|_ can be used as a source of data. To handle this additional data, a :class:`~.glasslibs.GlassLibrary` is used to collect instances of GlassCatalogs. When :mod:`~.glassfactory` is imported, a central library |og_glass_libs| is created containing the following libraries:
+This release is a major upgrade to OpticalGlass. The :mod:`~.agf_glass` module for reading Zemax AGF files has been added and a local copy of |RII|_ can be used as a source of data. To handle this additional data, a :class:`~.glasslibs.GlassLibrary` is used to collect instances of GlassCatalogs. When :mod:`~.glassfactory` is imported, a central library |og_glass_libs| is created containing the following libraries:
 
 	- 'user': the 'custom' GlassCatalog wraps the custom_glass_registry
 	- 'xls': catalog data source is an Excel spreadsheet
@@ -24,7 +24,7 @@ GlassLibraries may be queried to find all occurances of glasses and catalogs.
 
 The :mod:`~.glass` module was renamed to :mod:`~.xls_glass`.
 
-:mod:`~.glassmapviewer` and :mod:`~.glassmap` were substantially rewritten to use |og_glass_libs| as a data source. The classes :class:`~.glassmap.GlassMapDB` and :class:`~.glassmap.GlassMapSet` were removed.
+:mod:`~.glassmapviewer` and :mod:`~.glassmap` were substantially rewritten to use |og_glass_libs| as a data source. The classes :class:`~.glassmap.GlassMapDB` and :class:`~.glassmap.GlassMapSet` were removed. It is fair to say, however, that the glass map handling of all of this additional data is currently barely functional.
 
 Version 1.2.0
 =============
