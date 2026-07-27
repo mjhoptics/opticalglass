@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=83.0.0", "setuptools-scm>=10.2.0"]
+requires = ["setuptools>=83.0.0", "setuptools-scm>=10.2.1"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -32,8 +32,8 @@ requires-python = ">=3.12"
 dependencies = [ 
     "numpy>=2.5.1", 
     "scipy>=1.18.0", 
-    "matplotlib>=3.11.0", 
-    "pandas>=3.0.3", 
+    "matplotlib>=3.11.1", 
+    "pandas>=3.0.5", 
     "xlrd>=2.0.2", 
     "openpyxl>=3.1.5", 
     "zemaxglass>=2.0.0",
@@ -66,7 +66,7 @@ include-package-data = true
 "" = "src"
 
 [tool.setuptools.package-data]
-data = [ "*.xlsx", "*.xls", "*.txt",]
+opticalglass.data = [ "*.xlsx", "*.xls", "*.txt"]
 
 [tool.setuptools_scm]
 
