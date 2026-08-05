@@ -632,7 +632,8 @@ def get_rii_libs(rii_base_path: str|Path|None=None) -> dict[str, GlassLibrary]:
     rii_path = rii_base_path / "catalog-nk.yml"
     rii_data_path = rii_base_path / "data"
 
-    with open(rii_path) as rii_file:
+    # explicitly specify UTF-8 to avoid problems with encoding on Windows 
+    with open(rii_path, 'r', encoding='utf_8') as rii_file:
         rii_data = yaml.safe_load(rii_file)
 
     rii_libs = {}
