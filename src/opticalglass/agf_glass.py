@@ -150,7 +150,7 @@ class AGFCatalog(Mapping, GlassCatalogBase):
 def get_agf_lib(agf_path_str: str = '', 
                 cat_list: list[str]|str = 'all') -> GlassLibrary:
     
-    if agf_path_str is '':
+    if agf_path_str == '':
         zg_path = Path(zg.__file__)
         agf_path = zg_path.parent / 'AGF_files'
     else:

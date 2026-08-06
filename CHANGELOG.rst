@@ -4,6 +4,10 @@
 Changelog
 =========
 
+Version 2.0.1
+=============
+Fix a crashing problem on Windows trying to read the RefractiveIndex.INFO database with an inappropriate character encoding. Revise packaging setup to ensure data files are exported correctly in all cases.
+
 Version 2.0.0
 =============
 This release is a major upgrade to OpticalGlass. The :mod:`~.agf_glass` module for reading Zemax AGF files has been added and a local copy of |RII|_ can be used as a source of data. To handle this additional data, a :class:`~.glasslibs.GlassLibrary` is used to collect instances of GlassCatalogs. When :mod:`~.glassfactory` is imported, a central library |og_glass_libs| is created containing the following libraries:
