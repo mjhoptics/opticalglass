@@ -4,6 +4,10 @@
 Changelog
 =========
 
+Version 2.0.2
+=============
+Fix rii directory name when downloaded to match environment variable specification. Patch another file read that needed UTF-8 encoding specification. Update ZemaxGlass dependency (2.0.1) to ensure AGF_files directory is installed when using conda-forge.
+
 Version 2.0.1
 =============
 Fix a crashing problem on Windows trying to read the RefractiveIndex.INFO database with an inappropriate character encoding. Revise packaging setup to ensure data files are exported correctly in all cases.
