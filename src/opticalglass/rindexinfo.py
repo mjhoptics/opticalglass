@@ -87,46 +87,41 @@ def summary_plots(opt_medium, opt_medium_yaml=None):
     plt.show()
 
 
-def get_glassname_from_filestr(filestr: str, include_rii_page=False):
+def get_glassname_from_filepath(filepath: Path, include_rii_page=False):
     """ try to construct a name and catalog from the filename/url 
     
     If `include_rii_page` is True, the "Page" or lowest level in the RII 
     hierarchy, typically the lead author of the published results, is appended 
     in brackets to the medium name.
     """
+    db, catalog, data_type, name = filepath.parts[-4:]
+
     # strip off `.yml` and take final partition
-    full_db_path = filestr[filestr.find('database/data/'):]
-    path_parts = full_db_path.split('/')[2:]
+    name = name.removesuffix('.yml')
 
-    path_parts[-1] = path_parts[-1].removesuffix('.yml')
-    db = path_parts[0]
+    name_catalog = name, catalog
+    catalog = 'rii-' + catalog
+    if not db == 'specs':
+        if not data_type == 'nk':
+            raise GlassDBNotSupported(data_type)
 
-    catalog = 'rii-'
-    name_catalog = path_parts[-3], path_parts[-1]
-    if db == 'specs':
-        catalog += path_parts[1]
-        name = path_parts[-1]
-    else:
-        if not path_parts[-2] == 'nk':
-            raise GlassDBNotSupported(path_parts[-2])
-        catalog += path_parts[-4]
         if include_rii_page:
             name = f"{name_catalog[0]} [{name_catalog[1]}]"
         else:
             name = f"{name_catalog[0]}"
 
-    logger.debug(f"glassname_from_filestr: {db:7s}:   {catalog:25s}  {name}")
+    logger.debug(f"glassname_from_filepath: {db:7s}:   {catalog:25s}  {name}")
     return db, name, catalog
 
 
 def read_rii_file(filename: str | Path):
     ''' given a filename of a RII file, return a yaml instance. '''
     filepath = Path(filename)
-    with filepath.open() as file:
+    with filepath.open(encoding='utf_8') as file:
         inpt = file.read()
     yaml_data = yaml.safe_load(inpt)	
 
-    db, name, catalog = get_glassname_from_filestr(str(filename))
+    db, name, catalog = get_glassname_from_filepath(filepath)
 
     return yaml_data, name, catalog, db
 
@@ -140,7 +135,9 @@ def read_rii_url(url:str):
 
     yaml_data = yaml.safe_load(inpt)
 
-    db, name, catalog = get_glassname_from_filestr(urllib.parse.unquote(url))
+    # hack url with Path because RII url looks a lot like a file path
+    url_path = Path(urllib.parse.unquote(url))
+    db, name, catalog = get_glassname_from_filepath(url_path)
 
     return yaml_data, name, catalog, db
 
