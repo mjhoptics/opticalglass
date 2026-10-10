@@ -73,7 +73,7 @@ shiboken6==6.11.1
     #   pyside6-essentials
 six==1.17.0
     # via python-dateutil
-urllib3==2.7.0
+urllib3==2.8.0
     # via requests
 xlrd==2.0.2
     # via opticalglass (pyproject.toml)
