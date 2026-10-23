@@ -42,7 +42,7 @@ packaging==26.2
     # via matplotlib
 pandas==3.0.3
     # via opticalglass (pyproject.toml)
-pillow==12.3.0
+pillow==13.0.0
     # via matplotlib
 pyparsing==3.3.2
     # via matplotlib
