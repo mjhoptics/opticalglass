@@ -4,7 +4,7 @@
 #
 #    pip-compile --output-file=./docs/requirements.txt pyproject.toml
 #
-certifi==2026.6.17
+certifi==2026.10.18
     # via requests
 charset-normalizer==3.4.9
     # via requests
